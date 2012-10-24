@@ -33,6 +33,28 @@ except:
         print 'error importing cubit, check if cubit is installed'
         pass
 
+
+def add_sea_layer(block=1001):
+    cubit.silent_cmd('group "seaface" add face in block '+str(block)+' with Z_coord < -200')
+    group1 = cubit.get_id_from_name("seaface")
+    hbefore=cubit.get_last_id("hex")+1
+    cubit.cmd('create element extrude face in group '+str(group1)+' direction 0 0 1 distance 50000 layers 1')
+    hafter=cubit.get_last_id("hex")
+    cubit.cmd('equivalence node all tolerance 1')
+    cubit.silent_cmd('group "seasurf" add node with Z_coord > 30000')
+    group1 = cubit.get_id_from_name("seasurf")
+    nodes_ls =list(cubit.get_group_nodes(group1))
+    for n in nodes_ls:
+        x,y,z=cubit.get_nodal_coordinates(n)
+        cmd='node '+str(n)+' move X '+str(0) +' move Y '+str(0) +' move Z '+str(stoplayer-z)
+        cubit.cmd(cmd)
+    ######TODO
+    #add sea hex
+    #change hex absoorbing....
+
+
+
+
 def refine_closecurve(block=1001,closed_filenames=None,acis=True):
     from utilities import load_curves
     from boundary_definition import build_block_side,define_surf
@@ -474,7 +496,7 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
         if len(n1) != 0:
             print 'error, negative jacobian after the equivalence node command, use --merge instead of --equivalence'
 
-def collect(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cubfiles=False,ckbound_method1=False,ckbound_method2=False,merge_tolerance=None,curverefining=False,outfilename='totalmesh_merged',qlog=False,export2SPECFEM3D=False,listblock=None,listflag=None,outdir='.'):
+def collect(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cubfiles=False,ckbound_method1=False,ckbound_method2=False,merge_tolerance=None,curverefining=False,outfilename='totalmesh_merged',qlog=False,export2SPECFEM3D=False,listblock=None,listflag=None,outdir='.',add_sea=False):
     #
     collecting_merging(cpuxmin,cpuxmax,cpuymin,cpuymax,cpux,cpuy,cubfiles=cubfiles,ckbound_method1=ckbound_method1,ckbound_method2=ckbound_method2,merge_tolerance=merge_tolerance)
     #
@@ -483,6 +505,13 @@ def collect(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cubfiles=False
         refine_closecurve(block,curverefining,acis=True)
     #
     #
+    if add_sea:
+        block=1001
+        add_sea_layer(block=block)
+    
+    
+    
+    
     cubit.cmd('compress all')
     command="export mesh '"+outfilename+".e' block all overwrite xml '"+outfilename+".xml'"
     cubit.cmd(command)

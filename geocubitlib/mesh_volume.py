@@ -125,16 +125,43 @@ def mesh_layercake_regularmap(filename=None):
     for k in surf_or:
         command = "surface "+str(k)+" scheme "+cfg.or_mesh_scheme
         cubit.cmd(command)
-    for k in list_curve_or:
+    #
+    ucurve,vcurve=get_uv_curve(list_curve_or)
+    #
+    ucurve_interval={}
+    for k in ucurve:
         length=cubit.get_curve_length(k)
         interval=int(2*round(.5*length/cfg.size,0))
+        ucurve_interval[k]=interval
         command = "curve "+str(k)+" interval "+str(interval)
         cubit.cmd(command)
         #cubit_error_stop(iproc,command,ner)
         command = "curve "+str(k)+" scheme equal"
         cubit.cmd(command)
         #cubit_error_stop(iproc,command,ner)
-        #
+    if max(ucurve_interval.values()) != min(ucurve_interval.values()):
+        print 'mesh scheme is set to pave'
+        for sk in surf_or:
+            command = "surface "+str(sk)+" scheme pave"
+            cubit.cmd(command)
+    #
+    vcurve_interval={}
+    for k in vcurve:
+        length=cubit.get_curve_length(k)
+        interval=int(2*round(.5*length/cfg.size,0))
+        vcurve_interval[k]=interval
+        command = "curve "+str(k)+" interval "+str(interval)
+        cubit.cmd(command)
+        #cubit_error_stop(iproc,command,ner)
+        command = "curve "+str(k)+" scheme equal"
+        cubit.cmd(command)
+        #cubit_error_stop(iproc,command,ner)
+    if max(vcurve_interval.values()) != min(vcurve_interval.values()):
+        print 'mesh scheme is set to pave'
+        for sk in surf_or:
+            command = "surface "+str(sk)+" scheme pave"
+            cubit.cmd(command)
+    #
     for s in surf_vertical:
         lcurve=cubit.get_relatives("surface",s,"curve")
         interval_store=[]
@@ -161,6 +188,9 @@ def mesh_layercake_regularmap(filename=None):
                 command = "curve "+' '.join(str(iv[0]) for iv in interval_store)+" scheme equal"
                 cubit.cmd(command)
                 #cubit_error_stop(iproc,command,ner)
+        command = "surface "+str(s)+" scheme submap"
+        cubit.cmd(command)
+        
     #cubit_error_stop(iproc,command,ner)
     #
     #meshing
@@ -211,14 +241,9 @@ def mesh_layercake_regularmap(filename=None):
     ##vol 0
     ##___________________________ interface 1
     ##
-    # AAA # refinement(nvol,vol,filename=filename)
+    refinement(nvol,vol,filename=filename)
     #
     #top layer vertical coarsening
-    # AAA
-    # Volume 2 is always in between the 2nd and 3rd vertical surfaces from the left
-    cubitcommand = "refine node in volume 2 numsplit 1 depth 0"
-    cubit.cmd(cubitcommand)
-    # END AAA
     print 'coarsening top layer... ',cfg.coarsening_top_layer
     if  cfg.coarsening_top_layer:
         from sets import Set
@@ -334,6 +359,12 @@ def refinement(nvol,vol,filename=None):
                    cubitcommand= 'refine node in surf '+str(zstore[0])+' numsplit 1 bias 1.0 depth '+str(idepth)
                 cubit.cmd(cubitcommand)
 
+        if not nvol and cfg.volume_type == 'verticalsandwich_volume_ascii_regulargrid_mpiregularmap':
+            # AAA
+            # Volume 2 is always in between the 2nd and 3rd vertical surfaces from the left
+            cubitcommand = "refine node in volume 2 numsplit 1 depth 0"
+            cubit.cmd(cubitcommand)
+            # END AAA
 
 
 
@@ -450,3 +481,36 @@ def refine_inside_curve(curves,ntimes=1,depth=1,block=1,surface=False):
         import sys
         #sys.exit()
 
+def get_uv_curve(list_curve_or):
+    import math
+    import numpy as np
+    klen={}
+    for curve in list_curve_or:
+      vertex_list = cubit.get_relatives("curve", curve, "vertex")
+      coord0=cubit.get_center_point('vertex', vertex_list[0])
+      coord1=cubit.get_center_point('vertex', vertex_list[1])
+      klen[curve]=np.array(coord1)-np.array(coord0)
+    #
+    l0=list_curve_or[0]
+    c0=klen[l0]
+    angles={}
+    angles[l0]=0
+    for curve in list_curve_or[1:]:
+      c1=klen[curve]
+      angletmp=np.dot(c0,c1)/(np.dot(c0,c0)**.5*np.dot(c1,c1)**.5)
+      if -1 < angletmp < 1:
+        angle=math.sin(np.arccos(angletmp))
+      else:
+        angle=0.        
+      angles[curve]=angle
+    a=angles.values()
+    diff=max(a)-min(a)
+    ucurve=[]
+    vcurve=[]
+    for curve in list_curve_or:
+      if -diff < angles[curve] < diff:
+        ucurve.append(curve)
+      else:
+        vcurve.append(curve)
+    #
+    return ucurve,vcurve

@@ -176,13 +176,14 @@ def define_surf(ip=0,cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1):
     for k in list_surf: 
         center_point = cubit.get_center_point("surface", k)
         for p in lp:
-            if k == 33:
-                print (center_point[0] - p[0])/p[0]
-                print (center_point[1] - p[1])/p[1]
-                print abs((center_point[0] - p[0])/p[0]) <= 0.002 and abs((center_point[1] - p[1])/p[1]) <= 0.002
-            if abs((center_point[0] - p[0])/p[0]) <= 0.001 and abs((center_point[1] - p[1])/p[1]) <= 0.001:
-                absorbing_surf.append(k)
-                break
+            try:
+                if abs((center_point[0] - p[0])/p[0]) <= 0.001 and abs((center_point[1] - p[1])/p[1]) <= 0.001:
+                    absorbing_surf.append(k)
+                    break
+            except:
+                if -1 <= center_point[0] <= 1 and -1 <= center_point[1] <= 1:
+                    absorbing_surf.append(k)
+                    break
     #
     four_side=True
     if four_side:

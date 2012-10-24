@@ -340,7 +340,7 @@ class mesh_tools(block_tools):
         return self.ddt[0],self.dr[0]
 
 class mesh(object,mesh_tools):
-    def __init__(self):
+    def __init__(self,hex27=False):
         super(mesh, self).__init__()
         self.mesh_name='mesh_file'
         self.nodecoord_name='nodes_coords_file'
@@ -349,20 +349,27 @@ class mesh(object,mesh_tools):
         self.absname='absorbing_surface_file'
         self.freename='free_surface_file'
         self.recname='STATIONS'
-        version_cubit=float(cubit.get_version())
+        try:
+            version_cubit=float(cubit.get_version())
+        except:
+            version_cubit=float(cubit.get_version()[0:2])
+        #
         if version_cubit >= 12:
             self.face='SHELL4'
         else:
             self.face='QUAD4'
         self.hex='HEX'
+        self.hex27=hex27
         self.edge='BAR2'
         self.topo='face_topo'
         self.rec='receivers'
+        if hex27: cubit.cmd('block all except (block 1001 1002 1003 1004 1005 1006) type hex27')
         self.block_definition()
         self.ngll=5
         self.percent_gll=0.172
         self.point_wavelength=5
         cubit.cmd('compress all')
+        print 'version hex27'
     def __repr__(self):
         pass
     def block_definition(self):
@@ -501,6 +508,27 @@ class mesh(object,mesh_tools):
             print bc
             print topography
             print '****************************************'
+    def get_hex_connectivity(self,ind):
+        if self.hex27:
+                cubit.silent_cmd('group "nh" add Node in hex '+str(ind))
+                group1 = cubit.get_id_from_name("nh")
+                result=cubit.get_group_nodes(group1)
+                cubit.cmd('del group '+str(group1))
+        else:
+            result=cubit.get_connectivity(ind)
+        return result
+    #
+    def get_face_connectivity(self,ind):
+        if self.hex27:
+                cubit.silent_cmd('group "nf" add Node in face '+str(ind))
+                group1 = cubit.get_id_from_name("nf")
+                result=cubit.get_group_nodes(group1)
+                cubit.cmd('del group '+str(group1))
+        else:
+            result=cubit.get_connectivity(ind)
+        return result        
+    
+    
     def mat_parameter(self,properties): 
         print properties
         #format nummaterials file: #material_domain_id #material_id #rho #vp #vs #Q_mu #anisotropy_flag
@@ -550,6 +578,48 @@ class mesh(object,mesh_tools):
             #name=cubit.get_exodus_entity_name('block',block)
             nummaterial.write(str(self.mat_parameter(self.material[block])))
         nummaterial.close()
+    
+    def create_hexnode_string(self,hexa):
+        nodes=self.get_hex_connectivity(hexa)
+        #nodes=self.jac_check(nodes) #is it valid for 3D? TODO
+        if self.hex27:
+            ordered_nodes=[hexa]+list(nodes[:20])+[nodes[21]]+[nodes[25]]+[nodes[24]]+[nodes[26]]+[nodes[23]]+[nodes[22]]+[nodes[20]]
+            txt=' '.join(str(x) for x in ordered_nodes)
+            txt=txt+'\n'
+            #txt=('%10i %10i %10i %10i %10i %10i %10i %10i ')% nodes[:8] #first 8 nodes following specfem3d numbering convenction..
+            #txt=txt+('%10i %10i %10i %10i %10i %10i %10i %10i ')% nodes[8:16] #middle 12 nodes following specfem3d numbering convenction..
+            #txt=txt+('%10i %10i %10i %10i ')% nodes[16:20]
+            #txt=txt+('%10i %10i %10i %10i %10i %10i ')% (nodes[21], nodes[25], nodes[24], nodes[26], nodes[23], nodes[22])
+            #txt=txt+('%10i\n ')% nodes[20] #center volume
+        else:
+            txt=str(hexa)+' '+' '.join(str(x) for x in nodes)
+            txt=txt+'\n'
+            #txt=('%10i %10i %10i %10i %10i %10i %10i %10i\n')% nodes[:]
+        return txt
+        
+    def create_facenode_string(self,hexa,face,normal=None,cknormal=True):
+        nodes=self.get_face_connectivity(face)
+        if cknormal:
+            nodes_ok=self.normal_check(nodes[0:4],normal)
+            if self.hex27: nodes_ok2=self.normal_check(nodes[4:8],normal)
+        else:
+            nodes_ok=nodes[0:4]
+            if self.hex27: nodes_ok2=nodes[4:8]
+        #
+        if self.hex27:
+            ordered_nodes=[hexa]+list(nodes_ok)+list(nodes_ok2)+[nodes[8]]
+            txt=' '.join(str(x) for x in ordered_nodes)
+            txt=txt+'\n'
+            #txt=('%10i %10i %10i %10i %10i ') % (hexa,nodes_ok[0],nodes_ok[1],nodes_ok[2],nodes_ok[3]) #first 4 nodes following specfem3d numbering convenction..
+            #txt=txt+('%10i %10i %10i %10i ')% (nodes_ok2[0],nodes_ok2[1],nodes_ok2[2],nodes_ok2[3]) #middle 4 nodes following specfem3d numbering convenction..
+            #txt=txt+('%10i\n')% nodes[8]
+        else:
+            txt=str(hexa)+' '+' '.join(str(x) for x in nodes_ok)
+            txt=txt+'\n'
+            #txt=('%10i %10i %10i %10i %10i\n') % (hexa,nodes_ok[0],nodes_ok[1],nodes_ok[2],nodes_ok[3])
+        return txt
+    
+    
     def mesh_write(self,mesh_name):
         meshfile=open(mesh_name,'w')
         print 'Writing '+mesh_name+'.....'
@@ -561,11 +631,7 @@ class mesh(object,mesh_tools):
             hexes=cubit.get_block_hexes(block)
             #print len(hexes)
             for hexa in hexes:
-                #print hexa
-                nodes=cubit.get_connectivity('Hex',hexa)
-                #nodes=self.jac_check(nodes) #is it valid for 3D? TODO
-                txt=('%10i ')% hexa
-                txt=txt+('%10i %10i %10i %10i %10i %10i %10i %10i\n')% nodes[:]
+                txt=self.create_hexnode_string(hexa)
                 meshfile.write(txt)
         meshfile.close()
     def material_write(self,mat_name):
@@ -614,9 +680,7 @@ class mesh(object,mesh_tools):
                     for f in faces:
                         if dic_quads_all.has_key(f):
                             #print f
-                            nodes=cubit.get_connectivity('Face',f)
-                            nodes_ok=self.normal_check(nodes,normal)
-                            txt='%10i %10i %10i %10i %10i\n' % (h,nodes_ok[0],nodes_ok[1],nodes_ok[2],nodes_ok[3])
+                            txt=self.create_facenode_string(h,f,normal,cknormal=True)
                             freehex.write(txt)
                 freehex.close()   
         cubit.cmd('set info on')
@@ -698,12 +762,7 @@ class mesh(object,mesh_tools):
                     faces=cubit.get_sub_elements('hex',h,2)
                     for f in faces:
                         if dic_quads_all.has_key(f):
-                            nodes=cubit.get_connectivity('Face',f)
-                            if cknormal:
-                                nodes_ok=self.normal_check(nodes,normal)
-                            else:
-                                nodes_ok=nodes
-                            txt='%10i %10i %10i %10i %10i\n' % (h,nodes_ok[0],nodes_ok[1],nodes_ok[2],nodes_ok[3])
+                            txt=self.create_facenode_string(h,f,normal=normal,cknormal=True)
                             abshex_local.write(txt)
                 abshex_local.close()   
         cubit.cmd('set info on')
@@ -745,9 +804,7 @@ class mesh(object,mesh_tools):
                     faces=cubit.get_sub_elements('hex',h,2)
                     for f in faces:
                         if dic_quads_all.has_key(f):
-                            nodes=cubit.get_connectivity('Face',f)
-                            txt='%10i %10i %10i %10i %10i\n' % (h,nodes[0],\
-                                             nodes[1],nodes[2],nodes[3])
+                            txt=self.create_facenode_string(h,f,cknormal=False)
                             surfhex_local.write(txt)
                 # closes file
                 surfhex_local.close()
@@ -778,8 +835,8 @@ class mesh(object,mesh_tools):
         cubit.cmd('set info on')
         cubit.cmd('set echo on')
 
-def export2SPECFEM3D(path_exporting_mesh_SPECFEM3D='.'):
-    sem_mesh=mesh()
+def export2SPECFEM3D(path_exporting_mesh_SPECFEM3D='.',hex27=False):
+    sem_mesh=mesh(hex27)
     #sem_mesh.block_definition()
     #print sem_mesh.block_mat
     #print sem_mesh.block_flag
