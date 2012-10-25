@@ -31,6 +31,45 @@ except:
         print 'error importing cubit, check if cubit is installed'
         pass
 
+def process_surfacefiles(iproc,nx,ny,nstep,grdfile,unit):
+        from utilities import geo2utm
+        elev=numpy.zeros([nx,ny],float)
+        coordx=numpy.zeros([nx,ny,cfg.nz],float)
+        coordy=numpy.zeros([nx,ny,cfg.nz],float)
+        icoord=0
+        for iy in range(0,ny):
+            for ix in range(0,nx):
+                txt=grdfile.readline()
+                try:
+                    if len(txt) != 0:
+                        x,y,z=map(float,txt.split())
+                        if iy%nstep == 0 and ix%nstep == 0:
+                            icoord=icoord+1
+                            x_current,y_current=geo2utm(x,y,unit)
+                            jx=min(nx-1,ix/nstep)
+                            jy=min(ny-1,iy/nstep)
+                            coordx[jx,jy]=x_current
+                            coordy[jx,jy]=y_current
+                            elev[jx,jy]=z      
+                except:
+                    print 'error reading point ',iy*nx+ix,txt, grdfile.name, ' proc '
+                    raise NameError, 'error reading point'
+                    #
+        if  (nx)*(ny) != icoord: 
+            if iproc == 0: print 'error in the surface file '+grdfile.name
+            if iproc == 0: print 'x points ' +str(nx)+ ' y points ' +str(ny)+ ' tot points '+str((nx)*(ny)) 
+            if iproc == 0: print 'points read in '+grdfile.name+': '+str(icoord)
+            raise NameError
+        
+        return coordx,coordy,elev
+
+
+
+
+
+
+
+
 def read_grid(filename=None):
     import sys
     import start as start
@@ -62,52 +101,38 @@ def read_grid(filename=None):
         nstep=1
     #
     elev=numpy.zeros([nx,ny,cfg.nz],float)
-    coordx=numpy.zeros([nx,ny],float)
-    coordy=numpy.zeros([nx,ny],float)
     #
     if  cfg.bottomflat: 
         elev[:,:,0] = cfg.depth_bottom
         bottomsurface=1
     else:
         bottomsurface=0
-            #
-    for inz in range(bottomsurface,cfg.nz):
+        
+    for inz in range(bottomsurface,cfg.nz-1):
         try:
              grdfile = open(cfg.filename[inz-bottomsurface], 'r')
              print 'reading ',cfg.filename[inz-bottomsurface]
         except:
              txt='error reading: '+  str( cfg.filename[inz-bottomsurface] )
              raise NameError, txt
+        
+        coordx,coordy,elev_1=process_surfacefiles(iproc,nx,ny,nstep,grdfile,cfg.unit)
+        elev[:,:,inz]=elev_1[:,:]
         #
-        icoord=0
-        for iy in range(0,ny):
-            for ix in range(0,nx):
-                txt=grdfile.readline()
-                try:
-                    if len(txt) != 0:
-                        x,y,z=map(float,txt.split())
-                        if iy%nstep == 0 and ix%nstep == 0:
-                            icoord=icoord+1
-                            x_current,y_current=geo2utm(x,y,cfg.unit)
-                            jx=min(nx-1,ix/nstep)
-                            jy=min(ny-1,iy/nstep)
-                            coordx[jx,jy]=x_current
-                            coordy[jx,jy]=y_current
-                            elev[jx,jy,inz]=z      
-                except:
-                    print 'error reading point ',iy*cfg.nx+ix,txt, cfg.filename[inz-bottomsurface], ' proc ',iproc
-                    raise NameError, 'error reading point'
-                    #
-        if  (nx)*(ny) != icoord: 
-            if iproc == 0: print 'error in the surface file '+cfg.filename[inz-bottomsurface]
-            if iproc == 0: print 'x points ' +str(nx)+ ' y points ' +str(ny)+ ' tot points '+str((nx)*(ny)) 
-            if iproc == 0: print 'points read in '+cfg.filename[inz-bottomsurface]+': '+str(icoord)
-            raise NameError
-            
-        #if iproc == 0: print 'end of reading grd ascii file '+cfg.filename[inz-bottomsurface]+' '+str(icoord)+ ' points'
         grdfile.close()
     
-    
+    inz=cfg.nz-1
+    if cfg.sea:
+        elev[:,:,inz]=elev[:,:,inz-1]
+    else:
+        try:
+             grdfile = open(cfg.filename[inz-bottomsurface], 'r')
+             print 'reading ',cfg.filename[inz-bottomsurface]
+             coordx,coordy,elev_1=process_surfacefiles(iproc,nx,ny,nstep,grdfile,cfg.unit)
+        except:
+             txt='error reading: '+  str( cfg.filename[inz-bottomsurface] )
+             raise NameError, txt
+        
     return coordx,coordy,elev,nx,ny
     
 

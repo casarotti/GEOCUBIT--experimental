@@ -38,7 +38,7 @@ def add_sea_layer(block=1001):
     cubit.silent_cmd('group "seaface" add face in block '+str(block)+' with Z_coord < -200')
     group1 = cubit.get_id_from_name("seaface")
     hbefore=cubit.get_last_id("hex")+1
-    cubit.cmd('create element extrude face in group '+str(group1)+' direction 0 0 1 distance 50000 layers 1')
+    cubit.cmd('create element extrude face in group '+str(group1)+' direction 0 0 1 distance 1000 layers 1')
     hafter=cubit.get_last_id("hex")
     cubit.cmd('equivalence node all tolerance 1')
     cubit.silent_cmd('group "seasurf" add node with Z_coord > 30000')

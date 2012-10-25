@@ -45,6 +45,15 @@ def volumes(filename=None):
     elif cfg.volume_type == 'verticalsandwich_volume_ascii_regulargrid_mpiregularmap':
             verticalsandwich_volume_ascii_regulargrid_mpiregularmap(filename=None)
 
+
+def adjust_sea_layers(zvertex,sealevel,bathymetry,cfg):
+    if sealevel and zvertex < cfg.sea_level:
+        zvertex=0
+    elif bathymetry:
+        zvertex=max(zvertex,cfg.sea_level)+cfg.sea_threshold #move node below the topography of sea_threshold
+    return zvertex
+
+
 ### AAA Added 7/19/12
 def verticalsandwich_volume_ascii_regulargrid_mpiregularmap(filename=None):
     # Create vertical rather than horizontal layering
@@ -519,6 +528,16 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None):
     #
     #create vertex
     for inz in range(0,cfg.nz):
+        if cfg.sea and inz=cfg.nz-1: #sea layer
+            sealevel=True
+            bathymetry=False
+        elif cfg.sea and inz=cfg.nz-2: #bathymetry layer
+            sealevel=False
+            bathymetry=True
+        else:
+            sealevel=False
+            bathymetry=False
+        
         if  cfg.bottomflat and inz == 0: #bottom layer
                 #
                 if cfg.geometry_format == 'ascii':
@@ -601,6 +620,7 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None):
                     ivx=0
                     for ix in range(nxmin_cpu,nxmax_cpu+1):
                         zvertex=elev[ix,iy,inz]
+                        zvertex=adjust_sea_layers(zvertex,sealevel,bathymetry,cfg)
                         x_current,y_current=(coordx[ix,iy],coordy[ix,iy])
                         #
                         vertex.append(' Position '+ str( x_current ) +' '+ str( y_current )+' '+ str( zvertex ) )

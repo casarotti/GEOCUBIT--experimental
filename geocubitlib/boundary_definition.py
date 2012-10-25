@@ -207,7 +207,7 @@ def define_block():
     list_name=map(lambda x: 'vol'+x,map(str,list_vol))
     return list_vol,list_name
 
-def build_block(vol_list,name,id_0=1):
+def build_block(vol_list,name,id_0=1,top_surf=None,sea=False,cfg=None):
     #
     from sets import Set
     #
@@ -220,12 +220,28 @@ def build_block(vol_list,name,id_0=1):
         id_block+=1
         v_other=Set(vol_list)-Set([v])
         #command= 'block '+str(id_block)+' hex in node in vol '+str(v)+' except hex in vol '+str(list(v_other))
-        command= 'block '+str(id_block)+' hex in vol '+str(v)+' except hex in vol '+str(list(v_other))
-        print command
-        command = command.replace("["," ").replace("]"," ")
-        cubit.cmd(command) 
-        command = "block "+str(id_block)+" name '"+n+"'"
-        cubit.cmd(command)
+        if sea and v == vol_list[-1]:
+            cubit.cmd('set duplicate block elements off')
+            #sea
+            block 11 hex in node in surf 15 with (Z_coord < -200) 
+            command= 'block '+str(id_block)+' hex in node in surf '+str(top_surf)+' with Z_coord < '+str(cfg.sea_threshold)
+            cubit.cmd(command)
+            #continent
+            command= 'block '+str(id_block)+' hex in node in surf '+str(top_surf)+' with (Z_coord > '+str(cfg.sea_threshold)+' and Z_coord < '+str(cfg.sea_level)
+            cubit.cmd(command)
+            #shallow_water
+            command= 'block '+str(id_block)+' hex in node in surf '+str(top_surf)+' with Z_coord >= '+str(cfg.sea_level)
+            cubit.cmd(command)
+            
+        else:
+            command= 'block '+str(id_block)+' hex in vol '+str(v)+' except hex in vol '+str(list(v_other))
+            print command
+            command = command.replace("["," ").replace("]"," ")
+            cubit.cmd(command) 
+            command = "block "+str(id_block)+" name '"+n+"'"
+            cubit.cmd(command)
+
+
 
 def build_block_side(surf_list,name,obj='surface',id_0=1):
     id_nodeset=cubit.get_next_nodeset_id()
@@ -292,7 +308,7 @@ def define_bc(*args,**keys):
         #     
         id_0=cubit.get_next_block_id()
         v_list,name_list=define_block()
-        build_block(v_list,name_list,id_0)
+        build_block(v_list,name_list,id_0,top_surf)
         #
     elif closed:
         surf=define_absorbing_surf_sphere()
