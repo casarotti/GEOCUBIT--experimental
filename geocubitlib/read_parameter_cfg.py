@@ -159,6 +159,7 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
     dcfg['coarsening_top_layer']=False
     dcfg['refineinsidevol']=False
     dcfg['sea']=False
+    dcfg['seaup']=False
     dcfg['sea_level']=False
     dcfg['sea_threshold']=False
     
@@ -251,9 +252,8 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
             dcfg['actual_vertical_interval_top_layer']=1
             dcfg['coarsening_top_layer']=True
         
-        
-        
-        
+    
+    dcfg['optionsea']={'sea':dcfg['sea'],'seaup':dcfg['seaup'],'sealevel':dcfg['sea_level'],'seathres':dcfg['sea_threshold']}
     cfg=attrdict(dcfg)
     
     if menu:
@@ -324,7 +324,11 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
     except:
         pass
         
-        
+    try:
+        if isinstance(cfg.refinement_depth,int): cfg.refinement_depth=[cfg.refinement_depth]
+    except:
+        pass
+    
     return cfg
 
 
