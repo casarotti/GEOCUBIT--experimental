@@ -515,7 +515,7 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None):
         #print coordx,coordy,nx,ny
     #
     print 'end of building grid '+str(iproc)
-    print 'number of point: ', len(coordx)
+    print 'number of point: ', len(coordx)*len(coordy)
     #
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     #for each processor

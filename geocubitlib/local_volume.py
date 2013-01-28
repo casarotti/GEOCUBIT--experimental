@@ -130,10 +130,11 @@ def read_grid(filename=None):
              grdfile = open(cfg.filename[inz-bottomsurface], 'r')
              print 'reading ',cfg.filename[inz-bottomsurface]
              coordx,coordy,elev_1=process_surfacefiles(iproc,nx,ny,nstep,grdfile,cfg.unit)
+             elev[:,:,inz]=elev_1[:,:]
         except:
              txt='error reading: '+  str( cfg.filename[inz-bottomsurface] )
              raise NameError, txt
-        
+    
     return coordx,coordy,elev,nx,ny
     
 
