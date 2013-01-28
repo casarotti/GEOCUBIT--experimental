@@ -47,11 +47,21 @@ def volumes(filename=None):
 
 
 def adjust_sea_layers(zvertex,sealevel,bathymetry,cfg):
-    if sealevel and zvertex < cfg.sea_level:
-        zvertex=0
-    elif bathymetry:
-        zvertex=max(zvertex,cfg.sea_level)+cfg.sea_threshold #move node below the topography of sea_threshold
+    if cfg.seaup: 
+        if sealevel:
+            vertex=max(cfg.sea_level,vertex-cfg.sea_threshold)    
+        elif bathymetry:
+            #if zvertex > cfg.sea_threshold: zvertex=max(zvertex,cfg.sea_level)+cfg.sea_threshold #move node below the topography of sea_threshold
+            vertex=vertex
+    else:
+        if sealevel and zvertex < cfg.sea_level:
+            zvertex=cfg.sea_level
+        elif bathymetry:
+            if zvertex > cfg.sea_threshold: zvertex=max(zvertex,cfg.sea_level)+cfg.sea_threshold #move node below the topography of sea_threshold
     return zvertex
+    
+
+    
 
 
 ### AAA Added 7/19/12
@@ -528,15 +538,16 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None):
     #
     #create vertex
     for inz in range(0,cfg.nz):
-        if cfg.sea and inz=cfg.nz-1: #sea layer
+        if cfg.sea and inz==cfg.nz-1: #sea layer
             sealevel=True
             bathymetry=False
-        elif cfg.sea and inz=cfg.nz-2: #bathymetry layer
+        elif cfg.sea and inz==cfg.nz-2: #bathymetry layer
             sealevel=False
             bathymetry=True
         else:
             sealevel=False
             bathymetry=False
+        print sealevel,bathymetry
         
         if  cfg.bottomflat and inz == 0: #bottom layer
                 #

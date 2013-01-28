@@ -34,24 +34,64 @@ except:
         pass
 
 
-def add_sea_layer(block=1001):
-    cubit.silent_cmd('group "seaface" add face in block '+str(block)+' with Z_coord < -200')
-    group1 = cubit.get_id_from_name("seaface")
-    hbefore=cubit.get_last_id("hex")+1
-    cubit.cmd('create element extrude face in group '+str(group1)+' direction 0 0 1 distance 1000 layers 1')
-    hafter=cubit.get_last_id("hex")
-    cubit.cmd('equivalence node all tolerance 1')
-    cubit.silent_cmd('group "seasurf" add node with Z_coord > 30000')
-    group1 = cubit.get_id_from_name("seasurf")
-    nodes_ls =list(cubit.get_group_nodes(group1))
-    for n in nodes_ls:
-        x,y,z=cubit.get_nodal_coordinates(n)
-        cmd='node '+str(n)+' move X '+str(0) +' move Y '+str(0) +' move Z '+str(stoplayer-z)
-        cubit.cmd(cmd)
+def add_sea_layer(block=1001,optionsea=False):
+    import numpy
+    if optionsea:
+            sea=optionsea['sea']
+            seaup=optionsea['seaup']
+            sealevel=optionsea['sealevel']
+            seathres=optionsea['seathres']
+    else:
+            sea=False
+            seaup=False
+            sealevel=False
+            seathres=False
+    
+    
+    #cubit.silent_cmd('group "seaface" add face in block '+str(block)+' with Z_coord < -200')
+    #group1 = cubit.get_id_from_name("seaface")
+    #hbefore=cubit.get_last_id("hex")+1
+    #cubit.cmd('create element extrude face in group '+str(group1)+' direction 0 0 1 distance 1000 layers 1')
+    #hafter=cubit.get_last_id("hex")
+    #cubit.cmd('equivalence node all tolerance 1')
+    #cubit.silent_cmd('group "seasurf" add node with Z_coord > 30000')
+    #group1 = cubit.get_id_from_name("seasurf")
+    #nodes_ls =list(cubit.get_group_nodes(group1))
+    #for n in nodes_ls:
+    #    x,y,z=cubit.get_nodal_coordinates(n)
+    #    cmd='node '+str(n)+' move X '+str(0) +' move Y '+str(0) +' move Z '+str(stoplayer-z)
+    #    cubit.cmd(cmd)
     ######TODO
     #add sea hex
     #change hex absoorbing....
-
+    block_list=cubit.get_block_id_list()
+    blist=numpy.array(block_list)
+    id_block=blist[blist<1000].max()
+    cubit.cmd('delete block '+str(id_block))
+    #sea
+    command= 'block '+str(id_block)+' hex in node in face in block '+str(block)+' with Z_coord < '+str(seathres)
+    cubit.cmd(command)
+    command = "block "+str(id_block)+" name 'sea'"
+    cubit.cmd(command)
+    if not seaup:
+        id_block+=1
+        command= 'block '+str(id_block)+' hex in node in face in block '+str(block)+' with (Z_coord > '+str(seathres)+' and Z_coord < '+str(sealevel)+')'
+        cubit.cmd(command)
+        command = "block "+str(id_block)+" name 'shwater'"
+        cubit.cmd(command)
+    id_block+=1
+    command= 'block '+str(id_block)+' hex in node in face in block '+str(block)+' with Z_coord >= '+str(sealevel)
+    cubit.cmd(command)
+    command = "block "+str(id_block)+" name 'continent'"
+    cubit.cmd(command)
+    
+    
+    
+    
+    
+    
+    
+    
 
 
 
@@ -496,6 +536,10 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
         if len(n1) != 0:
             print 'error, negative jacobian after the equivalence node command, use --merge instead of --equivalence'
 
+
+
+
+
 def collect(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cubfiles=False,ckbound_method1=False,ckbound_method2=False,merge_tolerance=None,curverefining=False,outfilename='totalmesh_merged',qlog=False,export2SPECFEM3D=False,listblock=None,listflag=None,outdir='.',add_sea=False):
     #
     collecting_merging(cpuxmin,cpuxmax,cpuymin,cpuymax,cpux,cpuy,cubfiles=cubfiles,ckbound_method1=ckbound_method1,ckbound_method2=ckbound_method2,merge_tolerance=merge_tolerance)
@@ -552,7 +596,7 @@ def collect(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cubfiles=False
     if export2SPECFEM3D:
         e2SEM(files=False,listblock=listblock,listflag=listflag,outdir=outdir)
                                             
-def e2SEM(files=False,listblock=None,listflag=None,outdir='.'):
+def e2SEM(files=False,listblock=None,listflag=None,outdir='.',cpml=False):
     import glob
     if files:
         filenames=glob.glob(files)
@@ -583,7 +627,7 @@ def e2SEM(files=False,listblock=None,listflag=None,outdir='.'):
         cubit.cmd("block "+str(ib)+" attribute index 1 "+ str(iflag)            )
     #
     import cubit2specfem3d
-    cubit2specfem3d.export2SPECFEM3D(outdir)
+    cubit2specfem3d.export2SPECFEM3D(outdir,cpml=cpml)
 
 def invert_dict(d):
      inv = {}

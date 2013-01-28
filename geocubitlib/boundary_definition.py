@@ -207,9 +207,20 @@ def define_block():
     list_name=map(lambda x: 'vol'+x,map(str,list_vol))
     return list_vol,list_name
 
-def build_block(vol_list,name,id_0=1,top_surf=None,sea=False,cfg=None):
+def build_block(vol_list,name,id_0=1,top_surf=None,optionsea=False):
     #
     from sets import Set
+    if optionsea:
+        sea=optionsea['sea']
+        seaup=optionsea['seaup']
+        sealevel=optionsea['sealevel']
+        seathres=optionsea['seathres']
+    else:
+        sea=False
+        seaup=False
+        sealevel=False
+        seathres=False
+    
     #
     block_list=cubit.get_block_id_list()
     if len(block_list) > 0:
@@ -222,17 +233,23 @@ def build_block(vol_list,name,id_0=1,top_surf=None,sea=False,cfg=None):
         #command= 'block '+str(id_block)+' hex in node in vol '+str(v)+' except hex in vol '+str(list(v_other))
         if sea and v == vol_list[-1]:
             cubit.cmd('set duplicate block elements off')
+            tsurf_string=" ".join(str(x) for x in top_surf)
             #sea
-            block 11 hex in node in surf 15 with (Z_coord < -200) 
-            command= 'block '+str(id_block)+' hex in node in surf '+str(top_surf)+' with Z_coord < '+str(cfg.sea_threshold)
+            command= 'block '+str(id_block)+' hex in node in surf '+tsurf_string+' with Z_coord < '+str(seathres)
             cubit.cmd(command)
-            #continent
-            command= 'block '+str(id_block)+' hex in node in surf '+str(top_surf)+' with (Z_coord > '+str(cfg.sea_threshold)+' and Z_coord < '+str(cfg.sea_level)
+            command = "block "+str(id_block)+" name 'sea"+n+"'"
             cubit.cmd(command)
-            #shallow_water
-            command= 'block '+str(id_block)+' hex in node in surf '+str(top_surf)+' with Z_coord >= '+str(cfg.sea_level)
+            if not seaup:
+                id_block+=1
+                command= 'block '+str(id_block)+' hex in node in surf '+tsurf_string+' with (Z_coord > '+str(seathres)+' and Z_coord < '+str(sealevel)
+                cubit.cmd(command)
+                command = "block "+str(id_block)+" name 'shwater"+n+"'"
+                cubit.cmd(command)
+            id_block+=1
+            command= 'block '+str(id_block)+' hex in node in surf '+tsurf_string+' with Z_coord >= '+str(sealevel)
             cubit.cmd(command)
-            
+            command = "block "+str(id_block)+" name 'continent"+n+"'"
+            cubit.cmd(command)
         else:
             command= 'block '+str(id_block)+' hex in vol '+str(v)+' except hex in vol '+str(list(v_other))
             print command
@@ -289,6 +306,7 @@ def define_bc(*args,**keys):
     cpuy=keys.get("cpuy",1)
     cpuxmax=keys.get("cpuxmax",cpux)
     cpuymax=keys.get("cpuymax",cpuy)
+    optionsea=keys.get("optionsea",False)
     #
     if parallel:
         absorbing_surf,abs_xmin,abs_xmax,abs_ymin,abs_ymax,top_surf,bottom_surf,xmin,ymin,xmax,ymax=define_surf(ip=ip,cpuxmin=cpuxmin,cpuxmax=cpuxmax,cpuymin=cpuymin,cpuymax=cpuymax,cpux=cpux,cpuy=cpuy)
@@ -308,7 +326,7 @@ def define_bc(*args,**keys):
         #     
         id_0=cubit.get_next_block_id()
         v_list,name_list=define_block()
-        build_block(v_list,name_list,id_0,top_surf)
+        build_block(v_list,name_list,id_0,top_surf,optionsea=optionsea)
         #
     elif closed:
         surf=define_absorbing_surf_sphere()

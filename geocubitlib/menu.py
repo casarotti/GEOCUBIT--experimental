@@ -77,7 +77,7 @@ def usage():
          
     """
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "sjmohbp1", ["SEMoutput=","qlog","mfast","curverefining=","output=","rangecpux=","rangecpuy=","equivalence","listflag=","listblock=","cpux=","cpuy=","exofiles=","partitioner","plane","x1=","x2=","x3=","x4=","unit=","chkcfg","mat=","merge_tolerance=","export2SPECFEM3D=","mesh","chklib","cfg=","job=","basin","help", "id_proc=", "surface=","script","jou","strat","MPI","regulargrid=",'skin=',"build_surface","build_volume","merge1","merge2","merge","collect","meshfiles="])
+    opts, args = getopt.getopt(sys.argv[1:], "sjmohbp1", ["addsea","SEMoutput=","qlog","mfast","curverefining=","output=","rangecpux=","rangecpuy=","equivalence","listflag=","listblock=","cpux=","cpuy=","exofiles=","partitioner","plane","x1=","x2=","x3=","x4=","unit=","chkcfg","mat=","merge_tolerance=","export2SPECFEM3D=","mesh","chklib","cfg=","job=","basin","help", "id_proc=", "surface=","script","jou","strat","MPI","regulargrid=",'skin=',"build_surface","build_volume","merge1","merge2","merge","collect","meshfiles="])
     print opts, args
 except getopt.GetoptError,errmsg:
     if str(errmsg) == 'option --export2SPECFEM3D requires argument':
@@ -85,7 +85,7 @@ except getopt.GetoptError,errmsg:
             if 'export2SPECFEM3D' in xop:
                 sys.argv[i+1]=sys.argv[i+1]+'=.'
         try:
-            opts, args = getopt.getopt(sys.argv[1:], "sjmohbp1", ["SEMoutput=","qlog","mfast","curverefining=","output=","rangecpux=","rangecpuy=","equivalence","listflag=","listblock=","cpux=","cpuy=","exofiles=","partitioner","plane","x1=","x2=","x3=","x4=","unit=","chkcfg","mat=","merge_tolerance=","export2SPECFEM3D=","mesh","chklib","cfg=","job=","basin","help", "id_proc=", "surface=","script","jou","strat","MPI","regulargrid=",'skin=',"build_surface","build_volume","merge1","merge2","merge","collect","meshfiles="])
+            opts, args = getopt.getopt(sys.argv[1:], "sjmohbp1", ["addsea","SEMoutput=","qlog","mfast","curverefining=","output=","rangecpux=","rangecpuy=","equivalence","listflag=","listblock=","cpux=","cpuy=","exofiles=","partitioner","plane","x1=","x2=","x3=","x4=","unit=","chkcfg","mat=","merge_tolerance=","export2SPECFEM3D=","mesh","chklib","cfg=","job=","basin","help", "id_proc=", "surface=","script","jou","strat","MPI","regulargrid=",'skin=',"build_surface","build_volume","merge1","merge2","merge","collect","meshfiles="])
             print opts, args
         except getopt.GetoptError,errmsg:
             print str(errmsg)
@@ -136,7 +136,7 @@ cpuymin=0
 cpuxmax=None
 cpuymax=None
 curverefining=False
-
+add_sea=False
 
 
 
@@ -265,8 +265,10 @@ if opts:
             output=value
         if o in ("--curverefining"):
             curverefining=value.split(',')
-        if o in ("SEMoutput"):
+        if o in ("--SEMoutput"):
             SPECFEM3D_output_dir=value
+        if o in ("--addsea"):
+            add_sea=True
     print cpuxmax,cpuymax
     if cpuymax:
         pass
@@ -312,4 +314,5 @@ if opts:
 elif opts == []:
     print __name__
     usage()
-    raise AttributeError('no options')
+    import sys
+    sys.exit()

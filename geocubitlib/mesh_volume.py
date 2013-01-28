@@ -279,7 +279,7 @@ def mesh_layercake_regularmap(filename=None):
     import boundary_definition
     entities=['face']
     print iproc, 'hex block definition...'
-    boundary_definition.define_bc(entities,parallel=True,cpux=cfg.cpux,cpuy=cfg.cpuy,cpuxmin=0,cpuymin=0)
+    boundary_definition.define_bc(entities,parallel=True,cpux=cfg.cpux,cpuy=cfg.cpuy,cpuxmin=0,cpuymin=0,optionsea=False)
     #save mesh
     
     print iproc, 'untangling...'
@@ -295,6 +295,7 @@ def mesh_layercake_regularmap(filename=None):
 def refinement(nvol,vol,filename=None):
     import start as start
     cfg                         = start.start_cfg(filename=filename)
+    from utilities import get_v_h_list
     #
     #vertical refinement
     #for nvol = 3 
@@ -314,14 +315,17 @@ def refinement(nvol,vol,filename=None):
     if cfg.ntripl != 0:
         if len(cfg.refinement_depth) != 0:
             #get the topo surface....
-            surf=cubit.get_relatives('volume',vol[nvol+1-2].ID,'surface')
-            zstore=[-1,-999999999]
-            for s in surf:
-                 c=cubit.get_center_point('surface',s)
-                 z=c[2]
-                 if z > zstore[1]:
-                     zstore=[s,z]
-            tsurf=zstore[0]
+            #surf=cubit.get_relatives('volume',vol[nvol-1].ID,'surface')
+            #zstore=[-1,-999999999]
+            #for s in surf:
+            #     c=cubit.get_center_point('surface',s)
+            #     z=c[2]
+            #     print s,z
+            #     if z > zstore[1]:
+            #         zstore=[s,z]
+            #tsurf=zstore[0]
+            _,_,_,_,_,tsurf = get_v_h_list([vol[nvol-1].ID])
+            tsurf=' '.join(str(x) for x in tsurf)
             for idepth in cfg.refinement_depth:
                  cubitcommand= 'refine node in surf  '+str(tsurf)+' numsplit 1 bias 1.0 depth '+str(idepth)
                  cubit.cmd(cubitcommand)
@@ -347,16 +351,10 @@ def refinement(nvol,vol,filename=None):
                    cubitcommand= 'refine hex in vol  '+txt
                 else:
                    #refinement on the top surface
-                   
-                   surf=cubit.get_relatives('volume',vol[ir-2].ID,'surface')
-                   zstore=[-1,-999999999]
-                   for s in surf:
-                        c=cubit.get_center_point('surface',s)
-                        z=c[2]
-                        if z > zstore[1]:
-                            zstore=[s,z]
+                   _,_,_,_,_,tsurf = get_v_h_list([vol[ir-2].ID])
+                   tsurf=' '.join(str(x) for x in tsurf)
                    idepth=1
-                   cubitcommand= 'refine node in surf '+str(zstore[0])+' numsplit 1 bias 1.0 depth '+str(idepth)
+                   cubitcommand= 'refine node in surf '+str(tsurf)+' numsplit 1 bias 1.0 depth '+str(idepth)
                 cubit.cmd(cubitcommand)
 
         if not nvol and cfg.volume_type == 'verticalsandwich_volume_ascii_regulargrid_mpiregularmap':

@@ -33,9 +33,10 @@ except:
 
 def process_surfacefiles(iproc,nx,ny,nstep,grdfile,unit):
         from utilities import geo2utm
+        numpy                       = start.start_numpy()
         elev=numpy.zeros([nx,ny],float)
-        coordx=numpy.zeros([nx,ny,cfg.nz],float)
-        coordy=numpy.zeros([nx,ny,cfg.nz],float)
+        coordx=numpy.zeros([nx,ny],float)
+        coordy=numpy.zeros([nx,ny],float)
         icoord=0
         for iy in range(0,ny):
             for ix in range(0,nx):
