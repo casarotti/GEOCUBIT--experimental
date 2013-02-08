@@ -77,28 +77,12 @@ def usage():
          
     """
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "sjmohbp1", ["addsea","SEMoutput=","qlog","mfast","curverefining=","output=","rangecpux=","rangecpuy=","equivalence","listflag=","listblock=","cpux=","cpuy=","exofiles=","partitioner","plane","x1=","x2=","x3=","x4=","unit=","chkcfg","mat=","merge_tolerance=","export2SPECFEM3D=","mesh","chklib","cfg=","job=","basin","help", "id_proc=", "surface=","script","jou","strat","MPI","regulargrid=",'skin=',"build_surface","build_volume","merge1","merge2","merge","collect","meshfiles="])
+    opts, args = getopt.getopt(sys.argv[1:], "sjmohbp1", ["addsea","SEMoutput=","qlog","mfast","curverefining=","output=","rangecpux=","rangecpuy=","equivalence","listflag=","listblock=","cpux=","cpuy=","exofiles=","partitioner","plane","x1=","x2=","x3=","x4=","unit=","chkcfg","mat=","merge_tolerance=","export2SPECFEM3D","mesh","chklib","cfg=","job=","basin","help", "id_proc=", "surface=","script","jou","strat","MPI","regulargrid=",'skin=',"build_surface","build_volume","merge1","merge2","merge","collect","meshfiles="])
     print opts, args
-except getopt.GetoptError,errmsg:
-    if str(errmsg) == 'option --export2SPECFEM3D requires argument':
-        for i,xop in enumerate(sys.argv[1:]):
-            if 'export2SPECFEM3D' in xop:
-                sys.argv[i+1]=sys.argv[i+1]+'=.'
-        try:
-            opts, args = getopt.getopt(sys.argv[1:], "sjmohbp1", ["addsea","SEMoutput=","qlog","mfast","curverefining=","output=","rangecpux=","rangecpuy=","equivalence","listflag=","listblock=","cpux=","cpuy=","exofiles=","partitioner","plane","x1=","x2=","x3=","x4=","unit=","chkcfg","mat=","merge_tolerance=","export2SPECFEM3D=","mesh","chklib","cfg=","job=","basin","help", "id_proc=", "surface=","script","jou","strat","MPI","regulargrid=",'skin=',"build_surface","build_volume","merge1","merge2","merge","collect","meshfiles="])
-            print opts, args
-        except getopt.GetoptError,errmsg:
-            print str(errmsg)
-            usage()
-            sys.exit(2)
-    else:
-        print str(errmsg)
-        usage()
-        sys.exit()
-except AttributeError:
-    opts=None
-    args=None
+except:
     print opts, args
+    usage()
+    sys.exit()
     
 output='totalmesh_merged'
 SPECFEM3D_output_dir='.'
@@ -231,12 +215,6 @@ if opts:
             exofiles=value
         if o in ("--export2SPECFEM3D"):
                export2SPECFEM3D=True
-               SPECFEM3D_output_dir=value
-               import os
-               try:
-                   os.makedirs(SPECFEM3D_output_dir)
-               except OSError:
-                   pass
         if o in ("--merge_tolerance") and o != '--merge' and o != '--merge2' and o != '--merge1':
              merge_tolerance=map(float,value.split(','))
         if o in ("--mat"):
@@ -267,6 +245,11 @@ if opts:
             curverefining=value.split(',')
         if o in ("--SEMoutput"):
             SPECFEM3D_output_dir=value
+            import os
+            try:
+                os.makedirs(SPECFEM3D_output_dir)
+            except OSError:
+                pass
         if o in ("--addsea"):
             add_sea=True
     print cpuxmax,cpuymax
