@@ -31,14 +31,23 @@ except:
         print 'error importing cubit, check if cubit is installed'
         pass
 
-def process_surfacefiles(iproc,nx,ny,nstep,grdfile,unit):
+def process_surfacefiles(iproc,nx,ny,nstep,grdfile,unit,lat_orientation):
         from utilities import geo2utm
         numpy                       = start.start_numpy()
         elev=numpy.zeros([nx,ny],float)
         coordx=numpy.zeros([nx,ny],float)
         coordy=numpy.zeros([nx,ny],float)
         icoord=0
-        for iy in range(0,ny):
+        if lat_orientation in 'NORTH2SOUTH':
+            rangey=range(ny-1,-1,-1)
+            #print rangey
+        elif lat_orientation in 'SOUTH2NORTH':
+            rangey=range(0,ny)
+        else:
+            rangey=False
+            print lat_orientation, lat_orientation == 'NORTH2SOUTH'
+            print rangey
+        for iy in rangey:
             for ix in range(0,nx):
                 txt=grdfile.readline()
                 try:
@@ -117,24 +126,32 @@ def read_grid(filename=None):
              txt='error reading: '+  str( cfg.filename[inz-bottomsurface] )
              raise NameError, txt
         
-        coordx,coordy,elev_1=process_surfacefiles(iproc,nx,ny,nstep,grdfile,cfg.unit)
+        coordx,coordy,elev_1=process_surfacefiles(iproc,nx,ny,nstep,grdfile,cfg.unit,cfg.lat_orientation)
         elev[:,:,inz]=elev_1[:,:]
         #
         grdfile.close()
     
-    inz=cfg.nz-1
+    inz=cfg.nz-1 #last surface
     if cfg.sea:
         elev[:,:,inz]=elev[:,:,inz-1]
     else:
         try:
              grdfile = open(cfg.filename[inz-bottomsurface], 'r')
              print 'reading ',cfg.filename[inz-bottomsurface]
-             coordx,coordy,elev_1=process_surfacefiles(iproc,nx,ny,nstep,grdfile,cfg.unit)
+             coordx,coordy,elev_1=process_surfacefiles(iproc,nx,ny,nstep,grdfile,cfg.unit,cfg.lat_orientation)
              elev[:,:,inz]=elev_1[:,:]
         except:
              txt='error reading: '+  str( cfg.filename[inz-bottomsurface] )
              raise NameError, txt
-    
+        
+        if cfg.subduction:
+          print 'subduction'
+          top=elev[:,:,inz]
+          slab=elev[:,:,inz-1]
+          subcrit=numpy.abs(top-slab)<cfg.subduction_thres
+          top[subcrit]=slab[subcrit]+cfg.subduction_thres
+          print len(top[subcrit])
+          elev[:,:,inz]=top
     return coordx,coordy,elev,nx,ny
     
 

@@ -294,6 +294,7 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
         boundary=check_bc(ip,xmin,xmax,ymin,ymax,cpux,cpuy,cpuxmin,cpuxmax,cpuymin,cpuymax)
     #
     #
+    print boundary_dict
     block_list=cubit.get_block_id_list()
     for block in block_list:
         ty=cubit.get_block_element_type(block)
@@ -346,8 +347,8 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
                 if ip != idown:
                     nup=boundary_dict[ip]['nodes_surf_ymin']
                     ndow=boundary_dict[idown]['nodes_surf_ymax']
-                    merge_node(nup,ndow)
-                    
+                    merge_node_ck(nup,ndow)
+                 
                     if idiag != idown:
                         if ip in ymax and ip not in xmin:
                             nlu=boundary_dict[ip]['node_curve_xminymax'] #node in curve chunck left up... r u
@@ -371,7 +372,7 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
                 if ip != ileft:
                     nright=boundary_dict[ip]['nodes_surf_xmin']
                     nleft=boundary_dict[ileft]['nodes_surf_xmax']
-                    merge_node(nright,nleft)
+                    merge_node_ck(nright,nleft)
                     #
                     #
                     if ip in ymin:
@@ -673,15 +674,71 @@ def prepare_equivalence(nodes1,nodes2):
     return factor,minvalue,inv_length
 
 
-def merge_node(n1,n2):
+def merge_node_ck(n1,n2):
     factor,minvalue,inv_length=prepare_equivalence(n1,n2)
+    
+    cubit.cmd('set info off')
+    cubit.cmd('set echo off')
+    cubit.cmd('set journal off')
+    cubit.cmd('set error off')
     
     for k in inv_length.keys()[:-1]:
         if len(inv_length[k]) > 0:
             cmd='equivalence node '+' '.join(' '.join(str(n) for n in x) for x in inv_length[k])+' tolerance '+str(k*factor+minvalue/2.)
             cubit.cmd(cmd)
             print 'equivalence '+str(len(inv_length[k]))+' couples of nodes -  tolerance '+str(k*factor+minvalue/2.)
+             
 
+    cubit.cmd('group "checkmerge" add node '+' '.join(str(n) for n in n1)+' '+' '.join(str(n) for n in n2))
+    idg=cubit.get_id_from_name('checkmerge')
+    remainnodes=cubit.get_group_nodes(idg)
+    print 'from '+str(len(n1)+len(n2))+' nodes -> '+str(len(remainnodes)) +' nodes'
+    if len(n1) != len(remainnodes):
+        print 'equivalence '+str(len(remainnodes))+' couples of nodes -  tolerance '+str(minvalue/2.)
+        cubit.cmd('set info on')
+        cubit.cmd('set echo on')
+        cubit.cmd('set journal on')
+        cubit.cmd('set error on')
+        cmd='equivalence node in group '+str(idg)+' tolerance '+str(minvalue/2.)
+        cubit.cmd(cmd)
+        cmd='block 3000 node in group '+str(idg)
+        cubit.cmd(cmd)
+        
+    if len(n1) != len(remainnodes):
+        cubit.cmd('export mesh "error_merging.e" dimension 3 block all overwrite')
+        cubit.cmd('save as "error_merging.cub" dimension 3 block all overwrite')
+        print 'error merging '
+        import sys
+        sys.exit(2)
+    
+    cubit.cmd('set info on')
+    cubit.cmd('set echo on')
+    cubit.cmd('set journal on')
+    cubit.cmd('set error on')
+
+
+
+def merge_node(n1,n2):
+    factor,minvalue,inv_length=prepare_equivalence(n1,n2)
+
+    cubit.cmd('set info off')
+    cubit.cmd('set echo off')
+    cubit.cmd('set journal off')
+    cubit.cmd('set error off')
+
+    for k in inv_length.keys()[:-1]:
+        if len(inv_length[k]) > 0:
+            cmd='equivalence node '+' '.join(' '.join(str(n) for n in x) for x in inv_length[k])+' tolerance '+str(k*factor+minvalue/2.)
+            cubit.cmd(cmd)
+            print 'equivalence '+str(len(inv_length[k]))+' couples of nodes -  tolerance '+str(k*factor+minvalue/2.)
+
+    cubit.cmd('set info on')
+    cubit.cmd('set echo on')
+    cubit.cmd('set journal on')
+    cubit.cmd('set error on')
+
+    
+    
 
 def prepare_equivalence_4(nodes1,nodes2,nodes3,nodes4):
     cubit.cmd('set info off')

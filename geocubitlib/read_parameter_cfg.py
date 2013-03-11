@@ -162,7 +162,10 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
     dcfg['seaup']=False
     dcfg['sea_level']=False
     dcfg['sea_threshold']=False
-    
+    dcfg['subduction']=True
+    dcfg['subduction_thres']=500
+    dcfg['debugsurface']=False
+    dcfg['lat_orientation']=False
     
     
     dcfg['nsurf'] = None

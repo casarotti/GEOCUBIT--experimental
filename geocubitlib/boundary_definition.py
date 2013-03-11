@@ -393,6 +393,7 @@ def get_ordered_node_surf(lsurface,icurve):
     orient_nodes_surf=[]
     #
     cubit.cmd('del group sl')
+    print 'initializing group sl'
     cubit.cmd("group 'sl' add node in surf "+lsurf)
     group1 = cubit.get_id_from_name("sl")
     nodes_ls =list(cubit.get_group_nodes(group1))
@@ -400,6 +401,7 @@ def get_ordered_node_surf(lsurface,icurve):
     #
     orient=[]
     cubit.cmd('del group n1')
+    print 'initializing group n1'
     cubit.cmd("group 'n1' add node in curve "+icurvestr)
     x=cubit.get_bounding_box('curve', icurve)
     if x[2]>x[5]:
@@ -455,6 +457,7 @@ def get_ordered_node_surf(lsurface,icurve):
     #
     icurve=list2str(curve_vertical)
     cubit.cmd('del group curve_vertical')
+    print 'initializing group curve_vertical'
     cubit.cmd("group 'curve_vertical' add node in curve "+icurve)
     group1 = cubit.get_id_from_name('curve_vertical')
     nodes_curve = list(cubit.get_group_nodes(group1))

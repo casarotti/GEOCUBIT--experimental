@@ -693,27 +693,28 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None):
     #
     #
     #!create volume
-    if  cfg.osystem == 'macosx':
-        pass
-    elif cfg.osystem == 'linux':
-        for inz in range(1,cfg.nz):
+    if not cfg.debugsurface:
+        if  cfg.osystem == 'macosx':
+            pass
+        elif cfg.osystem == 'linux':
+            for inz in range(1,cfg.nz):
+                ner=cubit.get_error_count()
+                cubitcommand= 'create volume loft surface '+ str( inz+1 )+' '+str( inz )
+                cubit.cmd(cubitcommand)
+                ner2=cubit.get_error_count()
+                isurf=isurf+6
+        if ner == ner2:
+            cubitcommand= 'del surface 1 to '+ str( cfg.nz )
+            cubit.cmd(cubitcommand)
+            list_vol=cubit.parse_cubit_list("volume","all")
+            if len(list_vol) > 1:     
+                cubitcommand= 'imprint volume all'
+                cubit.cmd(cubitcommand)
+                cubitcommand= 'merge all'
+                cubit.cmd(cubitcommand)
             ner=cubit.get_error_count()
-            cubitcommand= 'create volume loft surface '+ str( inz+1 )+' '+str( inz )
-            cubit.cmd(cubitcommand)
-            ner2=cubit.get_error_count()
-            isurf=isurf+6
-    if ner == ner2:
-        cubitcommand= 'del surface 1 to '+ str( cfg.nz )
-        cubit.cmd(cubitcommand)
-        list_vol=cubit.parse_cubit_list("volume","all")
-        if len(list_vol) > 1:     
-            cubitcommand= 'imprint volume all'
-            cubit.cmd(cubitcommand)
-            cubitcommand= 'merge all'
-            cubit.cmd(cubitcommand)
-        ner=cubit.get_error_count()
-        #cubitcommand= 'composite create curve in vol all'
-        #cubit.cmd(cubitcommand)
+            #cubitcommand= 'composite create curve in vol all'
+            #cubit.cmd(cubitcommand)
     savegeometry(iproc,filename=filename)
     if cfg.geological_imprint:
         curvesname=[cfg.outlinebasin_curve,cfg.transition_curve,cfg.faulttrace_curve]
