@@ -212,7 +212,7 @@ def refine_closecurve(block=1001,closed_filenames=None,acis=True):
 
 
 
-def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cubfiles=False,ckbound_method1=False,ckbound_method2=False,merge_tolerance=None):
+def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cubfiles=False,ckbound_method1=False,ckbound_method2=False,merge_tolerance=None,decimate=False):
     import glob
     import re
     #
@@ -272,6 +272,7 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
                         cubit.cmd('import cubit "'+filename+'"')
                     else:
                         cubit.cmd('import mesh geometry "'+filename+'" block all use nodeset sideset feature_angle 135.00 linear merge')
+                    if decimate: cubit.cmd('refine volume all numsplit 1 bias 1.0 depth 1 ')
                     boundary=check_bc(ip,xmin,xmax,ymin,ymax,cpux,cpuy,cpuxmin,cpuxmax,cpuymin,cpuymax)
                     boundary_dict[ip]=boundary
                     list_vol=list(cubit.parse_cubit_list('volume','all'))
@@ -281,6 +282,7 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
                         cubit.cmd(command)
             except:
                 cubit.cmd('import mesh geometry "'+filename+'" block all use nodeset sideset feature_angle 135.00 linear merge')
+                if decimate: cubit.cmd('refine volume all numsplit 1 bias 1.0 depth 1 ')
                 ip=0
                 boundary=check_bc(ip,xmin,xmax,ymin,ymax,cpux,cpuy,cpuxmin,cpuxmax,cpuymin,cpuymax)
                 boundary_dict[ip]=boundary
@@ -547,11 +549,11 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
 
 
 
-def collect(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cubfiles=False,ckbound_method1=False,ckbound_method2=False,merge_tolerance=None,curverefining=False,outfilename='totalmesh_merged',qlog=False,export2SPECFEM3D=False,listblock=None,listflag=None,outdir='.',add_sea=False):
+def collect(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cubfiles=False,ckbound_method1=False,ckbound_method2=False,merge_tolerance=None,curverefining=False,outfilename='totalmesh_merged',qlog=False,export2SPECFEM3D=False,listblock=None,listflag=None,outdir='.',add_sea=False,decimate=False):
     #
     cubit.cmd('set error off')
     cubit.cmd('set verbose error off')
-    collecting_merging(cpuxmin,cpuxmax,cpuymin,cpuymax,cpux,cpuy,cubfiles=cubfiles,ckbound_method1=ckbound_method1,ckbound_method2=ckbound_method2,merge_tolerance=merge_tolerance)
+    collecting_merging(cpuxmin,cpuxmax,cpuymin,cpuymax,cpux,cpuy,cubfiles=cubfiles,ckbound_method1=ckbound_method1,ckbound_method2=ckbound_method2,merge_tolerance=merge_tolerance,decimate=decimate)
     cubit.cmd('set error on')
     #
     if curverefining:

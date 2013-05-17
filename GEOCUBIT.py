@@ -65,7 +65,7 @@ if __name__ == '__main__':
         output=output.upper()
         #
         print menu.cpuxmin,menu.cpuxmax,menu.cpuymin,menu.cpuymax,menu.cpux,menu.cpuy
-        collect(menu.cpuxmin,menu.cpuxmax,menu.cpuymin,menu.cpuymax,menu.cpux,menu.cpuy,menu.cubfiles,menu.ckbound_method1,menu.ckbound_method2,menu.merge_tolerance,curverefining=menu.curverefining,outfilename=output,qlog=menu.qlog,export2SPECFEM3D=menu.export2SPECFEM3D,listblock=menu.listblock,listflag=menu.listflag,outdir=menu.SPECFEM3D_output_dir,add_sea=menu.add_sea)
+        collect(menu.cpuxmin,menu.cpuxmax,menu.cpuymin,menu.cpuymax,menu.cpux,menu.cpuy,menu.cubfiles,menu.ckbound_method1,menu.ckbound_method2,menu.merge_tolerance,curverefining=menu.curverefining,outfilename=output,qlog=menu.qlog,export2SPECFEM3D=menu.export2SPECFEM3D,listblock=menu.listblock,listflag=menu.listflag,outdir=menu.SPECFEM3D_output_dir,add_sea=menu.add_sea,decimate=menu.decimate)
         
     if menu.export2SPECFEM3D and not menu.collect:
         from geocubitlib.exportlib import e2SEM
