@@ -636,10 +636,12 @@ class mesh(object,mesh_tools):
         num_elems=cubit.get_hex_count()
         print '  number of elements:',str(num_elems)
         meshfile.write(str(num_elems)+'\n')
+        print 'prova'
+        print self.block_mat,self.block_flag
         for block,flag in zip(self.block_mat,self.block_flag):
-            #print block,flag
+            print block,flag
             hexes=cubit.get_block_hexes(block)
-            #print len(hexes)
+            print len(hexes)
             for hexa in hexes:
                 txt=self.create_hexnode_string(hexa)
                 meshfile.write(txt)

@@ -294,7 +294,7 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
         boundary=check_bc(ip,xmin,xmax,ymin,ymax,cpux,cpuy,cpuxmin,cpuxmax,cpuymin,cpuymax)
     #
     #
-    print boundary_dict
+    #print boundary_dict
     block_list=cubit.get_block_id_list()
     for block in block_list:
         ty=cubit.get_block_element_type(block)
@@ -364,9 +364,15 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
                         nlu=boundary_dict[ileft]['node_curve_xmaxymin']
                         merge_node_4(nru,nrd,nld,nlu)
                     elif ip in xmin:
-                        nru=boundary_dict[ip]['node_curve_xminymin'] #node in curve chunck right up... r u
-                        nrd=boundary_dict[idown]['node_curve_xminymax']
+                        nlu=boundary_dict[ip]['node_curve_xminymin'] #node in curve chunck right up... r u
+                        nld=boundary_dict[idown]['node_curve_xminymax']
+                        merge_node(nld,nlu)
+                        nru=boundary_dict[ip]['node_curve_xmaxymin'] #node in curve chunck right up... r u
+                        nrd=boundary_dict[idown]['node_curve_xmaxymax']
                         merge_node(nrd,nru)
+                        
+                        
+                        
                         
                 #
                 if ip != ileft:
@@ -543,7 +549,10 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
 
 def collect(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cubfiles=False,ckbound_method1=False,ckbound_method2=False,merge_tolerance=None,curverefining=False,outfilename='totalmesh_merged',qlog=False,export2SPECFEM3D=False,listblock=None,listflag=None,outdir='.',add_sea=False):
     #
+    cubit.cmd('set error off')
+    cubit.cmd('set verbose error off')
     collecting_merging(cpuxmin,cpuxmax,cpuymin,cpuymax,cpux,cpuy,cubfiles=cubfiles,ckbound_method1=ckbound_method1,ckbound_method2=ckbound_method2,merge_tolerance=merge_tolerance)
+    cubit.cmd('set error on')
     #
     if curverefining:
         block=1001 #topography
@@ -698,7 +707,6 @@ def merge_node_ck(n1,n2):
         cubit.cmd('set info on')
         cubit.cmd('set echo on')
         cubit.cmd('set journal on')
-        cubit.cmd('set error on')
         cmd='equivalence node in group '+str(idg)+' tolerance '+str(minvalue/2.)
         cubit.cmd(cmd)
         cmd='block 3000 node in group '+str(idg)
@@ -710,11 +718,14 @@ def merge_node_ck(n1,n2):
         print 'error merging '
         import sys
         sys.exit(2)
+    else:
+        cubit.cmd('delete group checkmerge')
+        cubit.cmd('delete block 3000')
     
     cubit.cmd('set info on')
     cubit.cmd('set echo on')
     cubit.cmd('set journal on')
-    cubit.cmd('set error on')
+
 
 
 
@@ -724,7 +735,7 @@ def merge_node(n1,n2):
     cubit.cmd('set info off')
     cubit.cmd('set echo off')
     cubit.cmd('set journal off')
-    cubit.cmd('set error off')
+
 
     for k in inv_length.keys()[:-1]:
         if len(inv_length[k]) > 0:
@@ -735,7 +746,7 @@ def merge_node(n1,n2):
     cubit.cmd('set info on')
     cubit.cmd('set echo on')
     cubit.cmd('set journal on')
-    cubit.cmd('set error on')
+
 
     
     
