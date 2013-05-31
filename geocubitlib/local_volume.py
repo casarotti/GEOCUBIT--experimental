@@ -38,15 +38,12 @@ def process_surfacefiles(iproc,nx,ny,nstep,grdfile,unit,lat_orientation):
         coordx=numpy.zeros([nx,ny],float)
         coordy=numpy.zeros([nx,ny],float)
         icoord=0
-        if lat_orientation in 'NORTH2SOUTH':
-            rangey=range(ny-1,-1,-1)
-            #print rangey
-        elif lat_orientation in 'SOUTH2NORTH':
+        if lat_orientation is 'SOUTH2NORTH':
             rangey=range(0,ny)
         else:
-            rangey=False
-            print lat_orientation, lat_orientation == 'NORTH2SOUTH'
-            print rangey
+            rangey=range(ny-1,-1,-1)
+            lat_orientation='NORTH2SOUTH'
+        print lat_orientation
         for iy in rangey:
             for ix in range(0,nx):
                 txt=grdfile.readline()

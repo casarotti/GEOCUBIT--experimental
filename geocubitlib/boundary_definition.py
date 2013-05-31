@@ -392,6 +392,7 @@ def get_ordered_node_surf(lsurface,icurve):
         icurvestr=str(icurve)
     orient_nodes_surf=[]
     #
+    #get the nodes on a surface, I don't use the method get_surface_nodes since it has different behavior in cubit12.2 and cubit13.2+
     cubit.cmd('del group sl')
     print 'initializing group sl'
     cubit.cmd("group 'sl' add node in surf "+lsurf)
@@ -399,6 +400,7 @@ def get_ordered_node_surf(lsurface,icurve):
     nodes_ls =list(cubit.get_group_nodes(group1))
     nnode=len(nodes_ls)
     #
+    #get the nodes on curves
     orient=[]
     cubit.cmd('del group n1')
     print 'initializing group n1'
@@ -455,10 +457,10 @@ def get_ordered_node_surf(lsurface,icurve):
             if length[-1][1] == 3:
                 curve_vertical.append(l)
     #
-    icurve=list2str(curve_vertical)
+    kcurve=list2str(curve_vertical)
     cubit.cmd('del group curve_vertical')
     print 'initializing group curve_vertical'
-    cubit.cmd("group 'curve_vertical' add node in curve "+icurve)
+    cubit.cmd("group 'curve_vertical' add node in curve "+kcurve)
     group1 = cubit.get_id_from_name('curve_vertical')
     nodes_curve = list(cubit.get_group_nodes(group1))
     for n in nodes_curve:

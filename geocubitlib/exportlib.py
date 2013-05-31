@@ -758,7 +758,14 @@ def prepare_equivalence_4(nodes1,nodes2,nodes3,nodes4):
     cubit.cmd('set echo off')
     cubit.cmd('set journal off')
     length={}
-    for ns in zip(nodes1,nodes2,nodes3,nodes4):
+    nodes=[nodes1,nodes2,nodes3,nodes4]
+    check=map(len,nodes)
+    checked_nodes=[]
+    for ind,iflag in enumerate(check):
+        if iflag:
+            checked_nodes.append(nodes[ind])
+            
+    for ns in zip(checked_nodes):
         cmd='group "tmpn" add edge in node '+' '.join(str(n) for n in ns )
         cubit.cmd(cmd)
         ge=cubit.get_id_from_name("tmpn")
@@ -772,8 +779,11 @@ def prepare_equivalence_4(nodes1,nodes2,nodes3,nodes4):
         minvalue=min(length.values())
         maxvalue=max(length.values())
     except:
-        print nodes1,nodes2,nodes3,nodes4
-        print 'edges ', e1
+        try:
+            print nodes
+            print 'edges ', e1
+        except:
+            pass
         minvalue=100.
         maxvalue=2000.
     print 'min lentgh: ',minvalue,'max lentgh: ',maxvalue
