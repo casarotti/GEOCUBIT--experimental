@@ -55,7 +55,38 @@ def snapshot(name=None,i=0,viewnumber=1):
     cubit.cmd(command)
     return i
 
+def cubit_command_check(iproc,command,stop=True):
+    """
+    Run a cubit command, checking if it performs correctly. 
+    If the command fails, it writes the result on a file "error_[processor number]" and stop the meshing process
+    
+    iproc = process number
+    command = cubit command
+    stop = if command fails, stop the meshing process (Default: True)
+    
+    return status variable (0 ok, -1 fail)
+    
+    """
+    er=cubit.get_error_count()
+    cubit.cmd(command)
+    ner=cubit.get_error_count()
+    flag=0
+    if ner > er:
+        text='"Proc: '+str(iproc)+' ERROR '+str(command)+' number of error '+str(er)+'/'+str(ner)+'"'
+        cubitcommand = 'comment '+text
+        cubit.cmd(cubitcommand)
+        f=open('error_'+str(iproc)+'.log','a')
+        f.write("CUBIT ERROR: \n"+text)
+        f.close()
+        if stop: raise Exception("CUBIT ERROR: "+text)
+        flag=-1
+    return flag
+
+    
+    
+
 def cubit_error_stop(iproc,command,ner):
+    """obsolete"""
     er=cubit.get_error_count()
     if er > ner: 
        text='"Proc: '+str(iproc)+' ERROR '+str(command)+' number of error '+str(er)+'/'+str(ner)+'"'
@@ -64,6 +95,7 @@ def cubit_error_stop(iproc,command,ner):
        raise NameError, text
 
 def cubit_error_continue(iproc,command,n_er):
+    """obsolete"""
     er=cubit.get_error_count()
     if  er >= n_er: 
         text='"Proc: '+str(iproc)+' ERROR continue '+str(command)+' number of error '+str(er)+' '+str(n_er)+'"'
