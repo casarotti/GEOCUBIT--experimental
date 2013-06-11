@@ -305,7 +305,10 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
     #
     #
     print 'chbound',ckbound_method1,ckbound_method2
-    if ckbound_method1 and not ckbound_method2:
+    
+    
+    if ckbound_method1 and not ckbound_method2 and len(filenames) != 1:
+        #use the equivalence method for groups
         if isinstance(merge_tolerance,list):
             tol=merge_tolerance[0]
         elif merge_tolerance:
@@ -405,7 +408,7 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
         n1=cubit.get_group_nodes(group_id_1)
         if len(n1) != 0:
             print 'error, negative jacobian after the equivalence node command, use --merge2 instead of --equivalence/--merge/--merge1'
-    elif ckbound_method2 and not ckbound_method1:
+    elif ckbound_method2 and not ckbound_method1 and len(filenames) != 1:
         if isinstance(merge_tolerance,list):
             tol=merge_tolerance[0]
         elif merge_tolerance:
@@ -499,7 +502,7 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
         n1=cubit.get_group_nodes(group_id_1)
         if len(n1) != 0:
             print 'error, negative jacobian after the equivalence node command, check the mesh'
-    elif ckbound_method1 and  ckbound_method2:
+    elif ckbound_method1 and  ckbound_method2 and len(filenames) != 1:
         block_list=cubit.get_block_id_list()
         i=-1
         for block in block_list:
@@ -718,11 +721,12 @@ def merge_node_ck(n1,n2):
         cubit.cmd('export mesh "error_merging.e" dimension 3 block all overwrite')
         cubit.cmd('save as "error_merging.cub" dimension 3 block all overwrite')
         print 'error merging '
-        import sys
-        sys.exit(2)
-    else:
-        cubit.cmd('delete group checkmerge')
-        cubit.cmd('delete block 3000')
+        if False:
+            import sys
+            sys.exit(2)
+    
+    cubit.cmd('delete group checkmerge')
+    cubit.cmd('delete block 3000')
     
     cubit.cmd('set info on')
     cubit.cmd('set echo on')
@@ -783,7 +787,7 @@ def prepare_equivalence_4(nodes1,nodes2,nodes3,nodes4):
             print 'edges ', e1
         except:
             pass
-        minvalue=100.
+        minvalue=10.
         maxvalue=2000.
     print 'min lentgh: ',minvalue,'max lentgh: ',maxvalue
     nbin= int((maxvalue/minvalue)/2.)+1
@@ -804,23 +808,37 @@ def prepare_equivalence_4(nodes1,nodes2,nodes3,nodes4):
 
 
 def merge_node_4(n1,n2,n3,n4):
-    factor,minvalue,inv_length=prepare_equivalence_4(n1,n2,n3,n4)
-    
-    for k in inv_length.keys()[:-1]:
-        if len(inv_length[k]) > 1:
-           try:
-               cmd='equivalence node '+' '.join(' '.join(str(n) for n in x) for x in inv_length[k])+' tolerance '+str(k*factor+minvalue/2.)
-           except:
-               print k
-               print inv_length[k]
-           
-           cubit.cmd(cmd)
-           print 'equivalence '+str(len(inv_length[k]))+' couples of nodes -  tolerance '+str(k*factor+minvalue/2.)
-        if len(inv_length[k]) == 1:
-           cmd='equivalence node '+' '.join(' '.join(str(n) for n in  inv_length[k]))+' tolerance '+str(k*factor+minvalue/2.)
-           cubit.cmd(cmd)
-           print 'equivalence '+str(len(inv_length[k]))+' couples of nodes -  tolerance '+str(k*factor+minvalue/2.)
-
+    newstuff=True
+    if newstuff:
+        print "merge node 4 side"
+        allnodes=n1+n2+n3+n4
+        print allnodes
+        for n in allnodes:
+            print n
+        cmd='equivalence node '+' '.join(str(n) for n in allnodes) +' tolerance 10 ' 
+        cubit.cmd(cmd)
+    else:
+        factor,minvalue,inv_length=prepare_equivalence_4(n1,n2,n3,n4)
+        
+        for k in inv_length.keys()[:-1]:
+            if len(inv_length[k]) > 1:
+                try:
+                    for x in inv_length[k]:
+                        if type(x) is not list:
+                            x=[x]
+                        else:
+                            pass
+                    cmd='equivalence node '+' '.join(' '.join(str(n) for n in x) )+' tolerance '+str(k*factor+minvalue/2.)
+                except:
+                    print k,"***************************************** s"
+                    print inv_length[k]
+                    
+                cubit.cmd(cmd)
+                print 'equivalence '+str(len(inv_length[k]))+' couples of nodes -  tolerance '+str(k*factor+minvalue/2.)
+            if len(inv_length[k]) == 1:
+                cmd='equivalence node '+' '.join(' '.join(str(n) for n in  inv_length[k]))+' tolerance '+str(k*factor+minvalue/2.)
+                cubit.cmd(cmd)
+                print 'equivalence '+str(len(inv_length[k]))+' couples of nodes -  tolerance '+str(k*factor+minvalue/2.)
 
 
 
