@@ -70,7 +70,7 @@ def mesh_layercake_regularmap(filename=None):
     #
     #
     mpiflag,iproc,numproc,mpi   = start.start_mpi()
-    from utilities import  importgeometry,savemesh,get_v_h_list
+    from utilities import  importgeometry,savemesh,get_v_h_list,cubit_command_check
     #
     numpy                       = start.start_numpy()
     cfg                         = start.start_cfg(filename=filename)
@@ -127,6 +127,7 @@ def mesh_layercake_regularmap(filename=None):
         cubit.cmd(command)
     #
     ucurve,vcurve=get_uv_curve(list_curve_or)
+    schemepave=False
     #
     ucurve_interval={}
     for k in ucurve:
@@ -140,6 +141,7 @@ def mesh_layercake_regularmap(filename=None):
         cubit.cmd(command)
         #cubit_error_stop(iproc,command,ner)
     if max(ucurve_interval.values()) != min(ucurve_interval.values()):
+        schemepave=True
         print 'mesh scheme is set to pave'
         for sk in surf_or:
             command = "surface "+str(sk)+" scheme pave"
@@ -156,8 +158,10 @@ def mesh_layercake_regularmap(filename=None):
         command = "curve "+str(k)+" scheme equal"
         cubit.cmd(command)
         #cubit_error_stop(iproc,command,ner)
+
     if max(vcurve_interval.values()) != min(vcurve_interval.values()):
         print 'mesh scheme is set to pave'
+        schemepave=True
         for sk in surf_or:
             command = "surface "+str(sk)+" scheme pave"
             cubit.cmd(command)
@@ -194,15 +198,25 @@ def mesh_layercake_regularmap(filename=None):
     #cubit_error_stop(iproc,command,ner)
     #
     #meshing
-    if cfg.or_mesh_scheme == 'pave':
+    if cfg.or_mesh_scheme == 'pave' or schemepave:
         command='mesh surf '+' '.join(str(t) for t in top)
-        cubit.cmd(command)    
+        status=cubit_command_check(iproc,command,stop=True)
+        #cubit.cmd(command)    
     elif cfg.or_mesh_scheme == 'map':
         command='mesh surf '+' '.join(str(t) for t in bottom)
-        cubit.cmd(command)
+        status=cubit_command_check(iproc,command,stop=True)
+        #cubit.cmd(command)
     for id_volume in range(nvol-1,-1,-1):
         command = "mesh vol "+str(vol[id_volume].ID)
-        cubit.cmd(command)        
+        status=cubit_command_check(iproc,command,stop=False)
+        if not status:
+            for s in surf_vertical:
+                command_surf="mesh surf "+str(s)
+                cubit.cmd(command_surf)
+            command_set_meshvol='volume all redistribute nodes on\nvolume all autosmooth target off\nvolume all scheme Sweep Vector 0 0 -1\nvolume all sweep smooth Auto\n'
+            status=cubit_command_check(iproc,command_set_meshvol,stop=False)
+            status=cubit_command_check(iproc,command,stop=True)
+        #cubit.cmd(command)     
     
     #
     #smoothing
