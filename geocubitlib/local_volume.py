@@ -31,6 +31,38 @@ except:
         print 'error importing cubit, check if cubit is installed'
         pass
 
+numpy                       = start.start_numpy()
+
+def check_orientation(grdfileNAME):
+
+    try:
+         grdfile = open(grdfileNAME, 'r')
+         print 'reading ',grdfileNAME
+    except:
+         txt='check_orintation ->error reading: '+  str( grdfile )
+         raise Exception(txt)
+    diff=1
+    txt=grdfile.readline()
+    x0,y0,z=map(float,txt.split())
+    while diff>0:
+        try:
+            txt=grdfile.readline()
+        except:
+            break
+        x,y,z=map(float,txt.split())
+        diff=x-x0
+        x0=x
+    diff=y-y0
+    if diff>0:
+        orientation= 'SOUTH2NORTH'
+    else:
+        orientation= 'NORTH2SOUTH'
+    grdfile.close()
+    return orientation
+    
+        
+    
+
 def process_surfacefiles(iproc,nx,ny,nstep,grdfile,unit,lat_orientation):
         from utilities import geo2utm
         numpy                       = start.start_numpy()
@@ -38,6 +70,18 @@ def process_surfacefiles(iproc,nx,ny,nstep,grdfile,unit,lat_orientation):
         coordx=numpy.zeros([nx,ny],float)
         coordy=numpy.zeros([nx,ny],float)
         icoord=0
+        
+        
+        lat_orientation=check_orientation(grdfile)
+        
+        try:
+             grdfile = open(grdfile, 'r')
+             #print 'reading ',grdfile
+        except:
+             txt='error reading: '+  str( grdfile )
+             raise Exception(txt)
+        
+        
         if lat_orientation is 'SOUTH2NORTH':
             rangey=range(0,ny)
         else:
@@ -61,12 +105,15 @@ def process_surfacefiles(iproc,nx,ny,nstep,grdfile,unit,lat_orientation):
                 except:
                     print 'error reading point ',iy*nx+ix,txt, grdfile.name, ' proc '
                     raise NameError, 'error reading point'
-                    #
+
+        
         if  (nx)*(ny) != icoord: 
             if iproc == 0: print 'error in the surface file '+grdfile.name
             if iproc == 0: print 'x points ' +str(nx)+ ' y points ' +str(ny)+ ' tot points '+str((nx)*(ny)) 
             if iproc == 0: print 'points read in '+grdfile.name+': '+str(icoord)
             raise NameError
+        
+        grdfile.close()
         
         return coordx,coordy,elev
 
@@ -116,14 +163,10 @@ def read_grid(filename=None):
         bottomsurface=0
         
     for inz in range(bottomsurface,cfg.nz-1):
-        try:
-             grdfile = open(cfg.filename[inz-bottomsurface], 'r')
-             print 'reading ',cfg.filename[inz-bottomsurface]
-        except:
-             txt='error reading: '+  str( cfg.filename[inz-bottomsurface] )
-             raise NameError, txt
+        grdfilename=cfg.filename[inz-bottomsurface]
+
         
-        coordx,coordy,elev_1=process_surfacefiles(iproc,nx,ny,nstep,grdfile,cfg.unit,cfg.lat_orientation)
+        coordx,coordy,elev_1=process_surfacefiles(iproc,nx,ny,nstep,grdfilename,cfg.unit,cfg.lat_orientation)
         elev[:,:,inz]=elev_1[:,:]
         #
         grdfile.close()
@@ -132,14 +175,15 @@ def read_grid(filename=None):
     if cfg.sea:
         elev[:,:,inz]=elev[:,:,inz-1]
     else:
-        try:
-             grdfile = open(cfg.filename[inz-bottomsurface], 'r')
-             print 'reading ',cfg.filename[inz-bottomsurface]
-             coordx,coordy,elev_1=process_surfacefiles(iproc,nx,ny,nstep,grdfile,cfg.unit,cfg.lat_orientation)
-             elev[:,:,inz]=elev_1[:,:]
-        except:
-             txt='error reading: '+  str( cfg.filename[inz-bottomsurface] )
-             raise NameError, txt
+        #try:
+        grdfile = cfg.filename[inz-bottomsurface]
+        print 'reading ',cfg.filename[inz-bottomsurface]
+        coordx,coordy,elev_1=process_surfacefiles(iproc,nx,ny,nstep,grdfile,cfg.unit,cfg.lat_orientation)
+        elev[:,:,inz]=elev_1[:,:]
+        #except:
+        #     txt='error reading: '+  str( cfg.filename[inz-bottomsurface] )
+        #    raise NameError, txt
+        
         
         if cfg.subduction:
           print 'subduction'
