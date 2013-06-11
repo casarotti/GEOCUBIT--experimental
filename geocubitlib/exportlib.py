@@ -763,18 +763,17 @@ def prepare_equivalence_4(nodes1,nodes2,nodes3,nodes4):
     checked_nodes=[]
     for ind,iflag in enumerate(check):
         if iflag:
-            checked_nodes.append(nodes[ind])
-            
-    for ns in zip(checked_nodes):
-        cmd='group "tmpn" add edge in node '+' '.join(str(n) for n in ns )
-        cubit.cmd(cmd)
-        ge=cubit.get_id_from_name("tmpn")
-        e1=cubit.get_group_edges(ge)
-        lengthmin=1e9
-        for e in e1:
-            lengthmin=min(lengthmin,cubit.get_mesh_edge_length(e))
-        length[ns]=lengthmin*.5
-        cubit.cmd('delete group '+str(ge))
+            checked_nodes=checked_nodes+nodes[ind]
+    
+    cmd='group "tmpn" add edge in node '+' '.join(str(n) for n in checked_nodes )
+    cubit.cmd(cmd)
+    ge=cubit.get_id_from_name("tmpn")
+    e1=cubit.get_group_edges(ge)
+    lengthmin=1e9
+    for e in e1:
+        lengthmin=min(lengthmin,cubit.get_mesh_edge_length(e))
+        length[e]=lengthmin*.5
+    cubit.cmd('delete group '+str(ge))
     try:
         minvalue=min(length.values())
         maxvalue=max(length.values())
@@ -808,10 +807,19 @@ def merge_node_4(n1,n2,n3,n4):
     factor,minvalue,inv_length=prepare_equivalence_4(n1,n2,n3,n4)
     
     for k in inv_length.keys()[:-1]:
-        if len(inv_length[k]) > 0:
-            cmd='equivalence node '+' '.join(' '.join(str(n) for n in x) for x in inv_length[k])+' tolerance '+str(k*factor+minvalue/2.)
-            cubit.cmd(cmd)
-            print 'equivalence '+str(len(inv_length[k]))+' couples of nodes -  tolerance '+str(k*factor+minvalue/2.)
+        if len(inv_length[k]) > 1:
+           try:
+               cmd='equivalence node '+' '.join(' '.join(str(n) for n in x) for x in inv_length[k])+' tolerance '+str(k*factor+minvalue/2.)
+           except:
+               print k
+               print inv_length[k]
+           
+           cubit.cmd(cmd)
+           print 'equivalence '+str(len(inv_length[k]))+' couples of nodes -  tolerance '+str(k*factor+minvalue/2.)
+        if len(inv_length[k]) == 1:
+           cmd='equivalence node '+' '.join(' '.join(str(n) for n in  inv_length[k]))+' tolerance '+str(k*factor+minvalue/2.)
+           cubit.cmd(cmd)
+           print 'equivalence '+str(len(inv_length[k]))+' couples of nodes -  tolerance '+str(k*factor+minvalue/2.)
 
 
 
