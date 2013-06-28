@@ -85,7 +85,17 @@ def start_cubit(init=False):
     except:
         try:
             import cubit
+            import utilities
             cubit.init([""])
+            version_cubit=utilities.get_cubit_version()
+    
+            if version_cubit <= 12.2:
+                print 'VERSION CUBIT ',version_cubit
+            elif version_cubit > 12.2:
+                print 'CAVEAT:'
+                print 'VERSION CUBIT ',version_cubit
+                print 'VERSIONs of CUBIT > 12.2 have bugs with merge node commands and equivalence'
+                print 'the merge option is not operative with this version, please download CUBIT 12.2'
         except:
             print 'error importing cubit'
             sys.exit()

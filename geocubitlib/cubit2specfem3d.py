@@ -126,6 +126,8 @@ except:
         print 'error importing cubit, check if cubit is installed'
         pass
 
+from utilities import get_cubit_version
+
 class mtools(object):
     def __init__(self,frequency,list_surf,list_vp):
         super(mtools, self).__init__()
@@ -350,11 +352,7 @@ class mesh(object,mesh_tools):
         self.cpmlname='absorbing_cpml_file'
         self.freename='free_surface_file'
         self.recname='STATIONS'
-        try:
-            version_cubit=float(cubit.get_version())
-        except:
-            version_cubit=float(cubit.get_version()[0:2])
-        #
+        version_cubit=get_cubit_version()
         if version_cubit >= 12:
             self.face='SHELL4'
         else:

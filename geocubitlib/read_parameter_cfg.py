@@ -46,7 +46,7 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
         import sys
         sys.exit()
     #
-    from utilities import geo2utm #here I can use pyproj but I prefere to include a function in pure python in order to avoid an additional installation
+    from utilities import geo2utm,get_cubit_version #here I can use pyproj but I prefere to include a function in pure python in order to avoid an additional installation
     #
     #
     import ConfigParser
@@ -119,6 +119,7 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
     #CONSTANTS
     dcfg['osystem'] = 'linux'
     dcfg['debug_cfg']=False
+    dcfg['version_cubit']=get_cubit_version()
     dcfg['checkbound']=False
     dcfg['top_partitioner'] = 10000
     dcfg['tres']=0.3 #if n is the vertical component of the normal at a surface pointing horizontally, when -tres < n < tres then the surface is vertical

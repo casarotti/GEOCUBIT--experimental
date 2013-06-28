@@ -32,7 +32,14 @@ except:
         pass
 
 
-
+def get_cubit_version():
+    v=cubit.get_version()
+    try:
+        v=float(v[0:4])
+    except:
+        v=float(v[0:2])
+    return v
+    
 
 def snapshot(name=None,i=0,viewnumber=1):
     """
