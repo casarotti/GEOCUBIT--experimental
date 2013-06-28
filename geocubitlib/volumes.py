@@ -37,6 +37,7 @@ def volumes(filename=None):
     import start as start
     print'volume'
     cfg                     = start.start_cfg(filename=filename)
+    print cfg
     #
     if cfg.volume_type == 'layercake_volume_ascii_regulargrid_regularmap':
             layercake_volume_ascii_regulargrid_mpiregularmap(filename=filename)
@@ -44,37 +45,12 @@ def volumes(filename=None):
             layercake_volume_fromacis_mpiregularmap(filename=filename)
     elif cfg.volume_type == 'verticalsandwich_volume_ascii_regulargrid_mpiregularmap':
             verticalsandwich_volume_ascii_regulargrid_mpiregularmap(filename=None)
-
-
-def adjust_sea_layers(zvertex,sealevel,bathymetry,cfg):
-    if cfg.seaup: 
-        if sealevel:
-            vertex=max(cfg.sea_level,vertex-cfg.sea_threshold)    
-        elif bathymetry:
-            #if zvertex > cfg.sea_threshold: zvertex=max(zvertex,cfg.sea_level)+cfg.sea_threshold #move node below the topography of sea_threshold
-            vertex=vertex
-    else:
-        if sealevel and zvertex < cfg.sea_level:
-            zvertex=cfg.sea_level
-        elif bathymetry:
-            if zvertex > cfg.sea_threshold: zvertex=max(zvertex,cfg.sea_level)+cfg.sea_threshold #move node below the topography of sea_threshold
-    return zvertex
-    
-
     
 
 
-### AAA Added 7/19/12
-def verticalsandwich_volume_ascii_regulargrid_mpiregularmap(filename=None):
-    # Create vertical rather than horizontal layering
-    #  This is in general the same as the layercake case but turned sideways
-    #    with the bottom being the leftmost boundary. Because of this, zdepth is
-    #    referenced to the rightmost boundary. The top is assumed to be depth 0.
-    #  In the cfg file:
-    #  zdepth = x distance in meters
-    #  depth_bottom = actual depth of bottom
-    #
-    #    Note: I've used the word 'vertexes' instead of 'vertices' for easier reading
+
+
+def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandwich=False):
     import sys
     import start as start
     #
@@ -83,7 +59,7 @@ def verticalsandwich_volume_ascii_regulargrid_mpiregularmap(filename=None):
     numpy                       = start.start_numpy()
     cfg                         = start.start_cfg(filename=filename)                       
     
-    from utilities import geo2utm, savegeometry,savesurf
+    from utilities import geo2utm, savegeometry,savesurf,cubit_command_check
     
     from math import sqrt
     #
@@ -94,344 +70,16 @@ def verticalsandwich_volume_ascii_regulargrid_mpiregularmap(filename=None):
     #
     #
     command = "comment '"+"PROC: "+str(iproc)+"/"+str(numproc)+" '"
-    cubit.cmd(command)
-    command = "comment 'Starting Vertical Sandwich'"
-    cubit.cmd(command)
-    #fer=open('ERROR_VOLUME_'+str(iproc),'w')
-    
+    cubit_command_check(iproc,command,stop=True)
+    if verticalsandwich: cubit.cmd("comment 'Starting Vertical Sandwich'")
     #
+    #get icpuy,icpux values
     if mpiflag:
         x_slice=numpy.zeros([numproc],int)
         y_slice=numpy.zeros([numproc],int)
         for icpuy in range(0,cfg.nproc_eta): 
             for icpux in range (0,cfg.nproc_xi):
                 iprocnum=icpuy*cfg.nproc_xi+icpux
-                #print iprocnum,cfg.nproc_xi,icpux,icpuy,cfg.nproc_xi,cfg.nproc_eta
-                x_slice[iprocnum]=icpux
-                y_slice[iprocnum]=icpuy
-        icpux=x_slice[iproc]
-        icpuy=y_slice[iproc]
-    else:
-        icpuy=int(cfg.id_proc/cfg.nproc_xi)
-        icpux=cfg.id_proc%cfg.nproc_xi
-    
-    #
-    if  cfg.geometry_format == 'ascii':
-        #for the original surfaces
-        #number of points in the files that describe the topography
-        import local_volume
-        if cfg.localdir_is_globaldir:
-            if iproc == 0 or not mpiflag:
-                coordx_0,coordy_0,elev_0,nx_0,ny_0=local_volume.read_grid(filename)
-                print 'end of reading grd files '+str(nx_0*ny_0)+ ' points'
-            else:
-                pass
-            if iproc == 0 or not mpiflag:
-                coordx=mpi.bcast(coordx_0)
-            else:
-                coordx=mpi.bcast()
-            if iproc == 0 or not mpiflag:
-                coordy=mpi.bcast(coordy_0)
-            else:
-                coordy=mpi.bcast()
-            if iproc == 0 or not mpiflag:
-                elev=mpi.bcast(elev_0)
-            else:
-                elev=mpi.bcast()
-            if iproc == 0 or not mpiflag:
-                nx=mpi.bcast(nx_0)
-            else:
-                nx=mpi.bcast()       
-            if iproc == 0 or not mpiflag:
-                ny=mpi.bcast(ny_0)
-            else:
-                ny=mpi.bcast()
-        else:
-            coordx,coordy,elev,nx,ny=local_volume.read_grid(filename)
-        print str(iproc)+ ' end of receving grd files '
-        nx_segment=int(nx/cfg.nproc_xi)+1
-        ny_segment=int(ny/cfg.nproc_eta)+1
-        
-    elif cfg.geometry_format=='regmesh': # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        
-        nx= cfg.nproc_xi+1
-        ny= cfg.nproc_eta+1
-        nx_segment=2
-        ny_segment=2
-        #if iproc == 0: print nx,ny,cfg.cpux,cfg.cpuy
-        xp=(cfg.xmax-cfg.xmin)/float((nx-1))
-        yp=(cfg.ymax-cfg.ymin)/float((ny-1))
-        #
-        elev=numpy.zeros([nx,ny,cfg.nxvol],float)
-        coordx=numpy.zeros([nx,ny],float)
-        coordy=numpy.zeros([nx,ny],float)
-        #
-        #
-        xlength=(cfg.xmax-cfg.xmin)/float(cfg.nproc_xi) #length of x slide for chunk
-        ylength=(cfg.ymax-cfg.ymin)/float(cfg.nproc_eta) #length of y slide for chunk
-        nelem_chunk_x=1    
-        nelem_chunk_y=1
-        ivxtot=nelem_chunk_x+1
-        ivytot=nelem_chunk_y+1 
-        xstep=xlength #distance between vertex on x
-        ystep=ylength
-        for i in range(0,cfg.nxvol): #AAA - Not sure what this is for
-            elev[:,:,i] = cfg.xwidth[i]
-        
-        icoord=0
-        for iy in range(0,ny):
-            for ix in range(0,nx):
-                icoord=icoord+1
-                coordx[ix,iy]=cfg.xmin+xlength*(ix)
-                coordy[ix,iy]=cfg.ymin+ylength*(iy)
-        
-        #print coordx,coordy,nx,ny
-    #
-    print 'end of building grid '+str(iproc)
-    print 'number of point: ', len(coordx)
-    #
-    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    #for each processor
-    #
-    nxmin_cpu=(nx_segment-1)*(icpux)
-    nymin_cpu=(ny_segment-1)*(icpuy)
-    nxmax_cpu=min(nx-1,(nx_segment-1)*(icpux+1))
-    nymax_cpu=min(ny-1,(ny_segment-1)*(icpuy+1))
-    #if iproc == 0:
-    #    print nx_segment,ny_segment,nx,ny
-    #    print icpux,icpuy,nxmin_cpu,nxmax_cpu
-    #    print icpux,icpuy,nymin_cpu,nymax_cpu
-    #    print coordx[0,0],coordx[nx-1,ny-1]
-    #    print coordy[0,0],coordy[nx-1,ny-1]
-    #
-    #
-    icurve=0
-    isurf=0
-    ivertex=0
-    #
-    #create vertexes
-    command = "comment 'Starting vertices'"
-    cubit.cmd(command)
-    print 'nxvol =',cfg.nxvol
-    print 'xwidth=',cfg.xwidth
-    for inx in range(0,cfg.nxvol):
-        print 'inx = ', inx
-        if  cfg.bottomflat and inx == 0: #leftmost layer vertexes
-                ### AAA this section is not updated, so it only works for regmesh
-                if cfg.geometry_format == 'ascii':
-                    lv=cubit.get_last_id("vertex")     
-                    
-                    x_current,y_current=(coordx[nxmin_cpu,nymin_cpu],coordy[nxmin_cpu,nymin_cpu])
-                    cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
-                    cubit.cmd(cubitcommand)
-                    #
-                    x_current,y_current=(coordx[nxmin_cpu,nymax_cpu],coordy[nxmin_cpu,nymax_cpu])
-                    cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
-                    cubit.cmd(cubitcommand)                                                                              
-                    #
-                    x_current,y_current=(coordx[nxmax_cpu,nymax_cpu],coordy[nxmax_cpu,nymax_cpu])
-                    cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
-                    cubit.cmd(cubitcommand)
-                    #
-                    x_current,y_current=(coordx[nxmax_cpu,nymin_cpu],coordy[nxmax_cpu,nymin_cpu])
-                    cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
-                    cubit.cmd(cubitcommand)
-                    #
-                    lv2=cubit.get_last_id("vertex")     
-                    
-                    cubitcommand= 'create surface vertex '+str(lv+1)+' to '+str(lv2)
-                    cubit.cmd(cubitcommand)
-                    #
-                    isurf = isurf + 1
-                ### END AAA not updated
-                else: #create the four leftmost vertexes
-                    cubit.cmd("comment creating leftmost vertices")
-                    lv=cubit.get_last_id("vertex") 
-                    x_current,y_current=geo2utm(coordx[nxmin_cpu,nymin_cpu],coordy[nxmin_cpu,nymin_cpu],'utm')
-                    cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
-                    cubit.cmd(cubitcommand)
-                    #
-                    x_current,y_current=geo2utm(coordx[nxmin_cpu,nymax_cpu],coordy[nxmin_cpu,nymax_cpu],'utm')
-                    cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
-                    cubit.cmd(cubitcommand)                                                                              
-                    #
-                    x_current,y_current=geo2utm(coordx[nxmin_cpu,nymax_cpu],coordy[nxmin_cpu,nymax_cpu],'utm')
-                    cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( 0 )
-                    cubit.cmd(cubitcommand)
-                    #
-                    x_current,y_current=geo2utm(coordx[nxmin_cpu,nymin_cpu],coordy[nxmin_cpu,nymin_cpu],'utm')
-                    cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( 0 )
-                    cubit.cmd(cubitcommand)
-                    #
-                    lv2=cubit.get_last_id("vertex") 
-                    cubitcommand= 'create surface vertex '+str(lv+1)+' to '+str(lv2)
-                    cubit.cmd(cubitcommand)
-                    #
-                    isurf = isurf + 1
-        else: # Add all other vertexes
-            if cfg.geometry_format == 'regmesh':
-                zvertex=cfg.xwidth[inx] #this is actually the x co-ordinate referenced to nxmax_cpu
-                lv=cubit.get_last_id("vertex")                        
-                x_current,y_current=geo2utm(coordx[nxmax_cpu,nymin_cpu],coordy[nxmax_cpu,nymin_cpu],'utm')
-                x_current = x_current + zvertex;
-                cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
-                cubit.cmd(cubitcommand)
-                #
-                x_current,y_current=geo2utm(coordx[nxmax_cpu,nymax_cpu],coordy[nxmax_cpu,nymax_cpu],'utm')
-                x_current = x_current + zvertex;
-                cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
-                cubit.cmd(cubitcommand)                                                                              
-                #
-                x_current,y_current=geo2utm(coordx[nxmax_cpu,nymax_cpu],coordy[nxmax_cpu,nymax_cpu],'utm')
-                x_current = x_current + zvertex;
-                cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( 0 )
-                cubit.cmd(cubitcommand)
-                #
-                x_current,y_current=geo2utm(coordx[nxmax_cpu,nymin_cpu],coordy[nxmax_cpu,nymin_cpu],'utm')
-                x_current = x_current + zvertex;
-                cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( 0 )
-                cubit.cmd(cubitcommand)
-                #
-                cubitcommand= 'create surface vertex '+str(lv+1)+' '+str(lv+2)+' '+str(lv+3)+' '+str(lv+4)
-                cubit.cmd(cubitcommand)
-                #
-                isurf = isurf + 1
-            elif cfg.geometry_format == 'ascii':
-                
-                vertex=[]
-                
-                for iy in range(nymin_cpu,nymax_cpu+1):
-                    ivx=0
-                    for ix in range(nxmin_cpu,nxmax_cpu+1):
-                        zvertex=elev[ix,iy,inx]
-                        x_current,y_current=(coordx[ix,iy],coordy[ix,iy])
-                        #
-                        vertex.append(' Position '+ str( x_current ) +' '+ str( y_current )+' '+ str( zvertex ) )
-                #
-                print 'proc',iproc, 'vertex list created....',len(vertex)
-                n=max(nx,ny)
-                uline=[]
-                vline=[]
-                iv=0
-                
-                cubit.cmd("set info off")
-                cubit.cmd("set echo off")
-                cubit.cmd("set journal off")
-                
-                for iy in range(0,nymax_cpu-nymin_cpu+1):
-                    positionx=''
-                    for ix in range(0,nxmax_cpu-nxmin_cpu+1):
-                        positionx=positionx+vertex[iv]
-                        iv=iv+1
-                    command='create curve spline '+positionx
-                    cubit.cmd(command)
-                    #print command
-                    uline.append( cubit.get_last_id("curve") )
-                for ix in range(0,nxmax_cpu-nxmin_cpu+1):
-                    positiony=''
-                    for iy in range(0,nymax_cpu-nymin_cpu+1):
-                        positiony=positiony+vertex[ix+iy*(nxmax_cpu-nxmin_cpu+1)]
-                    command='create curve spline '+positiony
-                    cubit.cmd(command)
-                    #print command
-                    vline.append( cubit.get_last_id("curve") )
-                #
-                cubit.cmd("set info "+cfg.cubit_info)
-                cubit.cmd("set echo "+cfg.echo_info)
-                cubit.cmd("set journal "+cfg.jou_info)
-                #
-                #
-                print 'proc',iproc, 'lines created....',len(uline),'*',len(vline)
-                umax=max(uline)
-                umin=min(uline)
-                vmax=max(vline)
-                vmin=min(vline)
-                ner=cubit.get_error_count()
-                cubitcommand= 'create surface net u curve '+ str( umin )+' to '+str( umax )+ ' v curve '+ str( vmin )+ ' to '+str( vmax )+' heal'
-                cubit.cmd(cubitcommand)
-                ner2=cubit.get_error_count()
-                if ner == ner2: 
-                    command = "del curve all"
-                    cubit.cmd(command)
-                    isurf=isurf+1
-                #
-            else:
-                raise NameError, 'error, check geometry_format, it should be ascii or regmesh'   #
-                #
-        cubitcommand= 'del vertex all'
-        cubit.cmd(cubitcommand)
-    if cfg.save_surface_cubit:
-        savegeometry(iproc=iproc,surf=True,filename=filename)
-    #
-    #
-    #!create volume
-    if  cfg.osystem == 'macosx':
-        pass
-    elif cfg.osystem == 'linux':
-        for inx in range(1,cfg.nxvol):
-            cubitcommand= 'list surface all'
-            ner=cubit.get_error_count()
-            cubitcommand= 'create volume loft surface '+ str( inx+1 )+' '+str( inx )
-            cubit.cmd(cubitcommand)
-            ner2=cubit.get_error_count()
-            isurf=isurf+6
-    if ner == ner2:
-        cubitcommand= 'del surface 1 to '+ str( cfg.nxvol )
-        cubit.cmd(cubitcommand)
-        list_vol=cubit.parse_cubit_list("volume","all")
-        if len(list_vol) > 1:     
-            cubitcommand= 'imprint volume all'
-            cubit.cmd(cubitcommand)
-            cubitcommand= 'merge all'
-            cubit.cmd(cubitcommand)
-        ner=cubit.get_error_count()
-        #cubitcommand= 'composite create curve in vol all'
-        #cubit.cmd(cubitcommand)
-    savegeometry(iproc,filename=filename)
-    if cfg.geological_imprint:
-        curvesname=[cfg.outlinebasin_curve,cfg.transition_curve,cfg.faulttrace_curve]
-        outdir=cfg.working_dir
-        imprint_topography_with_geological_outline(curvesname,outdir)
-    #
-    #        
-    cubit.cmd("set info "+cfg.cubit_info)
-    cubit.cmd("set echo "+cfg.echo_info)
-    cubit.cmd("set journal "+cfg.jou_info)
-
-### END AAA Added 7/19/12
-
-
-def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None):
-    import sys
-    import start as start
-    #
-    mpiflag,iproc,numproc,mpi   = start.start_mpi()
-    #
-    numpy                       = start.start_numpy()
-    cfg                         = start.start_cfg(filename=filename)                       
-    
-    from utilities import geo2utm, savegeometry,savesurf
-    
-    from math import sqrt
-    #
-    try:
-        mpi.barrier()
-    except:
-        pass
-    #
-    #
-    command = "comment '"+"PROC: "+str(iproc)+"/"+str(numproc)+" '"
-    cubit.cmd(command)
-    #fer=open('ERROR_VOLUME_'+str(iproc),'w')
-    
-    #
-    if mpiflag:
-        x_slice=numpy.zeros([numproc],int)
-        y_slice=numpy.zeros([numproc],int)
-        for icpuy in range(0,cfg.nproc_eta): 
-            for icpux in range (0,cfg.nproc_xi):
-                iprocnum=icpuy*cfg.nproc_xi+icpux
-                #print iprocnum,cfg.nproc_xi,icpux,icpuy,cfg.nproc_xi,cfg.nproc_eta
                 x_slice[iprocnum]=icpux
                 y_slice[iprocnum]=icpuy
         icpux=x_slice[iproc]
@@ -716,10 +364,10 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None):
             #cubitcommand= 'composite create curve in vol all'
             #cubit.cmd(cubitcommand)
     savegeometry(iproc,filename=filename)
-    if cfg.geological_imprint:
-        curvesname=[cfg.outlinebasin_curve,cfg.transition_curve,cfg.faulttrace_curve]
-        outdir=cfg.working_dir
-        imprint_topography_with_geological_outline(curvesname,outdir)
+    #if cfg.geological_imprint:
+    #    curvesname=[cfg.outlinebasin_curve,cfg.transition_curve,cfg.faulttrace_curve]
+    #    outdir=cfg.working_dir
+    #    imprint_topography_with_geological_outline(curvesname,outdir)
     #
     #        
     cubit.cmd("set info "+cfg.cubit_info)
@@ -879,44 +527,45 @@ def layercake_volume_fromacis_mpiregularmap(filename=None):
             cubit.cmd(cubitcommand)
     #
     savegeometry(iproc,filename=filename)
-    if cfg.geological_imprint:
-        curvesname=[cfg.outlinebasin_curve,cfg.transition_curve,cfg.faulttrace_curve]
-        outdir=cfg.working_dir
-        imprint_topography_with_geological_outline(curvesname,outdir)
+    #if cfg.geological_imprint:
+    #    curvesname=[cfg.outlinebasin_curve,cfg.transition_curve,cfg.faulttrace_curve]
+    #    outdir=cfg.working_dir
+    #    imprint_topography_with_geological_outline(curvesname,outdir)
 
 
 
-def imprint_topography_with_geological_outline(curvesname,outdir='.'):
-    import sys,os
-    from sets import Set
-    #
-    from utilities import load_curves,project_curves,get_v_h_list
-    
-    list_vol=cubit.parse_cubit_list("volume","all")
-    surf_or,surf_vertical,list_curve_or,list_curve_vertical,bottom,top=get_v_h_list(list_vol)
-    
-    
-    
-    outlinebasin_curve=load_curves(curvesname[0])
-    transition_curve=load_curves(curvesname[1])
-    faulttrace_curve=load_curves(curvesname[2])
-    
-    curves=[]
-    if outlinebasin_curve: curves=curves+outlinebasin_curve
-    if transition_curve: curves=curves+transition_curve
-    if faulttrace_curve: curves=curves+faulttrace_curve
-    
-    if curves:
-            command='imprint tolerant surface '+str(top)+' with curve '+' '.join(str(x) for x in curves)+'  merge'
-            cubit.cmd(command)
-             
-    
-    command = "merge surf all"
-    cubit.cmd(command)
-    command = "compress vol all"
-    cubit.cmd(command)
-    command = "compress surf all"
-    cubit.cmd(command)
-    command = "save as '"+outdirs+"/"+"imprinted_vol_"+str(iproc)+".cub' overwrite"
-    cubit.cmd(command)    
-
+#def imprint_topography_with_geological_outline(curvesname,outdir='.'):
+#    import sys,os
+#    from sets import Set
+#    #
+#    from utilities import load_curves,project_curves,get_v_h_list
+#    
+#    list_vol=cubit.parse_cubit_list("volume","all")
+#    surf_or,surf_vertical,list_curve_or,list_curve_vertical,bottom,top=get_v_h_list(list_vol)
+#    
+#    
+#    
+#    outlinebasin_curve=load_curves(curvesname[0])
+#    transition_curve=load_curves(curvesname[1])
+#    faulttrace_curve=load_curves(curvesname[2])
+#    
+#    curves=[]
+#    if outlinebasin_curve: curves=curves+outlinebasin_curve
+#    if transition_curve: curves=curves+transition_curve
+#    if faulttrace_curve: curves=curves+faulttrace_curve
+#    
+#    if curves:
+#            command='imprint tolerant surface '+str(top)+' with curve '+' '.join(str(x) for x in curves)+'  merge'
+#            cubit.cmd(command)
+#             
+#    
+#    command = "merge surf all"
+#    cubit.cmd(command)
+#    command = "compress vol all"
+#    cubit.cmd(command)
+#    command = "compress surf all"
+#    cubit.cmd(command)
+#    command = "save as '"+outdirs+"/"+"imprinted_vol_"+str(iproc)+".cub' overwrite"
+#    cubit.cmd(command)    
+#
+#
