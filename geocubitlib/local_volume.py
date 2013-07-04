@@ -60,7 +60,38 @@ def check_orientation(grdfileNAME):
     grdfile.close()
     return orientation
     
-        
+def read_irregular_surf(filename):
+    "read irregular grid"
+    try:
+        x,y,z=numpy.loadtxt(filename,unpack=True)
+    except:
+        txt='error reading '+filename
+        raise Exception(txt)
+    gridpoints=numpy.array(zip(x.ravel(),y.ravel()))
+    return gridpoints,z
+    
+def get_interpolated_elevation(point,gridpoints,z,k=1):
+    """for x0 and y0 return the interpolated z point of a irregular x,y,z grid
+    K=1 nearest
+    K>1 number of points used in a inverse distance weighted interpolation
+    
+    point=(x0,y0)
+    gridpoints=numpy.array([[x1,y1],[x2,y2],...)
+    
+    """
+    dist=numpy.sum((point-gridpoints)**2,axis=1)
+    zindex=dist.argsort()[:k]
+    kmindist=dist[zindex]
+    w=1/kmindist
+    w/=w.sum()
+    zi = numpy.dot(w.T, z[index])
+    return zi
+
+def create_grid(xmin,xmax,ymin,ymax,xstep,ystep):
+    """create regular grid with xmin,xmax by xstep and  ymin,ymax by ystep"""
+    x,y=numpy.mgrid[xmin:xmax+xstep/2.:xstep,ymin:ymax+ystep/2.:ystep] #this includes the bounds
+    gridpoints=numpy.array(zip(x.ravel(),y.ravel()))
+    return x,y,gridpoints
     
 
 def process_surfacefiles(iproc,nx,ny,nstep,grdfile,unit,lat_orientation):
@@ -123,6 +154,23 @@ def process_surfacefiles(iproc,nx,ny,nstep,grdfile,unit,lat_orientation):
 
 
 
+def process_irregular_surfacefiles(iproc,nx,ny,xmin,xmax,ymin,ymax,xstep,ystep,grdfile,unit_surf,lat_orientation):
+    icoord=0
+    
+    elev=numpy.array([])
+    
+    gridpoints,z=read_irregular_surf(grdfile)
+    coordx,coordy,points=create_grid(xmin,xmax,ymin,ymax,xstep,ystep)
+    for point in points:
+        e=get_interpolated_elevation(point,gridpoints,z,k=4)
+        elev=numpy.append(elev,e)
+        
+    coordx.shape=(nx,ny)
+    coordy.shape=(nx,ny)
+    elev.shape=(nx,ny)
+    
+    return coordx,coordy,elev
+
 
 def read_grid(filename=None):
     import sys
@@ -133,7 +181,7 @@ def read_grid(filename=None):
     cfg                         = start.start_cfg(filename=filename)
     from utilities import geo2utm
     
-    #     
+    #if cfg.irregulargridded_surf==True then cfg.nx and cfg.ny are the desired number of point along the axis....
     if cfg.nx and cfg.ny:
         nx=cfg.nx
         ny=cfg.ny
@@ -154,6 +202,11 @@ def read_grid(filename=None):
         ny= int((cfg.latitude_max-cfg.latitude_min)/ystep)+1
         nstep=1
     #
+    
+    if cfg.irregulargridded_surf:
+        xt,xstep=numpy.linspace(cfg.xmin, cfg.xmax, num=nx, retstep=True)
+        yt,ystep=numpy.linspace(cfg.ymin, cfg.ymax, num=ny, retstep=True)
+    
     elev=numpy.zeros([nx,ny,cfg.nz],float)
     #
     if  cfg.bottomflat: 
@@ -165,11 +218,12 @@ def read_grid(filename=None):
     for inz in range(bottomsurface,cfg.nz-1):
         grdfilename=cfg.filename[inz-bottomsurface]
 
-        
-        coordx,coordy,elev_1=process_surfacefiles(iproc,nx,ny,nstep,grdfilename,cfg.unit,cfg.lat_orientation)
+        if cfg.irregulargridded_surf:
+            coordx,coordy,elev_1=process_irregular_surfacefiles(iproc,nx,ny,cfg.xmin,cfg.xmax,cfg.ymin,cfg.ymax,xstep,ystep,grdfile)
+        else:
+            coordx,coordy,elev_1=process_surfacefiles(iproc,nx,ny,nstep,grdfilename,cfg.unit,cfg.lat_orientation)
         elev[:,:,inz]=elev_1[:,:]
         #
-        grdfile.close()
     
     inz=cfg.nz-1 #last surface
     if cfg.sea:
@@ -178,7 +232,10 @@ def read_grid(filename=None):
         #try:
         grdfile = cfg.filename[inz-bottomsurface]
         print 'reading ',cfg.filename[inz-bottomsurface]
-        coordx,coordy,elev_1=process_surfacefiles(iproc,nx,ny,nstep,grdfile,cfg.unit,cfg.lat_orientation)
+        if cfg.irregulargridded_surf:
+            coordx,coordy,elev_1=process_irregular_surfacefiles(iproc,nx,ny,cfg.xmin,cfg.xmax,cfg.ymin,cfg.ymax,xstep,ystep,grdfile)
+        else:
+            coordx,coordy,elev_1=process_surfacefiles(iproc,nx,ny,nstep,grdfilename,cfg.unit,cfg.lat_orientation)
         elev[:,:,inz]=elev_1[:,:]
         #except:
         #     txt='error reading: '+  str( cfg.filename[inz-bottomsurface] )
@@ -194,134 +251,5 @@ def read_grid(filename=None):
           print len(top[subcrit])
           elev[:,:,inz]=top
     return coordx,coordy,elev,nx,ny
-    
 
-def extract_volume(xmin,ymin,xmax,ymax,coordx,coordy,elev,nx,ny,filename=None):
-    import sys
-    import start as start
-    #
-    mpiflag,iproc,numproc,mpi   = start.start_mpi()
-    #
-    numpy                       = start.start_numpy()
-    cfg                         = start.start_cfg(filename=filename)             
-    
-    from utilities import geo2utm
-    #
-    rxstep=coordx[1,0]-coordx[0,0]
-    rystep=coordy[0,1]-coordy[0,0]
-    
-    nxmin_cpu=min(0,int((x0-cfg.xmin)/rxstep)+1-10)
-    nymin_cpu=min(0,int((y0-cfg.ymin)/rxstep)+1-10)
-    nxmax_cpu=min(nx,int((x0-cfg.xmin)/rystep)+1+10)
-    nymax_cpu=min(ny,int((y0-cfg.ymin)/rystep)+1+10)
-    #
-    #
-    icurve=0
-    isurf=0
-    ivertex=0
-    #
-    #create vertex
-    last_surface=cubit.get_last_id('surface')
-    for inz in range(0,cfg.nz):
-        if  cfg.bottomflat and inz == 0: #bottom layer
-                    
-                    x_current,y_current=geo2utm(coordx[nxmin_cpu,nymin_cpu],coordy[nxmin_cpu,nymin_cpu],cfg.unit)
-                    cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
-                    cubit.cmd(cubitcommand)
-                    #
-                    x_current,y_current=geo2utm(coordx[nxmin_cpu,nymax_cpu],coordy[nxmin_cpu,nymax_cpu],cfg.unit)
-                    cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
-                    cubit.cmd(cubitcommand)                                                                              
-                    #
-                    x_current,y_current=geo2utm(coordx[nxmax_cpu,nymax_cpu],coordy[nxmax_cpu,nymax_cpu],cfg.unit)
-                    cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
-                    cubit.cmd(cubitcommand)
-                    #
-                    x_current,y_current=geo2utm(coordx[nxmax_cpu,nymin_cpu],coordy[nxmax_cpu,nymin_cpu],cfg.unit)
-                    cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
-                    cubit.cmd(cubitcommand)
-                    #
-                    cubitcommand= 'create surface vertex 1 2 3 4'
-                    cubit.cmd(cubitcommand)
-                    #
-                    isurf = isurf + 1
-                    
-        else:
-                vertex=[]
-                
-                for iy in range(nymin_cpu,nymax_cpu+1):
-                    ivx=0
-                    for ix in range(nxmin_cpu,nxmax_cpu+1):
-                        zvertex=elev[ix,iy,inz]
-                        x_current,y_current=geo2utm(coordx[ix,iy],coordy[ix,iy],cfg.unit)
-                        #
-                        vertex.append(' Position '+ str( x_current ) +' '+ str( y_current )+' '+ str( zvertex ) )
-                #
-                print iproc, 'vertex created....'
-                n=max(nx,ny)
-                uline=[]
-                vline=[]
-                iv=0
-                
-                cubit.cmd("set info off")
-                cubit.cmd("set echo off")
-                cubit.cmd("set journal off")
-                
-                for iy in range(0,nymax_cpu-nymin_cpu+1):
-                    positionx=''
-                    for ix in range(0,nxmax_cpu-nxmin_cpu+1):
-                        positionx=positionx+vertex[iv]
-                        iv=iv+1
-                    command='create curve spline '+positionx
-                    cubit.cmd(command)
-                    uline.append( cubit.get_last_id("curve") )
-                for ix in range(0,nxmax_cpu-nxmin_cpu+1):
-                    positiony=''
-                    for iy in range(0,nymax_cpu-nymin_cpu+1):
-                        positiony=positiony+vertex[ix+iy*(nxmax_cpu-nxmin_cpu+1)]
-                    command='create curve spline '+positiony
-                    cubit.cmd(command)
-                    vline.append( cubit.get_last_id("curve") )
-                #
-                cubit.cmd("set info "+cfg.cubit_info)
-                cubit.cmd("set echo "+cfg.echo_info)
-                cubit.cmd("set journal "+cfg.jou_info)
-                #
-                #
-                print iproc,'line created....'
-                umax=max(uline)
-                umin=min(uline)
-                vmax=max(vline)
-                vmin=min(vline)
-                cubitcommand= 'create surface net u curve '+ str( umin )+' to '+str( umax )+ ' v curve '+ str( vmin )+ ' to '+str( vmax )+' heal'
-                cubit.cmd(cubitcommand)
-                command = "del curve all"
-                cubit.cmd(command)
-                isurf=isurf+1
-                #
-                #
-        cubitcommand= 'del vertex all'
-        cubit.cmd(cubitcommand)
-        #cubit_error_stop(iproc,cubitcommand,ner)
-    cubitcommand= 'del curve all'
-    cubit.cmd(cubitcommand)
-    #
-    last_surface_2=cubit.get_last_id('surface')
-    #
-    for inz in range(1,cfg.nz):
-        #!cubit cmd
-        cubitcommand= 'create volume loft surface '+ str( inz+1 )+' '+str( inz )
-        cubit.cmd(cubitcommand)
-        #cubit_error_stop(iproc,cubitcommand,ner)
-        isurf=isurf+6
-    cubitcommand= 'del surface '+str(last_surface+1)+' to '+ str( last_surface_2 )
-    cubit.cmd(cubitcommand)
-    #cubit_error_stop(iproc,cubitcommand,ner)
-    #
-    #        
-    cubit.cmd("set info "+cfg.cubit_info)
-    cubit.cmd("set echo "+cfg.echo_info)
-    cubit.cmd("set journal "+cfg.jou_info)
-    command = "compress all"
-    cubit.cmd(command)
     

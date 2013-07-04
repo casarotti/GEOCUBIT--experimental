@@ -167,6 +167,7 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
     dcfg['subduction_thres']=500
     dcfg['debugsurface']=False
     dcfg['lat_orientation']=False
+    dcfg['irregulargridded_surf']=False
     
     
     dcfg['nsurf'] = None
