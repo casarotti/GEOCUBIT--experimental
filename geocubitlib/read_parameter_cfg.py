@@ -168,6 +168,7 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
     dcfg['debugsurface']=False
     dcfg['lat_orientation']=False
     dcfg['irregulargridded_surf']=False
+    dcfg['chktopo']=False
     
     
     dcfg['nsurf'] = None
