@@ -1,3 +1,26 @@
+#############################################################################
+# boundary_definition.py                                                    
+# this file is part of GEOCUBIT                                             #
+#                                                                           #
+# Created by Emanuele Casarotti                                             #
+# Copyright (c) 2008 Istituto Nazionale di Geofisica e Vulcanologia         #
+#                                                                           #
+#############################################################################
+#                                                                           #
+# GEOCUBIT is free software: you can redistribute it and/or modify          #
+# it under the terms of the GNU General Public License as published by      #
+# the Free Software Foundation, either version 3 of the License, or         #
+# (at your option) any later version.                                       #
+#                                                                           #
+# GEOCUBIT is distributed in the hope that it will be useful,               #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of            #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
+# GNU General Public License for more details.                              #
+#                                                                           #
+# You should have received a copy of the GNU General Public License         #
+# along with GEOCUBIT.  If not, see <http://www.gnu.org/licenses/>.         #
+#                                                                           #
+#############################################################################
 try:
     import start as start
     cubit                   = start.start_cubit()
@@ -8,9 +31,7 @@ except:
         print 'error importing cubit, check if cubit is installed'
         pass
 
-def list2str(l):
-    if not isinstance(l,list): l=list(l)
-    return ' '.join(str(x) for x in l)
+from utilities import list2str
 
 
 def map_boundary(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1):

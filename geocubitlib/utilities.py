@@ -493,4 +493,6 @@ def get_v_h_list(vol_id_list):
     bottom=[bottom]
     return surf_or,surf_vertical,list_curve_or,list_curve_vertical,bottom,top
 
-
+def list2str(l):
+    if not isinstance(l,list): l=list(l)
+    return ' '.join(str(x) for x in l)
