@@ -398,7 +398,7 @@ def savegeometry(iproc=0,surf=False,filename=None):
         f.close()
 
 
-def get_v_h_list(vol_id_list):
+def get_v_h_list(vol_id_list,chktopo=False):
     """return the lists of the cubit ID of vertical/horizontal surface and vertical/horizontal curves
     where v/h is defined by the distance of the z normal component from the axis direction
     the parameter cfg.tres is the threshold as for example if 
@@ -457,7 +457,7 @@ def get_v_h_list(vol_id_list):
             bottom=k
     #check that a top surface exists
     #it assume that the z coord of the center point 
-    if cfg.chktopo:
+    if chktopo:
         k=lsurf[0]
         vertical_centerpoint_top = cubit.get_center_point("surface", k)[2]
         vertical_zmax_box_top=cubit.get_bounding_box('surface',k)[7]
