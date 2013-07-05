@@ -116,13 +116,21 @@ def lateral_boundary_are_absorbing(ip=0,cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,
 
 def define_surf(ip=0,cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1):
     """
-    define the surfaces defining the boundaries of the volume
+    define the absorbing surfaces for a layered topological box where boundary are surfaces parallel to the axis.
+    it returns absorbing_surf,absorbing_surf_xmin,absorbing_surf_xmax,absorbing_surf_ymin,absorbing_surf_ymax,absorbing_surf_bottom,topo_surf
+    where
+    absorbing_surf is the list of all the absorbing boundary surf
+    absorbing_surf_xmin is the list of the absorbing boundary surfaces that correnspond to x=xmin
+    ...
+    absorbing_surf_bottom is the list of the absorbing boundary surfaces that correspond to z=zmin
     """
+    from utilities import get_v_h_list
     #
     from sets import Set
     def product(*args, **kwds):
         # product('ABCD', 'xy') --> Ax Ay Bx By Cx Cy Dx Dy
         # product(range(2), repeat=3) --> 000 001 010 011 100 101 110 111
+        # for compatibility with python2.5
         pools = map(tuple, args) * kwds.get('repeat', 1)
         result = [[]]
         for pool in pools:
@@ -144,12 +152,10 @@ def define_surf(ip=0,cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1):
     ymin_box=cubit.get_total_bounding_box("volume",list_vol)[3]
     ymax_box=cubit.get_total_bounding_box("volume",list_vol)[4]
     list_surf=cubit.parse_cubit_list("surface","all")
-    print zmax_box
-    print zmin_box
-    print xmin_box
-    print xmax_box
-    print ymin_box
-    print ymax_box
+    
+    absorbing_surface_distance_tolerance=0.001
+    topographic_surface_distance_tolerance=0.1
+    topographic_surface_normal_tolerance=0.4
     
     lv=[]
     for k in list_surf:
@@ -168,17 +174,17 @@ def define_surf(ip=0,cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1):
             dzmin=abs(sbox[6] - zmin_box)/max(abs(sbox[6]),abs(zmin_box))
         normal=cubit.get_surface_normal(k)
         zn=normal[2]
-        print k,dzmax,zn,dzmax <= 0.1 and zn > 0.4
-        print sbox[7],zmax_box,dzmax
-        if dzmax <= 0.1 and zn > 0.4:
+        if dzmax <= topographic_surface_distance_tolerance and zn > topographic_surface_normal_tolerance:
             top_surf.append(k)
             list_vertex=cubit.get_relatives('surface',k,'vertex')
             for v in list_vertex:
                 valence=cubit.get_valence(v)
                 if valence <= 4: #valence 3 is a corner, 4 is a vertex between 2 volumes, > 4 is a vertex not in the boundaries
                     lv.append(v)
-        elif dzmin <= 0.001 and zn < -0.7:
+        elif dzmin <= 0.001 and zn < -1+topographic_surface_normal_tolerance:
             bottom_surf.append(k)
+    if len(top_surf) ==0: #assuming that one topo surface need to be selected
+            _,_,_,_,_,top_surf=get_v_h_list(list_vol,chktopo=False)
     lp=[]
     labelp=[]
     combs=product(lv,lv)
@@ -198,7 +204,7 @@ def define_surf(ip=0,cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1):
         center_point = cubit.get_center_point("surface", k)
         for p in lp:
             try:
-                if abs((center_point[0] - p[0])/p[0]) <= 0.001 and abs((center_point[1] - p[1])/p[1]) <= 0.001:
+                if abs((center_point[0] - p[0])/p[0]) <= absorbing_surface_distance_tolerance and abs((center_point[1] - p[1])/p[1]) <= absorbing_surface_distance_tolerance:
                     absorbing_surf.append(k)
                     break
             except:
@@ -331,20 +337,6 @@ def define_bc(*args,**keys):
     #
     if parallel:
         absorbing_surf,abs_xmin,abs_xmax,abs_ymin,abs_ymax,top_surf,bottom_surf,xmin,ymin,xmax,ymax=define_surf(ip=ip,cpuxmin=cpuxmin,cpuxmax=cpuxmax,cpuymin=cpuymin,cpuymax=cpuymax,cpux=cpux,cpuy=cpuy)
-        #
-        #id_side=cubit.get_next_block_id()
-        #try:
-        #    entities=args[0]
-        #except:
-        #    entities=['face']
-        #for entity in entities:
-        #    build_block_side(top_surf,entity+'_topo',obj=entity,id_0=1) #topo is block 1 so id_0=1
-        #    build_block_side(bottom_surf,entity+'_abs_bottom',obj=entity,id_0=2)
-        #    build_block_side(xmin,entity+'_xmin',obj=entity,id_0=3)
-        #    build_block_side(ymin,entity+'_ymin',obj=entity,id_0=4)
-        #    build_block_side(xmax,entity+'_xmax',obj=entity,id_0=5)
-        #    build_block_side(ymax,entity+'_ymax',obj=entity,id_0=6)
-        #     
         id_0=cubit.get_next_block_id()
         v_list,name_list=define_block()
         build_block(v_list,name_list,id_0,top_surf,optionsea=optionsea)
