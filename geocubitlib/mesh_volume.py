@@ -41,10 +41,6 @@ def mesh(filename=None):
     #
     if cfg.map_meshing_type == 'regularmap':
             mesh_layercake_regularmap(filename=filename)
-            #elif cfg.map_meshing_type == 'partitioner':
-            #        mesh_partitioner()
-    #elif cfg.map_meshing_type=='sandwich':
-    #        mesh_sandwich(filename=filename)
     else:
         print 'error: map_meshing_type ', cfg.map_meshing_type,' not implemented'
 
@@ -53,6 +49,14 @@ def mesh(filename=None):
 def mesh_layercake_regularmap(filename=None):
     import sys,os
     import start as start
+    mpiflag,iproc,numproc,mpi   = start.start_mpi()
+    from utilities import  importgeometry,savemesh,get_v_h_list,cubit_command_check
+    #
+    numpy                       = start.start_numpy()
+    cfg                         = start.start_cfg(filename=filename)
+    from math import sqrt
+    from sets import Set
+
     #
     class cubitvolume:
           def __init__(self,ID,intervalv,centerpoint,dimension):
@@ -69,13 +73,6 @@ def mesh_layercake_regularmap(filename=None):
         return cmp(x.centerpoint,y.centerpoint)
     #
     #
-    mpiflag,iproc,numproc,mpi   = start.start_mpi()
-    from utilities import  importgeometry,savemesh,get_v_h_list,cubit_command_check
-    #
-    numpy                       = start.start_numpy()
-    cfg                         = start.start_cfg(filename=filename)
-    from math import sqrt
-    from sets import Set
     #
     list_vol=cubit.parse_cubit_list("volume","all")
     if len(list_vol) != 0:
@@ -86,7 +83,7 @@ def mesh_layercake_regularmap(filename=None):
     #
     command = 'composite create curve all'
     cubit.cmd(command)
-    print 'NO CRITICAL ERROR: "No valid composites can be created from the specified curves."  is not critical. \n It means that your model is clean and you don"t need a virtual geometry'
+    print '###"No valid composites can be created from the specified curves."  is NOT a critical ERROR.'
     #
     command = "compress all"
     cubit.cmd(command)
@@ -215,8 +212,7 @@ def mesh_layercake_regularmap(filename=None):
                 cubit.cmd(command_surf)
             command_set_meshvol='volume all redistribute nodes on\nvolume all autosmooth target off\nvolume all scheme Sweep Vector 0 0 -1\nvolume all sweep smooth Auto\n'
             status=cubit_command_check(iproc,command_set_meshvol,stop=False)
-            status=cubit_command_check(iproc,command,stop=True)
-        #cubit.cmd(command)     
+            status=cubit_command_check(iproc,command,stop=True)    
     
     #
     #smoothing
@@ -264,7 +260,6 @@ def mesh_layercake_regularmap(filename=None):
         cubitcommand= 'del mesh vol '+str(vol[-1].ID)+ ' propagate'
         cubit.cmd(cubitcommand)
         s1=Set(list_curve_vertical)
-        print s1
         command = "group 'list_curve_tmp' add curve "+"in vol "+str(vol[-1].ID)
         cubit.cmd(command)
         group=cubit.get_id_from_name("list_curve_tmp")
@@ -272,9 +267,7 @@ def mesh_layercake_regularmap(filename=None):
         command = "delete group "+ str(group)
         cubit.cmd(command)
         s2=Set(list_curve_tmp)
-        print s2
         lc=list(s1 & s2)
-        print lc
         #
         cubitcommand= 'curve '+' '.join(str(x) for x in lc)+' interval '+str(cfg.actual_vertical_interval_top_layer)
         cubit.cmd(cubitcommand)
