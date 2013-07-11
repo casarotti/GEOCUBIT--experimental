@@ -543,7 +543,7 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
 
 
 
-def collect(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cubfiles=False,ckbound_method1=False,ckbound_method2=False,merge_tolerance=None,curverefining=False,outfilename='totalmesh_merged',qlog=False,export2SPECFEM3D=False,listblock=None,listflag=None,outdir='.',add_sea=False,decimate=False,cpml=False,cpml_size=False,top_absorbing=False):
+def collect(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cubfiles=False,ckbound_method1=False,ckbound_method2=False,merge_tolerance=None,curverefining=False,outfilename='totalmesh_merged',qlog=False,export2SPECFEM3D=False,listblock=None,listflag=None,outdir='.',add_sea=False,decimate=False,cpml=False,cpml_size=False,top_absorbing=False,hex27=False):
     #
     cubit.cmd('set error off')
     cubit.cmd('set verbose error off')
@@ -598,9 +598,9 @@ def collect(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cubfiles=False
     #
     #
     if export2SPECFEM3D:
-        e2SEM(files=False,listblock=listblock,listflag=listflag,outdir=outdir,cpml=cpml,cpml_size=cpml_size,top_absorbing=top_absorbing)
+        e2SEM(files=False,listblock=listblock,listflag=listflag,outdir=outdir,cpml=cpml,cpml_size=cpml_size,top_absorbing=top_absorbing,hex27=hex27)
                                             
-def e2SEM(files=False,listblock=None,listflag=None,outdir='.',cpml=False,cpml_size=False,top_absorbing=False):
+def e2SEM(files=False,listblock=None,listflag=None,outdir='.',cpml=False,cpml_size=False,top_absorbing=False,hex27=False):
     import glob
     if files:
         filenames=glob.glob(files)
@@ -631,7 +631,7 @@ def e2SEM(files=False,listblock=None,listflag=None,outdir='.',cpml=False,cpml_si
         cubit.cmd("block "+str(ib)+" attribute index 1 "+ str(iflag)            )
     #
     import cubit2specfem3d
-    cubit2specfem3d.export2SPECFEM3D(outdir,cpml=cpml,cpml_size=cpml_size,top_absorbing=top_absorbing)
+    cubit2specfem3d.export2SPECFEM3D(outdir,cpml=cpml,cpml_size=cpml_size,top_absorbing=top_absorbing,hex27=hex27)
 
 def invert_dict(d):
      inv = {}

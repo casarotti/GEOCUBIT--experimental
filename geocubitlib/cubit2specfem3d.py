@@ -1001,9 +1001,3 @@ def export2SPECFEM3D(path_exporting_mesh_SPECFEM3D='.',hex27=False,cpml=False,cp
     #
     sem_mesh.write(path=path_exporting_mesh_SPECFEM3D)
     print 'END SPECFEM3D exporting process......'
-    
-
-
-if __name__ == '__main__':
-    path='.'
-    export2SPECFEM3D(path)
