@@ -496,3 +496,8 @@ def get_v_h_list(vol_id_list,chktopo=False):
 def list2str(l):
     if not isinstance(l,list): l=list(l)
     return ' '.join(str(x) for x in l)
+    
+def highlight(ent,l):
+    txt=list2str(l)
+    txt='highlight '+ent+' '+txt
+    cubit.cmd(txt)
