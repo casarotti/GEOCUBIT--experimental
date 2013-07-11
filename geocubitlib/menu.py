@@ -82,7 +82,7 @@ def usage():
          
     """
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "sjmohbp1", ["decimate","addsea","SEMoutput=","qlog","mfast","curverefining=","output=","rangecpux=","rangecpuy=","equivalence","listflag=","listblock=","cpux=","cpuy=","exofiles=","partitioner","plane","x1=","x2=","x3=","x4=","unit=","chkcfg","mat=","merge_tolerance=","export2SPECFEM3D","mesh","chklib","cfg=","job=","basin","help", "id_proc=", "surface=","script","jou","strat","MPI","regulargrid=",'skin=',"build_surface","build_volume","merge1","merge2","merge","collect","meshfiles="])
+    opts, args = getopt.getopt(sys.argv[1:], "sjmohbp1", ["cmpl_size=","top_absorbing","cpml","decimate","addsea","SEMoutput=","qlog","mfast","curverefining=","output=","rangecpux=","rangecpuy=","equivalence","listflag=","listblock=","cpux=","cpuy=","exofiles=","partitioner","plane","x1=","x2=","x3=","x4=","unit=","chkcfg","mat=","merge_tolerance=","export2SPECFEM3D","mesh","chklib","cfg=","job=","basin","help", "id_proc=", "surface=","script","jou","strat","MPI","regulargrid=",'skin=',"build_surface","build_volume","merge1","merge2","merge","collect","meshfiles="])
     print opts, args
 except:
     print opts, args
@@ -127,8 +127,8 @@ cpuymax=None
 curverefining=False
 add_sea=False
 decimate=False
-
-
+cpml=False
+top_absorbing=False
 
 qlog=False
 
@@ -136,7 +136,33 @@ qlog=False
 if opts: 
     for o, value in opts:
         #print o,value
-        if o in ('decimate'):
+        if o in ('--cpml'):
+            cpml=True
+            for otmp,vtmp in opts:
+                if otmp in ('--cmpl_size'):
+                    cpml_size=float(vtmp)
+                else:
+                    print 'specify the size of the cpml boundaries'
+                    import sys
+                    sys.exit()
+            if cpml_size <= 0:
+                print 'no negative/zero cpml size: cpml_size = ',cpml_size
+                import sys
+                sys.exit()
+        if o in ('--top_absorbing'):
+            cpml=True
+            top_absorbing=True
+        if o in ('--cmpl_size'):
+            cpml=True
+            cpml_size=float(value)     
+        if o in ('--cmpl_refinement'):
+            cmpl=True
+            try:
+                cpml_refinement=map(int,value.split(','))
+            except:
+                cpml_refinement=map(int,value.split(' '))
+            if cpml_refinement
+        if o in ('--decimate'):
             decimate=True
         if o in ('--partitioner'):
             create_partitioner=True

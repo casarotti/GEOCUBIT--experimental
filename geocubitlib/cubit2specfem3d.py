@@ -127,6 +127,7 @@ except:
         pass
 
 from utilities import get_cubit_version
+import numpy
 
 class mtools(object):
     def __init__(self,frequency,list_surf,list_vp):
@@ -342,7 +343,7 @@ class mesh_tools(block_tools):
         return self.ddt[0],self.dr[0]
 
 class mesh(object,mesh_tools):
-    def __init__(self,hex27=False,cpml=False):
+    def __init__(self,hex27=False,cpml=False,cpml_size=False,top_absorbing=False):
         super(mesh, self).__init__()
         self.mesh_name='mesh_file'
         self.nodecoord_name='nodes_coords_file'
@@ -350,7 +351,7 @@ class mesh(object,mesh_tools):
         self.nummaterial_name='nummaterial_velocity_file'
         self.absname='absorbing_surface_file'
         self.cpmlname='absorbing_cpml_file'
-        self.freename='free_surface_file'
+        self.freename='free_or_absorbing_surface_file_zmax'
         self.recname='STATIONS'
         version_cubit=get_cubit_version()
         if version_cubit >= 12:
@@ -363,13 +364,24 @@ class mesh(object,mesh_tools):
         self.topo='face_topo'
         self.rec='receivers'
         self.cpml=cpml
+        if cpml:
+            if cmpl_size:
+                self.size=cmpl_size
+            else:
+                print 'please specify cmpl size if you want to use cpml'
+        self.top_absorbing=top_absorbing
         if hex27: cubit.cmd('block all except (block 1001 1002 1003 1004 1005 1006) type hex27')
         self.block_definition()
         self.ngll=5
         self.percent_gll=0.172
         self.point_wavelength=5
+        self.xmin=False
+        self.ymin=False
+        self.zmin=False
+        self.xmax=False
+        self.ymax=False
+        self.zmax=False
         cubit.cmd('compress all')
-        print 'version hex27'
     def __repr__(self):
         pass
     def block_definition(self):
@@ -653,6 +665,14 @@ class mesh(object,mesh_tools):
                 for hexa in hexes:
                     mat.write(('%10i %10i\n') % (hexa,flag))
         mat.close()
+    def get_extreme(self,c,cmin,cmax):
+        if not cmin and not cmax:
+            cmin=c
+            cmax=c
+        else:
+            if c<cmin: cmin=c
+            if c>cmax: cmax=c
+        return cmin,cmax
     def nodescoord_write(self,nodecoord_name):
         nodecoord=open(nodecoord_name,'w')
         print 'Writing '+nodecoord_name+'.....'
@@ -661,11 +681,22 @@ class mesh(object,mesh_tools):
         print '  number of nodes:',str(num_nodes)
         nodecoord.write('%10i\n' % num_nodes)
         #
+        xmin=self.xmin
+        ymin=self.ymin
+        zmin=self.zmin
+        xmax=self.xmax
+        ymax=self.ymax
+        zmax=self.zmax
+        
         for node in node_list:
             x,y,z=cubit.get_nodal_coordinates(node)
+            self.xmin,self.xmax=get_extreme(x,xmin,xmax)
+            self.ymin,self.ymax=get_extreme(y,ymin,ymax)
+            self.zmin,self.zmax=get_extreme(z,zmin,zmax)
             txt=('%10i %20f %20f %20f\n') % (node,x,y,z)
             nodecoord.write(txt)
         nodecoord.close()
+        return xmin,xmax,ymin,ymax,zmin,zmax
     def free_write(self,freename=None):
         cubit.cmd('set info off')
         cubit.cmd('set echo off')
@@ -696,6 +727,79 @@ class mesh(object,mesh_tools):
                 freehex.close()   
         cubit.cmd('set info on')
         cubit.cmd('set echo on')
+    def check_cmpl_size(self,case='x'):
+        if case='x':
+            vmaxtmp=self.xmax
+            vmintmp=self.xmin
+        elif case='y':
+            vmaxtmp=self.ymax
+            vmintmp=self.ymin
+        elif case='z':
+            vmaxtmp=self.zmax
+            vmintmp=self.zmin
+            
+        if self.size > .3*(vmaxtmp-self.vmintmp):
+            print 'please select the size of cpml less than 30% of the '+case+' size of the volume'
+            print 'cmpl set to false, no '+self.cpmlname+' file will be created'
+            return False,False
+        else:
+            vmin=vmintmp+self.size
+            vmax=vmaxtmp-self.size
+        return vmin,vmax
+    def select_cpml(self):
+        xmin,xmax=check_cmpl_size(case='x')
+        ymin,ymax=check_cmpl_size(case='y')
+        zmin,zmax=check_cmpl_size(case='z')
+        #
+        if xmin is False or xmax is False or ymin is False or ymax is False or zmin is False or zmax is False:
+            return False
+        else:
+            txt="group 'hxmin' add hex  with X_coord < "+str(xmin)
+            cubit.cmd(txt)        
+            txt="group 'hxmax' add hex  with X_coord > "+str(xmax)
+            cubit.cmd(txt)        
+            txt="group 'hymin' add hex  with Y_coord < "+str(ymin)
+            cubit.cmd(txt)         
+            txt="group 'hymax' add hex  with Y_coord > "+str(ymax)
+            cubit.cmd(txt)        
+            txt="group 'hzmin' add hex  with Z_coord < "+str(zmin)
+            cubit.cmd(txt)       
+            txt="group 'hzmax' add hex  with Z_coord > "+str(zmax)
+            cubit.cmd(txt)
+            from sets import Set
+            group1 = cubit.get_id_from_name("hxmin")
+            cpml_xmin =Set(list(cubit.get_group_hexes(group1)))
+            group1 = cubit.get_id_from_name("hymin")
+            cpml_ymin =Set(list(cubit.get_group_hexes(group1)))
+            group1 = cubit.get_id_from_name("hxmax")
+            cpml_xmax =Set(list(cubit.get_group_hexes(group1)))
+            group1 = cubit.get_id_from_name("hymax")
+            cpml_ymax =Set(list(cubit.get_group_hexes(group1)))
+            group1 = cubit.get_id_from_name("hzmin")
+            cpml_zmin =Set(list(cubit.get_group_hexes(group1)))
+            if self.top_absorbing:
+                group1 = cubit.get_id_from_name("hzmax")
+                cpml_zmax =Set(list(cubit.get_group_hexes(group1)))
+            else:
+                cpml_zmax =Set([])
+            cpml_all=cpml_ymin | cpml_ymax | cpml_xmin | cpml_xmax | cpml_zmin | cpml_zmax
+            cpml_x=cpml_all-cpml_zmin-cpml_ymin-cpml_ymax-cpml_zmax
+            cpml_y=cpml_all-cpml_zmin-cpml_xmin-cpml_xmax-cpml_zmax
+            cpml_xy=cpml_all-cpml_zmin-cpml_y-cpml_x-cpml_zmax
+            cpml_z=cpml_all-cpml_xmin-cpml_ymin-cpml_ymax-cpml_xmax
+            cpml_xz=cpml_zmin-cpml_ymin-cpml_ymax-cpml_z
+            cpml_yz=cpml_zmin-cpml_xmin-cpml_xmax-cpml_z
+            cpml_xyz=cpml_zmin-cpml_xz-cpml_yz-cpml_z
+            return cpml_x,cpml_y,cpml_z,cpml_xy,cpml_xz,cpml_yz,cpml_xyz
+        
+        
+        
+        
+        
+        
+        
+    
+    
     def abs_write(self,absname=None):
         import re
         cubit.cmd('set info off')
@@ -708,27 +812,40 @@ class mesh(object,mesh_tools):
             if not absname: absname=self.cpmlname
             print 'Writing cpml'+absname+'.....'
             list_hex=cubit.parse_cubit_list('hex','all')
-            abshex_cpml=open(absname,'w')
-            hex_all=0
-            print self.block_mat
-            for block in self.block_mat:
-                print block, len(cubit.get_block_hexes(block)),hex_all
-                if 2000<block<2010:
-                    hex_count=len(cubit.get_block_hexes(block))
-                    hex_all=hex_all+hex_count
-            abshex_cpml.write('%10i #add CPML thickness\n' % (hex_all))
-            for block in self.block_mat:
-                hexes=cubit.get_block_hexes(block)
-                if 2000<block<2010: #I assume that the cpml block are numbered between 2001 and 2007
-                    print block
-                    hexes=cubit.get_block_hexes(block)
-                    for hexa in hexes:
-                        abshex_cpml.write(('%10i %10i\n') % (hexa,block-2000))
-                else:
-                    hexes=cubit.get_block_hexes(block)
-                    for hexa in hexes:
-                        abshex_cpml.write(('%10i %10i\n') % (hexa,block))
-        else:            
+            list_cpml=select_cpml(self)
+            if list_cpml is False:
+                return
+            else:
+                abshex_cpml=open(absname,'w')
+                hexcount=numpy.sum(map(len,list_cpml))
+                abshex_cpml.write(('%10i\n') % (hexcount))
+                for icpml,lcpml in enumerate(list_cpml):
+                    for hexa in lcpml:
+                        abshex_cpml.write(('%10i %10i\n') % (hexa,icpml))
+                #print self.block_mat
+                #for block in self.block_mat:
+                #    print block, len(cubit.get_block_hexes(block)),hex_all
+                #    if 2000<block<2010:
+                #        hex_count=len(cubit.get_block_hexes(block))
+                #        hex_all=hex_all+hex_count
+                #abshex_cpml.write('%10i #add CPML thickness\n' % (hex_all))
+                #for block in self.block_mat:
+                #    hexes=cubit.get_block_hexes(block)
+                #    if 2000<block<2010: #I assume that the cpml block are numbered between 2001 and 2007
+                #        print block
+                #        hexes=cubit.get_block_hexes(block)
+                #        for hexa in hexes:
+                #            abshex_cpml.write(('%10i %10i\n') % (hexa,block-2000))
+                #    else:
+                #        hexes=cubit.get_block_hexes(block)
+                #        for hexa in hexes:
+                #            abshex_cpml.write(('%10i %10i\n') % (hexa,block))
+                #
+                abshex_cpml.close()
+            
+            
+        stacey_absorb=True
+        if stacey_absorb:      
             #
             #
             if not absname: absname=self.absname
@@ -876,8 +993,8 @@ class mesh(object,mesh_tools):
         cubit.cmd('set info on')
         cubit.cmd('set echo on')
 
-def export2SPECFEM3D(path_exporting_mesh_SPECFEM3D='.',hex27=False,cpml=False):
-    sem_mesh=mesh(hex27,cpml)
+def export2SPECFEM3D(path_exporting_mesh_SPECFEM3D='.',hex27=False,cpml=False,cpml_size=False,top_absorbing=False):
+    sem_mesh=mesh(hex27,cpml,cpml_size,top_absorbing)
     #sem_mesh.block_definition()
     #print sem_mesh.block_mat
     #print sem_mesh.block_flag
