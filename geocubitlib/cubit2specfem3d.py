@@ -447,7 +447,7 @@ class mesh(object,mesh_tools):
                 elif  nattrib == 1:
                     flag=cubit.get_block_attribute_value(block,0)
                     print 'only 1 attribute ', name,block,flag
-                    vel,vs,rho,qk,qmu,ani=(0,0,9999.,9999.,0)
+                    vel,vs,rho,qk,qmu,ani=(0,0,0,9999.,9999.,0)
                 else:
                     flag=block
                     vel,vs,rho,qk,qmu,ani=(name,0,0,9999.,9999.,0)

@@ -579,9 +579,11 @@ def check_bc(iproc,xmin,xmax,ymin,ymax,cpux,cpuy,cpuxmin,cpuxmax,cpuymin,cpuymax
     boundary['node_curve_xminymax']=c_xminymax
     boundary['node_curve_xmaxymin']=c_xmaxymin
     boundary['node_curve_xmaxymax']=c_xmaxymax
-    #
-    #
-    #
+    
+    #print boundary['node_curve_xminymin']
+    #print     boundary['node_curve_xminymax']
+    #print     boundary['node_curve_xmaxymin']
+    #print     boundary['node_curve_xmaxymax']
     entities=['face']
     #
     for entity in entities:

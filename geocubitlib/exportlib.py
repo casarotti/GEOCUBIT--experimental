@@ -33,7 +33,7 @@ except:
         print 'error importing cubit, check if cubit is installed'
         pass
 
-import glob
+import glob,numpy
 
 def add_sea_layer(block=1001,optionsea=False):
     import numpy
@@ -341,6 +341,7 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
                     idown=ip
                     idiag=ileft
                 #
+                print ip,ileft,idiag,idown
                 if ip != idown:
                     nup=boundary_dict[ip]['nodes_surf_ymin']
                     ndow=boundary_dict[idown]['nodes_surf_ymax']
@@ -796,16 +797,34 @@ def prepare_equivalence_4(nodes1,nodes2,nodes3,nodes4):
     cubit.cmd('set journal on')
     return factor,minvalue,inv_length
 
+def ording_z(nodes):
+    zstore=numpy.array([])
+    for node in nodes:
+        x,y,z=cubit.get_nodal_coordinates(node)
+        zstore=numpy.append(zstore,z)
+    d=zip(zstore,nodes)
+    d.sort()
+    return [x[1] for x in d] 
+    
+    
 
-def merge_node_4(n1,n2,n3,n4,oldmethod=False):
-    if oldmethod:
+def merge_node_4(n1,n2,n3,n4,newmethod=True):
+    if newmethod:
         print "merge node 4 side"
-        allnodes=n1+n2+n3+n4
-        print allnodes
-        for n in allnodes:
-            print n
-        cmd='equivalence node '+' '.join(str(n) for n in allnodes) +' tolerance 10 ' 
-        cubit.cmd(cmd)
+        n1o=ording_z(n1)
+        n2o=ording_z(n2)
+        n3o=ording_z(n3)
+        n4o=ording_z(n4)
+        for ln in zip(n1o,n2o,n3o,n4o):
+            cmd='equivalence node '+' '.join(str(n) for n in ln) +' tolerance 10000 '
+            cubit.cmd(cmd)
+        #    
+        #allnodes=n1+n2+n3+n4
+        #print allnodes
+        #for n in allnodes:
+        #    print n
+        #cmd='equivalence node '+' '.join(str(n) for n in allnodes) +' tolerance 10 ' 
+        #cubit.cmd(cmd)
     else:
         factor,minvalue,inv_length=prepare_equivalence_4(n1,n2,n3,n4)
         
