@@ -184,7 +184,7 @@ def define_surf(ip=0,cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1):
         elif dzmin <= 0.001 and zn < -1+topographic_surface_normal_tolerance:
             bottom_surf.append(k)
     if len(top_surf) ==0: #assuming that one topo surface need to be selected
-            _,_,_,_,_,top_surf=get_v_h_list(list_vol,chktopo=False)
+            _,_,_,_,_,top_surf=get_v_h_list(list_vol,chktop=False)
     lp=[]
     labelp=[]
     combs=product(lv,lv)
@@ -406,8 +406,11 @@ def get_ordered_node_surf(lsurface,icurve):
     orient_nodes_surf=[]
     #
     #get the nodes on a surface, I don't use the method get_surface_nodes since it has different behavior in cubit12.2 and cubit13.2+
-    cubit.cmd('del group sl')
-    print 'initializing group sl'
+    k=cubit.get_id_from_name('sl')
+    if k!=0:
+        cubit.cmd('del group sl')
+    else:
+        print 'initializing group sl'
     cubit.cmd("group 'sl' add node in surf "+lsurf)
     group1 = cubit.get_id_from_name("sl")
     nodes_ls =list(cubit.get_group_nodes(group1))
@@ -415,8 +418,11 @@ def get_ordered_node_surf(lsurface,icurve):
     #
     #get the nodes on curves
     orient=[]
-    cubit.cmd('del group n1')
-    print 'initializing group n1'
+    k=cubit.get_id_from_name('n1')
+    if k!=0:
+        cubit.cmd('del group n1')
+    else:
+        print 'initializing group n1'
     cubit.cmd("group 'n1' add node in curve "+icurvestr)
     x=cubit.get_bounding_box('curve', icurve)
     if x[2]>x[5]:
@@ -471,8 +477,11 @@ def get_ordered_node_surf(lsurface,icurve):
                 curve_vertical.append(l)
     #
     kcurve=list2str(curve_vertical)
-    cubit.cmd('del group curve_vertical')
-    print 'initializing group curve_vertical'
+    k=cubit.get_id_from_name('curve_vertical')
+    if k!=0:
+        cubit.cmd('del group curve_vertical')
+    else:
+        print 'initializing group curve_vertical'
     cubit.cmd("group 'curve_vertical' add node in curve "+kcurve)
     group1 = cubit.get_id_from_name('curve_vertical')
     nodes_curve = list(cubit.get_group_nodes(group1))
@@ -596,14 +605,24 @@ def check_bc(iproc,xmin,xmax,ymin,ymax,cpux,cpuy,cpuxmin,cpuxmax,cpuymin,cpuymax
         block=3 #change here..... must be 1 @@@@@@@@@
         ty=None
         ty=cubit.get_block_element_type(block)
-        if ty != 'HEX8': cubit.cmd('del block '+str(block))
+        if ty=='':
+            pass
+        elif ty == 'HEX8':
+            pass
+        else:
+            cubit.cmd('del block '+str(block))
         build_block_side(top_surf,refname,obj=entity,id_0=1001)
         #
         refname=entity+'_bottom'
         block=4 #change here..... must be 2 @@@@@@@@
         ty=None
         ty=cubit.get_block_element_type(block)
-        if ty != 'HEX8': cubit.cmd('del block '+str(block))
+        if ty=='':
+            pass
+        elif ty == 'HEX8':
+            pass
+        else:
+            cubit.cmd('del block '+str(block))
         build_block_side(bottom_surf,refname,obj=entity,id_0=1002)
     #
     #

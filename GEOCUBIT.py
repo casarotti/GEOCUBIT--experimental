@@ -69,4 +69,5 @@ if __name__ == '__main__':
     if menu.export2SPECFEM3D and not menu.collect:
         from geocubitlib.exportlib import e2SEM
         print menu.cubfiles
+        print 'hex27 ',menu.hex27
         e2SEM(files=menu.cubfiles,listblock=menu.listblock,listflag=menu.listflag,outdir=menu.SPECFEM3D_output_dir,hex27=menu.hex27)

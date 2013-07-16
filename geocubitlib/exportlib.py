@@ -33,6 +33,7 @@ except:
         print 'error importing cubit, check if cubit is installed'
         pass
 
+import glob
 
 def add_sea_layer(block=1001,optionsea=False):
     import numpy
@@ -542,13 +543,13 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
 
 
 
-
 def collect(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cubfiles=False,ckbound_method1=False,ckbound_method2=False,merge_tolerance=None,curverefining=False,outfilename='totalmesh_merged',qlog=False,export2SPECFEM3D=False,listblock=None,listflag=None,outdir='.',add_sea=False,decimate=False,cpml=False,cpml_size=False,top_absorbing=False,hex27=False):
     #
-    cubit.cmd('set error off')
+    cubit.cmd('set journal error off')
     cubit.cmd('set verbose error off')
     collecting_merging(cpuxmin,cpuxmax,cpuymin,cpuymax,cpux,cpuy,cubfiles=cubfiles,ckbound_method1=ckbound_method1,ckbound_method2=ckbound_method2,merge_tolerance=merge_tolerance,decimate=decimate)
-    cubit.cmd('set error on')
+    cubit.cmd('set journal error on')
+    cubit.cmd('set verbose error on')
     #
     if curverefining:
         block=1001 #topography
@@ -624,7 +625,7 @@ def e2SEM(files=False,listblock=None,listflag=None,outdir='.',cpml=False,cpml_si
             if 'HEX' in ty:
                 listblock.append(block)
                 #listflag.append(block)
-        listflag=range(1,len(listflag)+1)  
+        listflag=range(1,len(block_list)+1)  
     #       
     for ib,iflag in zip(listblock,listflag):
         cubit.cmd("block "+str(ib)+" attribute count 1")

@@ -345,7 +345,11 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
         if  cfg.osystem == 'macosx':
             pass
         elif cfg.osystem == 'linux':
-            for inz in range(1,cfg.nz):
+            if cfg.nz == 1:
+                nsurface=2
+            else:
+                nsurface=cfg.nz
+            for inz in range(1,nsurface):
                 ner=cubit.get_error_count()
                 cubitcommand= 'create volume loft surface '+ str( inz+1 )+' '+str( inz )
                 cubit.cmd(cubitcommand)

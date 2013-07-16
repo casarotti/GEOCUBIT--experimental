@@ -113,7 +113,7 @@ def mesh_layercake_regularmap(filename=None):
     #
     #
     #interval assignement
-    surf_or,surf_vertical,list_curve_or,list_curve_vertical,bottom,top = get_v_h_list(list_vol,chktopo=cfg.chktop)
+    surf_or,surf_vertical,list_curve_or,list_curve_vertical,bottom,top = get_v_h_list(list_vol,chktop=cfg.chktop)
     print 'vertical surfaces: ',surf_vertical    
     
     for k in surf_vertical:

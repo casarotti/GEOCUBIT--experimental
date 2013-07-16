@@ -365,12 +365,12 @@ class mesh(object,mesh_tools):
         self.rec='receivers'
         self.cpml=cpml
         if cpml:
-            if cmpl_size:
-                self.size=cmpl_size
+            if cpml_size:
+                self.size=cpml_size
             else:
                 print 'please specify cmpl size if you want to use cpml'
         self.top_absorbing=top_absorbing
-        if hex27: cubit.cmd('block all except (block 1001 1002 1003 1004 1005 1006) type hex27')
+        if hex27: cubit.cmd('block all except block 1001 1002 1003 1004 1005 1006 element type hex27')
         self.block_definition()
         self.ngll=5
         self.percent_gll=0.172
@@ -419,7 +419,6 @@ class mesh(object,mesh_tools):
                     #   positive => material properties,
                     #   negative => interface/tomography domain
                     flag=int(cubit.get_block_attribute_value(block,0))
-                    if flag > 2000: flag=-1*flag
                     if 0< flag and nattrib >= 2:
                         vel=cubit.get_block_attribute_value(block,1)
                         if nattrib >= 3:
@@ -427,12 +426,14 @@ class mesh(object,mesh_tools):
                             if nattrib >= 4:
                                 rho=cubit.get_block_attribute_value(block,3)
                                 if nattrib >= 5:
-                                    q=cubit.get_block_attribute_value(block,4)
+                                    qk=cubit.get_block_attribute_value(block,4)
+                                    if nattrib >= 6:
+                                        qmu=cubit.get_block_attribute_value(block,4)
                                     # for q to be valid: it must be positive
-                                    if q < 0 :
-                                      print 'error, q value invalid:', q
+                                    if qk < 0 or qmu<0:
+                                      print 'error, q value invalid:', qk,qmu
                                       break                                                   
-                                    if nattrib == 6:
+                                    if nattrib == 7:
                                         ani=cubit.get_block_attribute_value(block,5)
                     elif flag < 0:
                         vel=name
@@ -445,17 +446,15 @@ class mesh(object,mesh_tools):
                             kind='tomography'
                 elif  nattrib == 1:
                     flag=cubit.get_block_attribute_value(block,0)
-                    if flag > 2000: flag=-1*flag
                     print 'only 1 attribute ', name,block,flag
-                    vel,vs,rho,q,ani=(0,0,0,0,0)
+                    vel,vs,rho,qk,qmu,ani=(0,0,9999.,9999.,0)
                 else:
                     flag=block
-                    if flag > 2000: flag=-1*flag
-                    vel,vs,rho,q,ani=(name,0,0,0,0)
+                    vel,vs,rho,qk,qmu,ani=(name,0,0,9999.,9999.,0)
                 block_flag.append(int(flag))
                 block_mat.append(block)
-                if (flag > 0 or flag < -2000) and nattrib != 1:
-                    par=tuple([imaterial,flag,vel,vs,rho,q,ani])
+                if (flag > 0) and nattrib != 1:
+                    par=tuple([imaterial,flag,vel,vs,rho,qk,qmu,ani])
                 elif flag < 0 and nattrib != 1:
                     if kind=='interface':
                         par=tuple([imaterial,flag,kind,name,flag_down,flag_up])
@@ -546,7 +545,7 @@ class mesh(object,mesh_tools):
     
     def mat_parameter(self,properties): 
         print properties
-        #format nummaterials file: #material_domain_id #material_id #rho #vp #vs #Q_mu #anisotropy_flag
+        #format nummaterials file: #material_domain_id #material_id #rho #vp #vs #Q_kappa #Q_mu #anisotropy_flag
         imaterial=properties[0]
         flag=properties[1]
         print 'prop',flag
@@ -562,25 +561,26 @@ class mesh(object,mesh_tools):
                 txt='%1i %3i %20f %20f %20f %1i %1i\n' % (properties[0],properties[1],rho,vel,vel/(3**.5),0,0)     
             elif type(vel) != str and vel != 0.:
                 try: 
-                    q=properties[5]
+                    qmu=properties[6]
                 except:
-                    q=0.
+                    qmu=9999.
+                try: 
+                    qk=properties[5]
+                except:
+                    qk=9999.
                 try:
-                    ani=properties[6]
+                    ani=properties[7]
                 except:
                     ani=0.
                 #print properties[0],properties[3],properties[1],properties[2],q,ani
-                txt='%1i %3i %20f %20f %20f %20f %20f\n' % (properties[0],properties[1],properties[4],properties[2],properties[3],q,ani)
+                txt='%1i %3i %20f %20f %20f %20f %20f\n' % (properties[0],properties[1],properties[4],properties[2],properties[3],qk,qmu,ani)
             elif type(vel) != str and vel != 0.:
-                helpstring="#material_domain_id #material_id #rho #vp #vs #Q_mu #anisotropy"
+                helpstring="#material_domain_id #material_id #rho #vp #vs #Q_kappa #Q_mu #anisotropy"
                 txt='%1i %3i %s \n' % (properties[0],properties[1],helpstring)
             else:
-                helpstring=" -->       sintax: #material_domain_id #material_id #rho #vp #vs #Q_mu #anisotropy"
+                helpstring=" -->       sintax: #material_domain_id #material_id #rho #vp #vs #Q_kappa #Q_mu #anisotropy"
                 txt='%1i %3i %s %s\n' % (properties[0],properties[1],properties[2],helpstring)
-        elif flag < -2000:
-                helpstring=" -->       sintax: #material_domain_id #material_id #rho #vp #vs"
-                txt='%1i %3i %s %s\n' % (properties[0],properties[1],properties[2],helpstring)
-        elif -2000 < flag < 0:
+        elif flag < 0:
             if properties[2] == 'tomography':
                 txt='%1i %3i %s %s\n' % (properties[0],properties[1],properties[2],properties[3])
             elif properties[2] == 'interface':
@@ -681,22 +681,15 @@ class mesh(object,mesh_tools):
         print '  number of nodes:',str(num_nodes)
         nodecoord.write('%10i\n' % num_nodes)
         #
-        xmin=self.xmin
-        ymin=self.ymin
-        zmin=self.zmin
-        xmax=self.xmax
-        ymax=self.ymax
-        zmax=self.zmax
         
         for node in node_list:
             x,y,z=cubit.get_nodal_coordinates(node)
-            self.xmin,self.xmax=get_extreme(x,xmin,xmax)
-            self.ymin,self.ymax=get_extreme(y,ymin,ymax)
-            self.zmin,self.zmax=get_extreme(z,zmin,zmax)
+            self.xmin,self.xmax=self.get_extreme(x,self.xmin,self.xmax)
+            self.ymin,self.ymax=self.get_extreme(y,self.ymin,self.ymax)
+            self.zmin,self.zmax=self.get_extreme(z,self.zmin,self.zmax)
             txt=('%10i %20f %20f %20f\n') % (node,x,y,z)
             nodecoord.write(txt)
         nodecoord.close()
-        return xmin,xmax,ymin,ymax,zmin,zmax
     def free_write(self,freename=None):
         cubit.cmd('set info off')
         cubit.cmd('set echo off')
@@ -728,18 +721,19 @@ class mesh(object,mesh_tools):
         cubit.cmd('set info on')
         cubit.cmd('set echo on')
     def check_cmpl_size(self,case='x'):
-        if case='x':
+        if case=='x':
             vmaxtmp=self.xmax
             vmintmp=self.xmin
-        elif case='y':
+        elif case=='y':
             vmaxtmp=self.ymax
             vmintmp=self.ymin
-        elif case='z':
+        elif case=='z':
             vmaxtmp=self.zmax
             vmintmp=self.zmin
             
-        if self.size > .3*(vmaxtmp-self.vmintmp):
+        if self.size > .3*(vmaxtmp-vmintmp):
             print 'please select the size of cpml less than 30% of the '+case+' size of the volume'
+            print vmaxtmp-vmintmp,.3*(vmaxtmp-vmintmp)
             print 'cmpl set to false, no '+self.cpmlname+' file will be created'
             return False,False
         else:
@@ -747,9 +741,9 @@ class mesh(object,mesh_tools):
             vmax=vmaxtmp-self.size
         return vmin,vmax
     def select_cpml(self):
-        xmin,xmax=check_cmpl_size(case='x')
-        ymin,ymax=check_cmpl_size(case='y')
-        zmin,zmax=check_cmpl_size(case='z')
+        xmin,xmax=self.check_cmpl_size(case='x')
+        ymin,ymax=self.check_cmpl_size(case='y')
+        zmin,zmax=self.check_cmpl_size(case='z')
         #
         if xmin is False or xmax is False or ymin is False or ymax is False or zmin is False or zmax is False:
             return False
@@ -790,6 +784,20 @@ class mesh(object,mesh_tools):
             cpml_xz=cpml_zmin-cpml_ymin-cpml_ymax-cpml_z
             cpml_yz=cpml_zmin-cpml_xmin-cpml_xmax-cpml_z
             cpml_xyz=cpml_zmin-cpml_xz-cpml_yz-cpml_z
+            txt=' '.join(str(h) for h in cpml_x)
+            cubit.cmd("group 'x_cpml' add hex "+txt)
+            txt=' '.join(str(h) for h in cpml_y)
+            cubit.cmd("group 'y_cpml' add hex "+txt)
+            txt=' '.join(str(h) for h in cpml_z)
+            cubit.cmd("group 'z_cpml' add hex "+txt)
+            txt=' '.join(str(h) for h in cpml_xy)
+            cubit.cmd("group 'xy_cpml' add hex "+txt)
+            txt=' '.join(str(h) for h in cpml_xz)
+            cubit.cmd("group 'xz_cpml' add hex "+txt)
+            txt=' '.join(str(h) for h in cpml_yz)
+            cubit.cmd("group 'yz_cpml' add hex "+txt)            
+            txt=' '.join(str(h) for h in cpml_xyz)
+            cubit.cmd("group 'xyz_cpml' add hex "+txt)
             return cpml_x,cpml_y,cpml_z,cpml_xy,cpml_xz,cpml_yz,cpml_xyz
         
         
@@ -811,9 +819,9 @@ class mesh(object,mesh_tools):
         if self.cpml:
             if not absname: absname=self.cpmlname
             print 'Writing cpml'+absname+'.....'
-            list_hex=cubit.parse_cubit_list('hex','all')
-            list_cpml=select_cpml(self)
+            list_cpml=self.select_cpml()
             if list_cpml is False:
+                print 'error writing cpml files'
                 return
             else:
                 abshex_cpml=open(absname,'w')
@@ -822,26 +830,6 @@ class mesh(object,mesh_tools):
                 for icpml,lcpml in enumerate(list_cpml):
                     for hexa in lcpml:
                         abshex_cpml.write(('%10i %10i\n') % (hexa,icpml))
-                #print self.block_mat
-                #for block in self.block_mat:
-                #    print block, len(cubit.get_block_hexes(block)),hex_all
-                #    if 2000<block<2010:
-                #        hex_count=len(cubit.get_block_hexes(block))
-                #        hex_all=hex_all+hex_count
-                #abshex_cpml.write('%10i #add CPML thickness\n' % (hex_all))
-                #for block in self.block_mat:
-                #    hexes=cubit.get_block_hexes(block)
-                #    if 2000<block<2010: #I assume that the cpml block are numbered between 2001 and 2007
-                #        print block
-                #        hexes=cubit.get_block_hexes(block)
-                #        for hexa in hexes:
-                #            abshex_cpml.write(('%10i %10i\n') % (hexa,block-2000))
-                #    else:
-                #        hexes=cubit.get_block_hexes(block)
-                #        for hexa in hexes:
-                #            abshex_cpml.write(('%10i %10i\n') % (hexa,block))
-                #
-                abshex_cpml.close()
             
             
         stacey_absorb=True
@@ -1001,3 +989,9 @@ def export2SPECFEM3D(path_exporting_mesh_SPECFEM3D='.',hex27=False,cpml=False,cp
     #
     sem_mesh.write(path=path_exporting_mesh_SPECFEM3D)
     print 'END SPECFEM3D exporting process......'
+    if cpml:
+        cmd='save as "cpml.cub" overwrite'
+        cubit.cmd(cmd)
+
+
+

@@ -165,10 +165,12 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
     dcfg['sea_threshold']=False
     dcfg['subduction']=True
     dcfg['subduction_thres']=500
-    dcfg['debugsurface']=False
+    dcfg['debugsurface']=False #if true it creates only the surface not the lofted volumes
     dcfg['lat_orientation']=False
     dcfg['irregulargridded_surf']=False
-    dcfg['chktopo']=False
+    dcfg['chktop']=False
+    dcfg['smoothing']=False
+    dcfg['ntripl']=0
     
     
     dcfg['nsurf'] = None
@@ -183,7 +185,7 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
                 dcfg.update(d)
             except:
                 pass
-                
+        
         if dcfg['nsurf']:
            surface_name=[]
            num_x=[]
@@ -327,6 +329,11 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
     #
     try:
         if isinstance(cfg.tripl,int): cfg.tripl=[cfg.tripl]
+    except:
+        pass
+        
+    try:
+        if isinstance(cfg.iv_interval,int): cfg.iv_interval=[cfg.iv_interval]
     except:
         pass
         
