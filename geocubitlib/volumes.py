@@ -279,7 +279,7 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
                     ivx=0
                     for ix in range(nxmin_cpu,nxmax_cpu+1):
                         zvertex=elev[ix,iy,inz]
-                        zvertex=adjust_sea_layers(zvertex,sealevel,bathymetry,cfg)
+                        #zvertex=adjust_sea_layers(zvertex,sealevel,bathymetry,cfg)
                         x_current,y_current=(coordx[ix,iy],coordy[ix,iy])
                         #
                         vertex.append(' Position '+ str( x_current ) +' '+ str( y_current )+' '+ str( zvertex ) )
