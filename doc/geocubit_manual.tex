@@ -326,7 +326,7 @@ ny=5
     \label{fig:net}
   \end{subfigure}
 
-  \begin{subfigure}{0.4\textwidth}
+  \begin{subfigure}{0.45\textwidth}
     \includegraphics[width=\textwidth,keepaspectratio]{media/strombolisurface.png}
     \caption{Topography of Stromboli volcano (Italy) using the net surface method.}
     \label{fig:stromboli}
@@ -439,10 +439,10 @@ In this example we create a simple layercake box \lstinline|geometry_format=regm
   \end{subfigure}
   \begin{subfigure}{0.45\textwidth}
     \includegraphics[width=\textwidth,keepaspectratio]{media/regrid_coarse.png}
-    \caption{Mesh with \lstinline|coarsening_top_layer=True|. The top layer is remeshed with \lstinline|actual_vertical_interval_top_layer=1| vertical hex sheet.}
+    \caption{\raggedright Mesh with \lstinline|coarsening_top_layer=True|. The top layer is remeshed with \lstinline|actual_vertical_interval_top_layer=1| vertical hex sheet.}
     \label{fig:regrid_coarse}
   \end{subfigure}
-  \caption{Regular mesh with one tripling layer.}
+  \caption{Regular mesh with one tripling layer showing the effect of \lstinline|coarsening_top_layer|.}
   \label{fig:regrid}
 \end{figure}
 
