@@ -23,15 +23,20 @@
 \newcommand{\geocubit}{\textsc{GeoCubit}}
 \newcommand{\specfem}{\textsc{Specfem3D}}
 
-\newenvironment{lyxcode}
-{\par\begin{list}{}{
-\setlength{\rightmargin}{\leftmargin}
-\setlength{\listparindent}{0pt}% needed for AMS classes
-\setlength{\itemsep}{0pt}
-\setlength{\parsep}{0pt}
-\normalfont\ttfamily}% 
-\item[]}
-{\end{list}}
+\definecolor{codebg}{RGB}{238,238,238}
+\definecolor{codeframe}{RGB}{204,204,204}
+\lstset{
+  % The bash style works pretty well for cfg files as well.
+  language=bash,
+  basicstyle=\small\ttfamily,
+  breakatwhitespace=true,
+  breaklines=true,
+  escapechar=\@,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  framesep=10pt,
+  rulecolor=\color{codeframe}
+}
 
 \begin{document}
 
@@ -88,19 +93,20 @@ and for using the parallel meshing capabilities:
 \subsection{Installation}
 
 For installing, download the code and type in the GEOCUBIT directory:
-\begin{lyxcode}
-python2.5 setup.py install~
-\end{lyxcode}
-
-Check that the following variables are set:
-
-\begin{lyxcode}
-CUBITDIR=/usr/local/CUBIT\\
-CUBITLIB=\$CUBITDIR/bin:\$CUBITDIR/structure:\$CUBITDIR/components\\
-PYTHONPATH=\$CUBITDIR/components/cubit:\$CUBITDIR/structure:\$CUBITDIR/bin\\
-LD\_LIBRARY\_PATH=\$CUBITDIR/bin\\
-PATH=\$CUBITDIR/bin:\$CUBITDIR/components/cubit \\
-\end{lyxcode}
+%
+\begin{lstlisting}
+python2.5 setup.py install
+\end{lstlisting}
+%
+and check that the following variables are set:
+%
+\begin{lstlisting}
+CUBITDIR="/usr/local/CUBIT"
+CUBITLIB="$CUBITDIR/bin:$CUBITDIR/structure:$CUBITDIR/components"
+PYTHONPATH="$CUBITDIR/components/cubit:$CUBITDIR/structure:$CUBITDIR/bin"
+LD_LIBRARY_PATH="$CUBITDIR/bin"
+PATH="$CUBITDIR/bin:$CUBITDIR/components/cubit"
+\end{lstlisting}
 
 
 \clearpage
@@ -110,14 +116,14 @@ PATH=\$CUBITDIR/bin:\$CUBITDIR/components/cubit \\
 
 \begin{itemize}
 \item checking the configuration of the libraries and dependencies:
-\begin{lyxcode}
+\begin{lstlisting}
 GEOCUBIT.py --chklib
-\end{lyxcode}
+\end{lstlisting}
 
 \item checking the parameter file:
-\begin{lyxcode}
+\begin{lstlisting}
 GEOCUBIT.py --chkcfg --cfg=[file]
-\end{lyxcode}
+\end{lstlisting}
 \end{itemize}
 
 \subsection{Create Geometry}
@@ -126,32 +132,32 @@ GEOCUBIT.py --chkcfg --cfg=[file]
 
 \begin{itemize}
 \item creating acis surfaces using a parameter file:
-\begin{lyxcode}
- GEOCUBIT.py --build\_surface --cfg=[filename]
-\end{lyxcode}
+\begin{lstlisting}
+ GEOCUBIT.py --build_surface --cfg=[filename]
+\end{lstlisting}
 \end{itemize}
 
 \begin{itemize}
 \item creating a surface from regular ascii grid or ascii lines that define a "skin":
-\begin{lyxcode}
+\begin{lstlisting}
  GEOCUBIT.py --surface=[file] (--regulargrid=[opts] | --skin=[opts])
-\end{lyxcode}
+\end{lstlisting}
 \end{itemize}
 
 \subsubsection{Volumes}
 
 \begin{itemize}
 \item **serial** command: creating \cubit\ volumes using a parameter file:
-\begin{lyxcode}
+\begin{lstlisting}
 GEOCUBIT.py --surface=[file] (--regulargrid=[opts] | --skin=[opts])
-\end{lyxcode}
+\end{lstlisting}
 \end{itemize}
 
 \begin{itemize}
 \item **parallel** command: creating \cubit\ volumes using a parameter file:
-\begin{lyxcode}
-mpirun -n [numproc] pyMPI GEOCUBIT.py --build\_volume --cfg=[file]
-\end{lyxcode}
+\begin{lstlisting}
+mpirun -n [numproc] pyMPI GEOCUBIT.py --build_volume --cfg=[file]
+\end{lstlisting}
 
 
 \begin{figure}
@@ -177,24 +183,21 @@ In this parallel application, the volume is separated in N slices, each one is a
 
 \begin{itemize}
 \item **serial** command: building a volume and meshing it.
-\begin{lyxcode}
-GEOCUBIT.py --build\_volume --mesh --cfg=[file] (--id\_proc=n)
-\end{lyxcode}
-\end{itemize}
+\begin{lstlisting}
+GEOCUBIT.py --build_volume --mesh --cfg=[file] (--id_proc=n)
+\end{lstlisting}
 
-\begin{itemize}
 \item **serial** command : meshing a volume
-\begin{lyxcode}
-GEOCUBIT.py --mesh --cfg=[file] (--id\_proc=[n, def=0])
-\end{lyxcode}
-{\footnotesize note: without the --build\_volume flag the script recall an old "geometry\_vol\_[id\_proc].cub" file}
-\end{itemize}
+\begin{lstlisting}
+GEOCUBIT.py --mesh --cfg=[file] (--id_proc=[n, def=0])
+\end{lstlisting}
 
-\begin{itemize}
+{\footnotesize note: without the \lstinline|--build_volume| flag the script recall an old "\lstinline|geometry_vol_[id_proc].cub|" file}
+
 \item **parallel** command: meshing a volume from a parameter file
-\begin{lyxcode}
-mpirun -n [nproc] pyMPI GEOCUBIT.py --build\_volume --mesh --cfg=[file]
-\end{lyxcode}
+\begin{lstlisting}
+mpirun -n [nproc] pyMPI GEOCUBIT.py --build_volume --mesh --cfg=[file]
+\end{lstlisting}
 \end{itemize}
 
 \subsection{Finalizing and Exporting}
@@ -203,21 +206,20 @@ It is possible to collect, merge, set the absorbing boundary conditions and to e
 \begin{itemize}
 \item
 Collecting some \cubit\ files, setting the absorbing boundary conditions and merging in a single free mesh cubitfile
-\begin{lyxcode}
+\begin{lstlisting}
 GEOCUBIT.py --collect --merge --meshfiles=[files] --cpux=N --cpuy=N (--rangecpux=[cpuxmin,cpuxmax] --rangecpuy=[cpuymin,cpuymax])
-\end{lyxcode}
-\texttt{cpuy, cpux} set the number of cpus used for creating the mesh files; \texttt{rangecpux} and \texttt{rangecpuy} set the range of slices that are used in the mesh.
+\end{lstlisting}
 
-Following the example in Figure~\ref{fig:grid}, the parameters \texttt{--cpux=4 --cpuy=4 --rangecpux=1,2 --rangecpuy=2,3} select the slices with id 10 11 14 15. Only these slices are going to be collect and merged with the appropriated absorbing boundary conditions.
+\lstinline{cpux, cpuy} set the number of cpus used for creating the mesh files; \lstinline{rangecpux} and \lstinline{rangecpuy} set the range of slices that are used in the mesh.
+
+Following the example in Figure~\ref{fig:grid}, the parameters \lstinline{--cpux=4 --cpuy=4 --rangecpux=1,2 --rangecpuy=2,3} select the slices with id $10, 11, 14, 15$. Only these slices are going to be collected and merged with the appropriate absorbing boundary conditions.
 
 \item Collecting a single free mesh cubitfile and refine the hex inside some curves (ex. alluvial basin, Figure~\ref{fig:refcurve})
-\begin{lyxcode}
-GEOCUBIT.py --collect --meshfiles=[list of files] --curverefining=[file]\\
-\end{lyxcode}
+\begin{lstlisting}
+GEOCUBIT.py --collect --meshfiles=[list of files] --curverefining=[file]
+\end{lstlisting}
 
 {\footnotesize note: the curves must be stored in acis format (sat) and must be closed.}
-
-\end{itemize}
 
 \begin{figure}\center
 \includegraphics[scale=.37]{media/refcurve_1.png}%
@@ -227,12 +229,12 @@ GEOCUBIT.py --collect --meshfiles=[list of files] --curverefining=[file]\\
 \label{fig:refcurve}
 \end{figure}
 
-\begin{itemize}
 \item Exporting a \cubit\ mesh file to a \specfem\ mesh
-\begin{lyxcode}
-GEOCUBIT.py --export2SPECFEM3D=[output directory] --meshfiles=[filename] (--listblock=[list of cubit blocks] --listflag=[list of specfem3d flags])
-\end{lyxcode}
-{\footnotesize If required, it is possible to assign personalized flags to each block using --listblock and the correspondent 	listflag (for example: --listblock=3,4 --listflag=1,-1)}
+\begin{lstlisting}
+GEOCUBIT.py --export2SPECFEM3D=[output directory] --meshfiles=[filename] (--listblock=[list of @\cubit@ blocks] --listflag=[list of specfem3d flags])
+\end{lstlisting}
+
+If required, it is possible to assign personalized flags to each block using \lstinline{--listblock} and the corresponding listflag (for example: \lstinline{--listblock=3,4 --listflag=1,-1})
 \end{itemize}
 
 \clearpage
@@ -240,85 +242,76 @@ GEOCUBIT.py --export2SPECFEM3D=[output directory] --meshfiles=[filename] (--list
 
 In the Python script tab of \cubit\ GUI, type:
 
-\begin{lyxcode}
->f="volume.cfg" $\to$  \textrm{\small{\textit{store the name of the configuration file, see next section}}}\\
-\end{lyxcode}
+\begin{lstlisting}
+>f="volume.cfg" # store the name of the configuration file, see next section
 
-\begin{lyxcode}
->from geocubitlib import volumes $\to$  \textrm{\small{\textit{load the geocubit modules}}}\\
->from geocubitlib import mesh\_volume\\
->from geocubitlib import exportlib\\
-\end{lyxcode}
+>from geocubitlib import volumes # load the @\geocubit@ modules
+>from geocubitlib import mesh_volume
+>from geocubitlib import exportlib
 
-\begin{lyxcode}
-volumes.volumes(f) $\to$  \textrm{\small{\textit{create the volumes, the parameters are stored in the cfg file}}}\\
-mesh\_volume.mesh(f) $\to$  \textrm{\small{\textit{mesh the volume}}}\\
-\end{lyxcode}\begin{lyxcode}
-exportlib.collect() $\to$  \textrm{\small{\textit{set the boundary conditions, see SPECFEM3D manual}}}\\
-exportlib.e2SEM(outdir="./output") $\to$  \textrm{\small{\textit{save the mesh in the SPECFEM3D format}}}\\
-\end{lyxcode}
-See the media/iterative.mov for a live example. 
+volumes.volumes(f)  # create the volumes, the parameters are stored in the cfg file
+mesh_volume.mesh(f) # mesh the volume
 
+exportlib.collect()                # set the boundary conditions, see @\specfem@ manual
+exportlib.e2SEM(outdir="./output") # save the mesh in the @\specfem@ format
+\end{lstlisting}
+
+See the \lstinline|media/iterative.mov| for a live example.
 
 \section{Examples of Configuration Files}
 
-In the current section a few configuration files will be described. Please, see the files in the examples directory of the \geocubit\ distribution for reference.
+In the current section a few configuration files will be described. Please see the files in the examples directory of the \geocubit\ distribution for reference.
 
 \subsection{General Options}
 
 A cfg file has a format similar to ini windows files.
-They are divided in \texttt{[sections]}. There is no order in the position or in the name of the sections.
+They are divided in \lstinline{[sections]}. There is no order in the position or in the name of the sections.
 
-Generally, the parameters that control the general options are in the first section, called \texttt{[cubit.options]} and \texttt{[simulation.cpu\_parameters]}. For example:
+Generally, the parameters that control the general options are in the first section, called \lstinline{[cubit.options]} and \lstinline{[simulation.cpu_parameters]}. For example:
 
-\begin{lyxcode}
-[cubit.options]\\
-cubit\_info=off $\to$  \textrm{\small{\textit{turn on/off the information of the cubit command}}}\\
-echo\_info=off $\to$   \textrm{\small{\textit{turn on/off the echo of the cubit command}}}\\
-cubit\_info=off $\to$   \textrm{\small{\textit{turn on/off the cubit journaling}}}\\
-echo\_info=off $\to$   \textrm{\small{\textit{turn on/off the cubit error journaling}}}\\
-working\_dir=tmp $\to$   \textrm{\small{\textit{set the working directory}}}\\
-output\_dir=output $\to$   \textrm{\small{\textit{set the output directory}}}\\
-save\_geometry\_cubit = True $\to$   \textrm{\small{\textit{true if it saves the geometry files}}}\\
-save\_surface\_cubit = False $\to$   \textrm{\small{\textit{true if it saves the surfaces in a cubit files}}}\\
-export\_exodus\_mesh = True $\to$   \textrm{\small{\textit{true if it saves the mesh also in exodus format. The default is the cubit format (cub), that contains both the geometry and the meshing information. In case of complex geometry, the cub file could be enormous and a more light exodus file become important.}}}\\
-\end{lyxcode}
-\begin{lyxcode}
-[simulation.cpu\_parameters]\\
-nodes = 1  $\to$   \textrm{\small{\textit{number of nodes/process}}}\\
+\begin{lstlisting}
+[cubit.options]
+cubit_info=off             # turn on/off the information of the @\cubit@ command
+echo_info=off              # turn on/off the echo of the @\cubit@ command
+cubit_info=off             # turn on/off the @\cubit@ journaling
+echo_info=off              # turn on/off the @\cubit@ error journaling
+working_dir=tmp            # set the working directory
+output_dir=output          # set the output directory
+save_geometry_cubit = True # true if it saves the geometry files
+save_surface_cubit = False # true if it saves the surfaces in a @\cubit@ files
+export_exodus_mesh = True  # true if it saves the mesh also in exodus format. The default is the @\cubit@ format (cub), that contains both the geometry and the meshing information. In case of complex geometry, the cub file could be enormous and a more light exodus file become important.
 
-\end{lyxcode}
+[simulation.cpu_parameters]
+nodes = 1  # number of nodes/process
+\end{lstlisting}
 
-{\footnotesize note: Usually the *\_info options are turn off by default for improving the performances.}
+{\footnotesize note: Usually the \lstinline|*_info| options are turned off by default for improving the performance.}
 
 \subsection{Creating a Topographic Surface}
 
-{\footnotesize See stromboli.cfg, execute with: \verb!GEOCUBIT.py --build\_surface --cfg=./example/stromboli.cfg!}
+{\footnotesize See stromboli.cfg, execute with: \lstinline|GEOCUBIT.py --build_surface --cfg=./example/stromboli.cfg|.}
 
-\geocubit\ is able to create a topographic surface based upon the \cubit\ command \verb!create skin curve! and \verb!create surface net! (Figure~\ref{fig:surfacetype}). See the \cubit\ manual for details.
+\geocubit\ is able to create a topographic surface based upon the \cubit\ command \lstinline|create skin curve| and \lstinline|create surface net| (Figure~\ref{fig:surfacetype}). See the \cubit\ manual for details.
 
-\begin{lyxcode}
+\begin{lstlisting}
 [geometry.surfaces]
-nsurf = 2 $\to$   \textrm{\small{\textit{number of surfaces that will be created}}}\\
-\end{lyxcode}
-\begin{lyxcode}
-[surface\textbf{1}.parameters]\\
-name=example/data/stromboli.xyz  $\to$   \textrm{\small{\textit{the name of the file defining the surface}}}\\
-surf\_type=skin $\to$   \textrm{\small{\textit{the type of surface:} \texttt{skin} \textit{, the file is a sequence of parallel points that span the surface in the order describer by the following direction parameters} \texttt{regular\_grid} \emph{the points are structured distritibuted. see Cubit Manual for details(skin surface and net surface) }}}\\
-unit\_surf= utm $\to$   \textrm{\small{\textit{unit of the points,} \texttt{utm} \emph{or} \texttt{geo} \emph{(geographical) coordinates}}}\\
-directionx = 0 $\to$   \textrm{\small{\textit{if} \texttt{surf\_type=skin}\emph{:} \texttt{directionx} \emph{and} \texttt{directiony} \emph{define how the points span the surface}}}\\
-directiony = 1\\
-step = 1 $\to$   \textrm{\small{\textit{the script creates a vertex each} \texttt{step} \emph{points: in this case} \texttt{step=1} \textit{means a vertex for all the points}}}\\
-\end{lyxcode}
+nsurf = 2 # number of surfaces that will be created
 
-\begin{lyxcode}
-[surface2.parameters] $\to$ \textrm{\small{\emph{note the different number of surface in the section name}}}
-name=./examples/surfaces/topo.dat $\to$   \textrm{\small{\textit{the name of the file defining the surface}}}\\
-surf\_type=regular\_grid $\to$   \textrm{\small{\textit{the type of surface:} \texttt{skin} \textit{, the file is a sequence of parallel points that span the surface in the order describer by the following direction parameters} \texttt{regular\_grid} \emph{the points are structured distritibuted. See see Cubit Manual for details (skin surface and net surface) }}}\\
-unit\_surf= geo $\to$   \textrm{\small{\textit{unit of the points,} \texttt{utm} \emph{or} \texttt{geo} \emph{(geographical) coordinates}}}\\
-nx=5 $\to$   \textrm{\small{\textit{In case of} \texttt{regular\_grid}: \texttt{nx} \emph{and} \texttt{ny} \emph{are the number of points along x and y direction.}}}\\
+[surface1.parameters]
+name=example/data/stromboli.xyz # the name of the file defining the surface
+surf_type=skin # the type of surface: @\texttt{skin}@: the file is a sequence of parallel points that span the surface in the order described by the following direction parameters; @\texttt{regular\_grid}@: the points are structured distributed. See @\cubit@ Manual for details (skin surface and net surface)
+unit_surf = utm # unit of the points, @\texttt{utm}@ or @\texttt{geo}@ (geographical) coordinates
+directionx = 0 # if surf_type=skin: @\texttt{directionx}@ and @\texttt{directiony}@ define how the points span the surface
+directiony = 1
+step = 1 # the script creates a vertex each @\texttt{step}@ points: in this case @\texttt{step=1}@ means a vertex for all the points
+
+[surface2.parameters] # note the different number of surface in the section name
+name=./examples/surfaces/topo.dat # the name of the file defining the surface
+surf_type=regular_grid # the type of surface: @\texttt{skin}@: the file is a sequence of parallel points that span the surface in the order described by the following direction parameters; @\texttt{regular\_grid}@: the points are structured distributed. See see @\cubit@ Manual for details (skin surface and net surface)
+unit_surf= geo # unit of the points, @\texttt{utm}@ or @\texttt{geo}@ (geographical) coordinates
+nx=5 # In case of @\texttt{regular\_grid}@: @\texttt{nx}@ and @\texttt{ny}@ are the number of points along x and y direction.
 ny=5
-\end{lyxcode}
+\end{lstlisting}
 
 \begin{figure}
   \centering
@@ -345,7 +338,7 @@ ny=5
 
 \subsection{Creating and Meshing a Volume}
 
-{\footnotesize see volume.cfg, for executioning: \verb!GEOCUBIT.py --build\_volume --mesh --cfg=./example/volume.cfg!}
+{\footnotesize see volume.cfg, for executioning: \lstinline|GEOCUBIT.py --build_volume --mesh --cfg=./example/volume.cfg|}
 
 The example is for a volume with topography with dimension of the hexahedra increasing with depth by means of a refinement layer (Figure~\ref{fig:volume}).
 
@@ -358,28 +351,24 @@ The example is for a volume with topography with dimension of the hexahedra incr
 \end{center}
 \end{figure}
 
+\begin{lstlisting}
+[geometry.volumes]
+volume_type = layercake_volume_ascii_regulargrid_regularmap
+latitude_min                    = 13.879
+latitude_max                    = 14.279
+longitude_min                   = 40.619
+longitude_max                   = 40.969
+nx = 5
+ny = 5
+unit                            = geo
 
-
-\begin{lyxcode}
-[geometry.volumes]\\
-volume\_type = layercake\_volume\_ascii\_regulargrid\_regularmap\\
-latitude\_min                    = 13.879\\
-latitude\_max                    = 14.279\\
-longitude\_min                   = 40.619\\
-longitude\_max                   = 40.969\\
-nx = 5 \\
-ny = 5\\
-unit                            = geo\\
-\end{lyxcode}
-
-\begin{lyxcode}
-[geometry.volumes.layercake]\\
-nz = 2\\
-bottomflat = True\\
-depth\_bottom = -7000\\
-filename = ./example/topo.dat\\
-geometry\_format=ascii\\
-\end{lyxcode}
+[geometry.volumes.layercake]
+nz = 2
+bottomflat = True
+depth_bottom = -7000
+filename = ./example/topo.dat
+geometry_format=ascii
+\end{lstlisting}
 
 \texttt{nz} is the number of the horizontal surfaces in the volume (in this case: topography and bottom).\\
 \texttt{bottomflat} is True if the bottom is flat.\\
@@ -387,16 +376,16 @@ geometry\_format=ascii\\
 \texttt{filename} is a list of files. Each one defines a surface (in this case there is only the topography file in a regular\_grid format).\\
 \texttt{geometry\_format} is set to ascii since the definition of the surfaces comes from ascii files (structured xyz points). \\
 
-\begin{lyxcode}
-[meshing]\\
-map\_meshing\_type=regularmap\\
-iv\_interval=5, $\to$   \textrm{\small{\textit{if only one value is present, append the comma}}}\\
-size=2000\\
-or\_mesh\_scheme=map\\
-ntripl=1\\
-tripl=2, $\to$   \textrm{\small{\textit{if only one value is present, append the comma}}}\\
-smoothing=False\\
-\end{lyxcode}
+\begin{lstlisting}
+[meshing]
+map_meshing_type=regularmap
+iv_interval=5, # if only one value is present, append the comma
+size=2000
+or_mesh_scheme=map
+ntripl=1
+tripl=2, # if only one value is present, append the comma
+smoothing=False
+\end{lstlisting}
 
 The \texttt{meshing} section contains the parameters request for the meshing process.
 \texttt{map\_meshing\_type} set the meshing scheme and is regularmap by default (other schemes are in preliminary phase).\\
@@ -410,42 +399,42 @@ The \texttt{meshing} section contains the parameters request for the meshing pro
 
 \subsection{Layered Volume and Mesh for Central Italy (in Parallel)}
 
-{\footnotesize In the example abruzzo.cfg, the layers are 2. For execution type: \texttt{mpirun -n 150 GEOCUBIT.py --build\_volume --mesh --cfg=./example/abruzzo.cfg}.}
+In the example abruzzo.cfg, the layers are 2. For execution, type: \lstinline|mpirun -n 150 GEOCUBIT.py --build_volume --mesh --cfg=./example/abruzzo.cfg|.
 
 Comparing the previous cfg files, there are few modifications:
 %
-\begin{lyxcode}
-$\cdots $\\
-nz = 3 \\
-$\cdots $\\
-filename = example/data/moho\_int.xyz,example/data/topo.xyz\\
-$\cdots $\\
-iv\_interval=8,8 (one value for each layer)\\
-$\cdots $\\
-refinement\_depth=1,\\
-\end{lyxcode}
+\begin{lstlisting}
+. . .
+nz = 3
+. . .
+filename = example/data/moho_int.xyz,example/data/topo.xyz
+. . .
+iv_interval=8,8 (one value for each layer)
+. . .
+refinement_depth=1,
+\end{lstlisting}
 
-The volume has \texttt{nz=3} interfaces: bottom, moho, and topography. The bottom is flat and  his z-coordinate position is set by \texttt{depth\_bottom}. 
+The volume has \lstinline|nz=3| interfaces: bottom, moho, and topography. The bottom is flat and its z-coordinate position is set by \lstinline|depth_bottom|.
 The name of the files that storage the data for the other interfaces are listed in \texttt{filename}.
-The interfaces defines 2 geological layers. Each layer has \texttt{iv\_interval=8} "horizontal" hex sheets. There is only a refinement and it is set in the \texttt{refinement\_depth=1} hex sheet, i.e just below the topography (\texttt{refinement\_depth=8} means just below the moho).
+The interfaces defines 2 geological layers. Each layer has \lstinline|iv_interval=8| "horizontal" hex sheets. There is only a refinement and it is set in the \lstinline|refinement_depth=1| hex sheet, i.e just below the topography (\lstinline|refinement_depth=8| means just below the moho).
 
 
 \subsection{Creation of a Regular Mesh}
 
-{\footnotesize In the example grid.cfg, the layers are 3. For execution type: \texttt{GEOCUBIT.py --build\_volume --mesh --cfg=./example/grid.cfg}.}
+In the example grid.cfg, the layers are 3. For execution, type: \lstinline|GEOCUBIT.py --build_volume --mesh --cfg=./example/grid.cfg|.
 
-In this example we create a simple layercake box \texttt{geometry\_format=regmesh} with 3 layers at depth defined by \texttt{zdepth=-7000,-3000,-600,0}. The initial mesh has hex with horizontal size \texttt{size=2000} and the numbers of vertical hex sheets is iv\_interval=3,1,1 respectively for the bottom, middle and top layer. We include a refinement layer (\texttt{ntripl=1}) at \texttt{tripl=2,} interface (the second from the bottom). Since the refinement occurs on the vertical direction, the vertical dimensions of the hexes in the top layer is too small and the quality of the mesh decreases. \texttt{coarsening\_top\_layer=True} remesh the top layer and the number of vertical hex sheet in the vertical is defined by \texttt{actual\_vertical\_interval\_top\_layer=1}. (see Figure~\ref{fig:regrid}) 
+In this example we create a simple layercake box \lstinline|geometry_format=regmesh| with 3 layers at depth defined by \lstinline|zdepth=-7000,-3000,-600,0|. The initial mesh has hex with horizontal size \lstinline|size=2000| and the numbers of vertical hex sheets is \lstinline|iv_interval=3,1,1| respectively for the bottom, middle and top layer. We include a refinement layer (\lstinline|ntripl=1|) at \lstinline|tripl=2,| interface (the second from the bottom). Since the refinement occurs on the vertical direction, the vertical dimensions of the hexes in the top layer is too small and the quality of the mesh decreases. \lstinline|coarsening_top_layer=True| remesh the top layer and the number of vertical hex sheet in the vertical is defined by \lstinline|actual_vertical_interval_top_layer=1|. (see Figure~\ref{fig:regrid})
 
 \begin{figure}
   \centering
   \begin{subfigure}{0.45\textwidth}
     \includegraphics[width=\textwidth,keepaspectratio]{media/regrid.png}
-    \caption{Mesh with \texttt{coarsening\_top\_layer=False}}
+    \caption{Mesh with \lstinline|coarsening_top_layer=False|}
     \label{fig:regrid_nocoarse}
   \end{subfigure}
   \begin{subfigure}{0.45\textwidth}
     \includegraphics[width=\textwidth,keepaspectratio]{media/regrid_coarse.png}
-    \caption{Mesh with \texttt{coarsening\_top\_layer=True}. The top layer is remeshed with \texttt{actual\_vertical\_interval\_top\_layer=1} vertical hex sheet.}
+    \caption{Mesh with \lstinline|coarsening_top_layer=True|. The top layer is remeshed with \lstinline|actual_vertical_interval_top_layer=1| vertical hex sheet.}
     \label{fig:regrid_coarse}
   \end{subfigure}
   \caption{Regular mesh with one tripling layer.}
@@ -467,27 +456,21 @@ TO DO
 \subsection{TODO: Grouping Hexes with Different Resolved Periods}
 
 Checking the stability
-For execution type: \texttt{GEOCUBIT.py --meshfiles=[filename] --stability (--tomofile=[tomographic file]/--vp=[vp text value] --vs=[vs text value])}.
+For execution type: \lstinline|GEOCUBIT.py --meshfiles=[filename] --stability (--tomofile=[tomographic file]/--vp=[vp text value] --vs=[vs text value])|.
 
 Or in the script tab of the \cubit\ GUI, type:
 
-\begin{lyxcode}
->from geocubitlib.hex_metric import SEM_stability_3D $\to$  \textrm{\small{\textit{load the geocubit modules}}}\\
->mesh=SEM_stability_3D()\\
->mesh.check_simulation_parameter(vp_static=vp,vs_static=vs) $\to$  \textrm{\small{\textit{text the mesh against some homogeneous velocity model}}}\\
-or\\
->mesh.check_simulation_parameter(tomofile=tomofile) $\to$  \textrm{\small{\textit{text the mesh against a tomographic file}}}\\
-mesh.group_timestep() $\to$  \textrm{\small{\textit{grouping hex with similar timestep}}}\\
-mesh.group_period() $\to$  \textrm{\small{\textit{grouping hex with similar period}}}\\
-\end{lyxcode}
-
-
+\begin{lstlisting}
+>from geocubitlib.hex_metric import SEM_stability_3D # load the @\geocubit@ modules
+>mesh=SEM_stability_3D()
+>mesh.check_simulation_parameter(vp_static=vp,vs_static=vs) # test the mesh against some homogeneous velocity model
+# or
+>mesh.check_simulation_parameter(tomofile=tomofile) # test the mesh against a tomographic file
+mesh.group_timestep() # grouping hex with similar timestep
+mesh.group_period() # grouping hex with similar period
+\end{lstlisting}
 
 TO DO: picture
-
- 
-
-
 
 \section{TODO: \specfem\ Mesh Format}
 
