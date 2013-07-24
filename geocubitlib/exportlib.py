@@ -33,10 +33,9 @@ except:
         print 'error importing cubit, check if cubit is installed'
         pass
 
-import glob,numpy
+import glob
 
 def add_sea_layer(block=1001,optionsea=False):
-    import numpy
     if optionsea:
             sea=optionsea['sea']
             seaup=optionsea['seaup']
@@ -52,8 +51,7 @@ def add_sea_layer(block=1001,optionsea=False):
     #add sea hex
     #change hex absoorbing....
     block_list=cubit.get_block_id_list()
-    blist=numpy.array(block_list)
-    id_block=blist[blist<1000].max()
+    id_block = max(block for block in block_list if block<1000)
     cubit.cmd('delete block '+str(id_block))
     #sea
     command= 'block '+str(id_block)+' hex in node in face in block '+str(block)+' with Z_coord < '+str(seathres)
@@ -798,15 +796,12 @@ def prepare_equivalence_4(nodes1,nodes2,nodes3,nodes4):
     return factor,minvalue,inv_length
 
 def ording_z(nodes):
-    zstore=numpy.array([])
-    for node in nodes:
-        x,y,z=cubit.get_nodal_coordinates(node)
-        zstore=numpy.append(zstore,z)
-    d=zip(zstore,nodes)
+    def get_z(node):
+        x,y,z = cubit.get_nodal_coordinates(node)
+        return z
+    d = [(get_z(node), node) for node in nodes]
     d.sort()
     return [x[1] for x in d] 
-    
-    
 
 def merge_node_4(n1,n2,n3,n4,newmethod=True):
     if newmethod:
@@ -848,7 +843,3 @@ def merge_node_4(n1,n2,n3,n4,newmethod=True):
                 cubit.cmd(cmd)
                 print 'equivalence '+str(len(inv_length[k]))+' couples of nodes -  tolerance '+str(k*factor+minvalue/2.)
 
-
-
-
-    

@@ -127,7 +127,6 @@ except:
         pass
 
 from utilities import get_cubit_version
-import numpy
 
 class mtools(object):
     def __init__(self,frequency,list_surf,list_vp):
@@ -825,7 +824,7 @@ class mesh(object,mesh_tools):
                 return
             else:
                 abshex_cpml=open(absname,'w')
-                hexcount=numpy.sum(map(len,list_cpml))
+                hexcount=sum(map(len,list_cpml))
                 abshex_cpml.write(('%10i\n') % (hexcount))
                 for icpml,lcpml in enumerate(list_cpml):
                     for hexa in lcpml:

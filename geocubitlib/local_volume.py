@@ -63,11 +63,12 @@ def check_orientation(grdfileNAME):
 def read_irregular_surf(filename):
     "read irregular grid"
     try:
-        x,y,z=numpy.loadtxt(filename,unpack=True)
+        xyz = numpy.loadtxt(filename)
     except:
         txt='error reading '+filename
         raise Exception(txt)
-    gridpoints=numpy.array(zip(x.ravel(),y.ravel()))
+    gridpoints = xyz[:,0:2]
+    z = xyz[:,2]
     return gridpoints,z
     
 def get_interpolated_elevation(point,gridpoints,z,k=1):
@@ -90,7 +91,7 @@ def get_interpolated_elevation(point,gridpoints,z,k=1):
 def create_grid(xmin,xmax,ymin,ymax,xstep,ystep):
     """create regular grid with xmin,xmax by xstep and  ymin,ymax by ystep"""
     x,y=numpy.mgrid[xmin:xmax+xstep/2.:xstep,ymin:ymax+ystep/2.:ystep] #this includes the bounds
-    gridpoints=numpy.array(zip(x.ravel(),y.ravel()))
+    gridpoints = numpy.vstack([x.ravel(), y.ravel()]).T
     return x,y,gridpoints
     
 
@@ -155,15 +156,12 @@ def process_surfacefiles(iproc,nx,ny,nstep,grdfile,unit,lat_orientation):
 
 
 def process_irregular_surfacefiles(iproc,nx,ny,xmin,xmax,ymin,ymax,xstep,ystep,grdfile,unit_surf,lat_orientation):
-    icoord=0
-    
-    elev=numpy.array([])
-    
     gridpoints,z=read_irregular_surf(grdfile)
     coordx,coordy,points=create_grid(xmin,xmax,ymin,ymax,xstep,ystep)
-    for point in points:
-        e=get_interpolated_elevation(point,gridpoints,z,k=4)
-        elev=numpy.append(elev,e)
+
+    elev = numpy.empty([len(points)])
+    for i in xrange(len(points)):
+        elev[i] = get_interpolated_elevation(points[i],gridpoints,z,k=4)
         
     coordx.shape=(nx,ny)
     coordy.shape=(nx,ny)
@@ -252,4 +250,3 @@ def read_grid(filename=None):
           elev[:,:,inz]=top
     return coordx,coordy,elev,nx,ny
 
-    
