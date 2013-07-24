@@ -75,15 +75,8 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
     #
     #get icpuy,icpux values
     if mpiflag:
-        x_slice=numpy.zeros([numproc],int)
-        y_slice=numpy.zeros([numproc],int)
-        for icpuy in range(0,cfg.nproc_eta): 
-            for icpux in range (0,cfg.nproc_xi):
-                iprocnum=icpuy*cfg.nproc_xi+icpux
-                x_slice[iprocnum]=icpux
-                y_slice[iprocnum]=icpuy
-        icpux=x_slice[iproc]
-        icpuy=y_slice[iproc]
+        icpux = iproc % cfg.nproc_xi
+        icpuy = int(iproc / cfg.nproc_xi)
     else:
         icpuy=int(cfg.id_proc/cfg.nproc_xi)
         icpux=cfg.id_proc%cfg.nproc_xi
@@ -385,7 +378,6 @@ def layercake_volume_fromacis_mpiregularmap(filename=None):
     #
     mpiflag,iproc,numproc,mpi   = start.start_mpi()
     #
-    numpy                       = start.start_numpy()
     cfg                         = start.start_cfg(filename=filename)                       
     #
     from utilities import geo2utm, savegeometry
@@ -432,16 +424,8 @@ def layercake_volume_fromacis_mpiregularmap(filename=None):
         cubit.cmd('move surface all x '+str(xmin)+' y '+str(ymin))
         
     if mpiflag:
-        x_slice=numpy.zeros([numproc],int)
-        y_slice=numpy.zeros([numproc],int)
-        for icpuy in range(0,cfg.nproc_eta): 
-            for icpux in range (0,cfg.nproc_xi):
-                iprocnum=icpuy*cfg.nproc_xi+icpux
-                #print iprocnum,cfg.nproc_xi,icpux,icpuy,cfg.nproc_xi,cfg.nproc_eta
-                x_slice[iprocnum]=icpux
-                y_slice[iprocnum]=icpuy
-        icpux=x_slice[iproc]
-        icpuy=y_slice[iproc]
+        icpux = iproc % cfg.nproc_xi
+        icpuy = int(iproc / cfg.nproc_xi)
     else:
         icpuy=int(cfg.id_proc/cfg.nproc_xi)
         icpux=cfg.id_proc%cfg.nproc_xi
