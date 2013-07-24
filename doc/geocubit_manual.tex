@@ -45,22 +45,24 @@
 \clearpage
 \section{Why?}
 
-\geocubit\ is a Python library wrapping around the \href{http://cubit.sandia.gov} {\cubit} Python Interface and it aims to facilitate the meshing
-process in some common problems in seismic wave propagation.\\ 
-In particular, it is focused on the meshing requests of \specfem\ and it is helpful for some tedious tasks as:\\
-
+\geocubit\ is a Python library wrapping around the \href{http://cubit.sandia.gov} {\cubit}
+Python Interface and it aims to facilitate the meshing
+process in some common problems in seismic wave propagation.
+In particular, it is focused on the meshing requests of \specfem\ and it is helpful for such tedious tasks as:
+%
 \begin{itemize}
 \item Creation of geophysical surfaces and volumes (ex. topography).
 \item Mesh of layered volumes with hexahedral.
 \item Creation of an anisotropic mesh suitable for cases where some alluvial
 basin (or slow velocity zones) are present.
-\item It can be used as serial or parallel process. The parallel meshing
+\item It can be used as a serial or parallel process. The parallel meshing
 capabilities are fundamental for large geophysical problems (ex. mesh
 of Southern California using SRTM topography).
 \end{itemize}
-\geocubit\ can be use inside the graphical interface of \cubit\ (i.e.
-as Python object in the script tab) or as unix command. We refer to the \cubit\ help appendix for more information about the Python interface.
 
+\geocubit\ can be used inside the graphical interface of \cubit\ (i.e.
+as a Python object in the script tab) or as unix command. We refer to the
+\cubit\ help appendix for more information about the Python interface.
 
 \clearpage
 \section{First Steps}
@@ -107,12 +109,12 @@ PATH=\$CUBITDIR/bin:\$CUBITDIR/components/cubit \\
 \subsection{Utilities}
 
 \begin{itemize}
-\item checking the configuration of the libraries and dependencies:\\
+\item checking the configuration of the libraries and dependencies:
 \begin{lyxcode}
 GEOCUBIT.py --chklib
 \end{lyxcode}
 
-\item checking the parameter file:\\
+\item checking the parameter file:
 \begin{lyxcode}
 GEOCUBIT.py --chkcfg --cfg=[file]
 \end{lyxcode}
@@ -123,14 +125,14 @@ GEOCUBIT.py --chkcfg --cfg=[file]
 \subsubsection{Surfaces}
 
 \begin{itemize}
-\item creating acis surfaces using a parameter file:\\
+\item creating acis surfaces using a parameter file:
 \begin{lyxcode}
  GEOCUBIT.py --build\_surface --cfg=[filename]
 \end{lyxcode}
 \end{itemize}
 
 \begin{itemize}
-\item creating a surface from regular ascii grid or ascii lines that define a "skin":\\
+\item creating a surface from regular ascii grid or ascii lines that define a "skin":
 \begin{lyxcode}
  GEOCUBIT.py --surface=[file] (--regulargrid=[opts] | --skin=[opts])
 \end{lyxcode}
@@ -139,14 +141,14 @@ GEOCUBIT.py --chkcfg --cfg=[file]
 \subsubsection{Volumes}
 
 \begin{itemize}
-\item **serial** command: creating \cubit\ volumes using a parameter file:\\
+\item **serial** command: creating \cubit\ volumes using a parameter file:
 \begin{lyxcode}
 GEOCUBIT.py --surface=[file] (--regulargrid=[opts] | --skin=[opts])
 \end{lyxcode}
 \end{itemize}
 
 \begin{itemize}
-\item **parallel** command: creating \cubit\ volumes using a parameter file:\\
+\item **parallel** command: creating \cubit\ volumes using a parameter file:
 \begin{lyxcode}
 mpirun -n [numproc] pyMPI GEOCUBIT.py --build\_volume --cfg=[file]
 \end{lyxcode}
@@ -174,22 +176,22 @@ In this parallel application, the volume is separated in N slices, each one is a
 \subsection{Meshing}
 
 \begin{itemize}
-\item **serial** command: building a volume and meshing it.\\
+\item **serial** command: building a volume and meshing it.
 \begin{lyxcode}
 GEOCUBIT.py --build\_volume --mesh --cfg=[file] (--id\_proc=n)
 \end{lyxcode}
 \end{itemize}
 
 \begin{itemize}
-\item **serial** command : meshing a volume\\
+\item **serial** command : meshing a volume
 \begin{lyxcode}
 GEOCUBIT.py --mesh --cfg=[file] (--id\_proc=[n, def=0])
 \end{lyxcode}
-\footnotesize note: without the --build\_volume flag the script recall an old "geometry\_vol\_[id\_proc].cub" file\\
+\footnotesize note: without the --build\_volume flag the script recall an old "geometry\_vol\_[id\_proc].cub" file
 \end{itemize}
 
 \begin{itemize}
-\item **parallel** command: meshing a volume from a parameter file\\
+\item **parallel** command: meshing a volume from a parameter file
 \begin{lyxcode}
 mpirun -n [nproc] pyMPI GEOCUBIT.py --build\_volume --mesh --cfg=[file]
 \end{lyxcode}
@@ -204,13 +206,15 @@ Collecting some \cubit\ files, setting the absorbing boundary conditions and mer
 \begin{lyxcode}
 GEOCUBIT.py --collect --merge --meshfiles=[files] --cpux=N --cpuy=N (--rangecpux=[cpuxmin,cpuxmax] --rangecpuy=[cpuymin,cpuymax])
 \end{lyxcode}
-\texttt{cpuy, cpux} set the number of cpus used for creating the mesh files; \texttt{rangecpux} and \texttt{rangecpuy} set the range of slices that are used in the mesh.\\
+\texttt{cpuy, cpux} set the number of cpus used for creating the mesh files; \texttt{rangecpux} and \texttt{rangecpuy} set the range of slices that are used in the mesh.
+
 Following the example in Figure~\ref{fig:grid}, the parameters \texttt{--cpux=4 --cpuy=4 --rangecpux=1,2 --rangecpuy=2,3} select the slices with id 10 11 14 15. Only these slices are going to be collect and merged with the appropriated absorbing boundary conditions.
 
 \item Collecting a single free mesh cubitfile and refine the hex inside some curves (ex. alluvial basin, Figure~\ref{fig:refcurve})
 \begin{lyxcode}
 GEOCUBIT.py --collect --meshfiles=[list of files] --curverefining=[file]\\
 \end{lyxcode}
+
 \footnotesize note: the curves must be stored in acis format (sat) and must be closed.
 
 \end{itemize}
@@ -257,7 +261,8 @@ See the media/iterative.mov for a live example.
 
 
 \section{Examples of Configuration Files}
-In the current section a few configuration files will be described. Please, see the files in the examples directory of the \geocubit\ distribution for reference.\\
+
+In the current section a few configuration files will be described. Please, see the files in the examples directory of the \geocubit\ distribution for reference.
 
 \subsection{General Options}
 
@@ -284,12 +289,12 @@ nodes = 1  $\to$   \textrm{\small{\textit{number of nodes/process}}}\\
 
 \end{lyxcode}
 
-\footnotesize note: Usually the *\_info options are turn off by default for improving the performances.\normalsize\\
+\footnotesize note: Usually the *\_info options are turn off by default for improving the performances.\normalsize
 
 \subsection{Creating a Topographic Surface}
 
-\footnotesize See stromboli.cfg, execute with: \verb!GEOCUBIT.py --build\_surface --cfg=./example/stromboli.cfg. !\normalsize\\
-~\\
+\footnotesize See stromboli.cfg, execute with: \verb!GEOCUBIT.py --build\_surface --cfg=./example/stromboli.cfg. !\normalsize
+
 \geocubit\ is able to create a topographic surface based upon the \cubit\ command \verb!create skin curve! and \verb!create surface net! (Figure~\ref{fig:surfacetype}). See the \cubit\ manual for details.
 
 \begin{lyxcode}
@@ -340,8 +345,8 @@ ny=5
 
 \subsection{Creating and Meshing a Volume}
 
-\footnotesize see volume.cfg, for executioning: \verb!GEOCUBIT.py --build\_volume --mesh --cfg=./example/volume.cfg !\normalsize\\
-~\\
+\footnotesize see volume.cfg, for executioning: \verb!GEOCUBIT.py --build\_volume --mesh --cfg=./example/volume.cfg !\normalsize
+
 The example is for a volume with topography with dimension of the hexahedra increasing with depth by means of a refinement layer (Figure~\ref{fig:volume}).
 
 \begin{figure}\begin{center}
@@ -405,12 +410,10 @@ The \texttt{meshing} section contains the parameters request for the meshing pro
 
 \subsection{Layered Volume and Mesh for Central Italy (in Parallel)}
 
-\footnotesize In the example abruzzo.cfg, the layers are 2. For execution type: \texttt{mpirun -n 150 GEOCUBIT.py --build\_volume --mesh --cfg=./example/abruzzo.cfg}.\normalsize\\
-~\\
+\footnotesize In the example abruzzo.cfg, the layers are 2. For execution type: \texttt{mpirun -n 150 GEOCUBIT.py --build\_volume --mesh --cfg=./example/abruzzo.cfg}.\normalsize
 
-Comparing the previous cfg files, there are few modification:
-
-
+Comparing the previous cfg files, there are few modifications:
+%
 \begin{lyxcode}
 $\cdots $\\
 nz = 3 \\
@@ -429,8 +432,7 @@ The interfaces defines 2 geological layers. Each layer has \texttt{iv\_interval=
 
 \subsection{Creation of a Regular Mesh}
 
-\footnotesize In the example grid.cfg, the layers are 3. For execution type: \texttt{GEOCUBIT.py --build\_volume --mesh --cfg=./example/grid.cfg}.\normalsize\\
-~\\
+\footnotesize In the example grid.cfg, the layers are 3. For execution type: \texttt{GEOCUBIT.py --build\_volume --mesh --cfg=./example/grid.cfg}.\normalsize
 
 In this example we create a simple layercake box \texttt{geometry\_format=regmesh} with 3 layers at depth defined by \texttt{zdepth=-7000,-3000,-600,0}. The initial mesh has hex with horizontal size \texttt{size=2000} and the numbers of vertical hex sheets is iv\_interval=3,1,1 respectively for the bottom, middle and top layer. We include a refinement layer (\texttt{ntripl=1}) at \texttt{tripl=2,} interface (the second from the bottom). Since the refinement occurs on the vertical direction, the vertical dimensions of the hexes in the top layer is too small and the quality of the mesh decreases. \texttt{coarsening\_top\_layer=True} remesh the top layer and the number of vertical hex sheet in the vertical is defined by \texttt{actual\_vertical\_interval\_top\_layer=1}. (see Figure~\ref{fig:regrid}) 
 
