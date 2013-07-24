@@ -35,17 +35,17 @@
 
 \begin{document}
 
-\title{GEOCUBIT USER MANUAL}
+\title{GEOCUBIT User Manual}
 \author{Emanuele Casarotti}
 
 \maketitle
 
 \tableofcontents
-\newpage{}
 
-\section{WHY}
+\clearpage
+\section{Why?}
 
-GEOCUBIT is a python library wrapping around the \href{http://cubit.sandia.gov} {CUBIT} Python Interface and it aims to facilitate the meshing
+GEOCUBIT is a Python library wrapping around the \href{http://cubit.sandia.gov} {CUBIT} Python Interface and it aims to facilitate the meshing
 process in some common problems in seismic wave propagation.\\ 
 In particular, it is focused on the meshing requests of SPECFEM3D and it is helpful for some tedious tasks as:\\
 
@@ -59,24 +59,26 @@ capabilities are fundamental for large geophysical problems (ex. mesh
 of Southern California using SRTM topography).
 \end{itemize}
 GEOCUBIT can be use inside the graphical interface of \href{http://cubit.sandia.gov} {CUBIT} (i.e.
-as python object in the script tab) or as unix command. We refer to the \href{http://cubit.sandia.gov} {CUBIT} help appendix for more information about the python interface.
+as Python object in the script tab) or as unix command. We refer to the \href{http://cubit.sandia.gov} {CUBIT} help appendix for more information about the Python interface.
 
 
-\newpage{}
-\section{FIRST STEPS}
+\clearpage
+\section{First Steps}
 
 
 \subsection{Requirements}
 
 The minimum requirements for using GEOCUBIT are:
-
+%
 \begin{itemize}
 \item \href{http://cubit.sandia.gov} {CUBIT 12.2}
-\item \href{http://downloads.sourceforge.net/numpy} {numpy 1.0+}
-\item \href{http://www.python.org} {python 2.5}
- (strictly! it depends on the cubit library that refers to this version of python)
+\item \href{http://downloads.sourceforge.net/numpy} {NumPy 1.0+}
+\item \href{http://www.python.org} {Python 2.5}
+ (strictly! it depends on the cubit library that refers to this version of Python)
 \end{itemize}
-\raggedright{and  for using the parallel meshing capabilities:}
+%
+and for using the parallel meshing capabilities:
+%
 \begin{itemize}
 \item \href{http://downloads.sourceforge.net/pympi/pyMPI-2.4b4.tar.gz} {pyMPI}
 \end{itemize}
@@ -99,10 +101,11 @@ PATH=\$CUBITDIR/bin:\$CUBITDIR/components/cubit \\
 \end{lyxcode}
 
 
-\newpage{}
-\section{USING GEOCUBIT AT COMMAND LINE:}
+\clearpage
+\section{Using GEOCUBIT from the Command Line}
 
-\subsection{UTILITIES}
+\subsection{Utilities}
+
 \begin{itemize}
 \item checking the configuration of the libraries and dependencies:\\
 \begin{lyxcode}
@@ -115,8 +118,9 @@ GEOCUBIT.py --chkcfg --cfg=[file]
 \end{lyxcode}
 \end{itemize}
 
-\subsection{CREATE GEOMETRY}
-SURFACES
+\subsection{Create Geometry}
+
+\subsubsection{Surfaces}
 
 \begin{itemize}
 \item creating acis surfaces using a parameter file:\\
@@ -132,7 +136,8 @@ SURFACES
 \end{lyxcode}
 \end{itemize}
 
-VOLUMES
+\subsubsection{Volumes}
+
 \begin{itemize}
 \item **serial** command: creating cubit volumes using a parameter file:\\
 \begin{lyxcode}
@@ -166,7 +171,8 @@ mpirun -n [numproc] pyMPI GEOCUBIT.py --build\_volume --cfg=[file]
 In this parallel application, the volume is separated in N slices, each one is assigned at a single process and one file for each slice is created (see Figure~\ref{fig:grid} as example).
 \end{itemize}
 
-\subsection{MESHING}
+\subsection{Meshing}
+
 \begin{itemize}
 \item **serial** command: building a volume and meshing it.\\
 \begin{lyxcode}
@@ -189,7 +195,7 @@ mpirun -n [nproc] pyMPI GEOCUBIT.py --build\_volume --mesh --cfg=[file]
 \end{lyxcode}
 \end{itemize}
 
-\subsection{FINALIZING AND EXPORTING}
+\subsection{Finalizing and Exporting}
 
 It is possible to collect, merge, set the absorbing boundary conditions and to export the resulting mesh in a format readable by SPECFEM3D.
 \begin{itemize}
@@ -225,8 +231,9 @@ GEOCUBIT.py --export2SPECFEM3D=[output directory] --meshfiles=[filename] (--list
 \footnotesize If required, it is possible to assign personalized flags to each block using --listblock and the correspondent 	listflag (for example: --listblock=3,4 --listflag=1,-1)
 \end{itemize}
 
-\newpage{}
-\section{GEOCUBIT and CUBIT GRAPHICAL INTERFACE}
+\clearpage
+\section{GEOCUBIT and CUBIT Graphical Interface}
+
 In the python script tab of CUBIT GUI, type:
 
 \begin{lyxcode}
@@ -249,10 +256,10 @@ exportlib.e2SEM(outdir="./output") $\to$  \textrm{\small{\textit{save the mesh i
 See the media/iterative.mov for a live example. 
 
 
-\section{EXAMPLES of CONFIGURATION FILES}
+\section{Examples of Configuration Files}
 In the current section a few configuration files will be described. Please, see the files in the examples directory of the GEOCUBIT distribution for reference.\\
 
-\subsection{GENERAL OPTIONS}
+\subsection{General Options}
 
 A cfg file has a format similar to ini windows files.
 They are divided in \texttt{[sections]}. There is no order in the position or in the name of the sections.
@@ -279,7 +286,8 @@ nodes = 1  $\to$   \textrm{\small{\textit{number of nodes/process}}}\\
 
 \footnotesize note: Usually the *\_info options are turn off by default for improving the performances.\normalsize\\
 
-\subsection{CREATING A TOPOGRAPHIC SURFACE}
+\subsection{Creating a Topographic Surface}
+
 \footnotesize See stromboli.cfg, execute with: \verb!GEOCUBIT.py --build\_surface --cfg=./example/stromboli.cfg. !\normalsize\\
 ~\\
 GEOCUBIT is able to create a topographic surface based upon the CUBIT command \verb!create skin curve! and \verb!create surface net! (Figure~\ref{fig:surfacetype}). See the CUBIT manual for details.
@@ -330,7 +338,8 @@ ny=5
 \end{figure}
 
 
-\subsection{CREATING and MESHING A VOLUME}
+\subsection{Creating and Meshing a Volume}
+
 \footnotesize see volume.cfg, for executioning: \verb!GEOCUBIT.py --build\_volume --mesh --cfg=./example/volume.cfg !\normalsize\\
 ~\\
 The example is for a volume with topography with dimension of the hexahedra increasing with depth by means of a refinement layer (Figure~\ref{fig:volume}).
@@ -394,7 +403,7 @@ The \texttt{meshing} section contains the parameters request for the meshing pro
 \texttt{smoothing} performes the smoothing command in Cubit.\\
 
 
-\subsection{LAYERED VOLUME and MESH FOR CENTRAL ITALY (PARALLEL)}
+\subsection{Layered Volume and Mesh for Central Italy (in Parallel)}
 
 \footnotesize In the example abruzzo.cfg, the layers are 2. For execution type: \texttt{mpirun -n 150 GEOCUBIT.py --build\_volume --mesh --cfg=./example/abruzzo.cfg}.\normalsize\\
 ~\\
@@ -418,7 +427,7 @@ The name of the files that storage the data for the other interfaces are listed 
 The interfaces defines 2 geological layers. Each layer has \texttt{iv\_interval=8} "horizontal" hex sheets. There is only a refinement and it is set in the \texttt{refinement\_depth=1} hex sheet, i.e just below the topography (\texttt{refinement\_depth=8} means just below the moho).
 
 
-\subsection{CREATION OF A REGULAR MESH}
+\subsection{Creation of a Regular Mesh}
 
 \footnotesize In the example grid.cfg, the layers are 3. For execution type: \texttt{GEOCUBIT.py --build\_volume --mesh --cfg=./example/grid.cfg}.\normalsize\\
 ~\\
@@ -442,18 +451,18 @@ In this example we create a simple layercake box \texttt{geometry\_format=regmes
 \end{figure}
 
 
-\subsection{TODO: MESH for SOUTHERN CALIFORNIA}
+\subsection{TODO: Mesh for Southern California}
 Mesh with high number of hexes and high resolution topography. Mesh in Parallel.
 
 TO DO
 
 
-\subsection{TODO MESH for SANTA MONICA OVERTRUST}
+\subsection{TODO: Mesh for Santa Monica Overtrust}
 Using part of the mesh for Southern California, stitching together several slices. 
 
 TO DO
 
-\subsection{TODO Grouping the hexes with different period resolved}
+\subsection{TODO: Grouping Hexes with Different Resolved Periods}
 
 Checking the stability
 For execution type: \texttt{GEOCUBIT.py --meshfiles=[filename] --stability (--tomofile=[tomographic file]/--vp=[vp text value] --vs=[vs text value])}.
@@ -480,11 +489,11 @@ TO DO: picture
 
 
 
-\section{TODO SPECFEM3D MESH FORMAT}
+\section{TODO: SPECFEM3D Mesh Format}
 
 TO DO
 
-\section{TODO NOTES ABOUT THE DIMENSION OF THE HEXES, THE MINIMUM PERIOD RESOLVED AND THE TIME STEP OF THE SIMULATION}
+\section{TODO: Notes about the Dimension of the Hexes, the Minimum Period Resolved and the Time Step of the Simulation}
 
 TO DO
 \bibliography{bibliography.bib}
