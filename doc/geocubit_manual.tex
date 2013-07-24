@@ -19,6 +19,9 @@
 \hypersetup{
  pdftex,pdfstartview=FitH,pdfpagelayout=SinglePage}
 
+\newcommand{\cubit}{\textsc{Cubit}}
+\newcommand{\geocubit}{\textsc{GeoCubit}}
+\newcommand{\specfem}{\textsc{Specfem3D}}
 
 \newenvironment{lyxcode}
 {\par\begin{list}{}{
@@ -32,7 +35,7 @@
 
 \begin{document}
 
-\title{GEOCUBIT User Manual}
+\title{\geocubit\ User Manual}
 \author{Emanuele Casarotti}
 
 \maketitle
@@ -42,9 +45,9 @@
 \clearpage
 \section{Why?}
 
-GEOCUBIT is a Python library wrapping around the \href{http://cubit.sandia.gov} {CUBIT} Python Interface and it aims to facilitate the meshing
+\geocubit\ is a Python library wrapping around the \href{http://cubit.sandia.gov} {\cubit} Python Interface and it aims to facilitate the meshing
 process in some common problems in seismic wave propagation.\\ 
-In particular, it is focused on the meshing requests of SPECFEM3D and it is helpful for some tedious tasks as:\\
+In particular, it is focused on the meshing requests of \specfem\ and it is helpful for some tedious tasks as:\\
 
 \begin{itemize}
 \item Creation of geophysical surfaces and volumes (ex. topography).
@@ -55,8 +58,8 @@ basin (or slow velocity zones) are present.
 capabilities are fundamental for large geophysical problems (ex. mesh
 of Southern California using SRTM topography).
 \end{itemize}
-GEOCUBIT can be use inside the graphical interface of \href{http://cubit.sandia.gov} {CUBIT} (i.e.
-as Python object in the script tab) or as unix command. We refer to the \href{http://cubit.sandia.gov} {CUBIT} help appendix for more information about the Python interface.
+\geocubit\ can be use inside the graphical interface of \cubit\ (i.e.
+as Python object in the script tab) or as unix command. We refer to the \cubit\ help appendix for more information about the Python interface.
 
 
 \clearpage
@@ -65,13 +68,13 @@ as Python object in the script tab) or as unix command. We refer to the \href{ht
 
 \subsection{Requirements}
 
-The minimum requirements for using GEOCUBIT are:
+The minimum requirements for using \geocubit\ are:
 %
 \begin{itemize}
-\item \href{http://cubit.sandia.gov} {CUBIT 12.2}
+\item \href{http://cubit.sandia.gov} {\cubit\ 12.2}
 \item \href{http://downloads.sourceforge.net/numpy} {NumPy 1.0+}
 \item \href{http://www.python.org} {Python 2.5}
- (strictly! it depends on the cubit library that refers to this version of Python)
+ (strictly! it depends on the \cubit\ library that refers to this version of Python)
 \end{itemize}
 %
 and for using the parallel meshing capabilities:
@@ -99,7 +102,7 @@ PATH=\$CUBITDIR/bin:\$CUBITDIR/components/cubit \\
 
 
 \clearpage
-\section{Using GEOCUBIT from the Command Line}
+\section{Using \geocubit\ from the Command Line}
 
 \subsection{Utilities}
 
@@ -136,14 +139,14 @@ GEOCUBIT.py --chkcfg --cfg=[file]
 \subsubsection{Volumes}
 
 \begin{itemize}
-\item **serial** command: creating cubit volumes using a parameter file:\\
+\item **serial** command: creating \cubit\ volumes using a parameter file:\\
 \begin{lyxcode}
 GEOCUBIT.py --surface=[file] (--regulargrid=[opts] | --skin=[opts])
 \end{lyxcode}
 \end{itemize}
 
 \begin{itemize}
-\item **parallel** command: creating cubit volumes using a parameter file:\\
+\item **parallel** command: creating \cubit\ volumes using a parameter file:\\
 \begin{lyxcode}
 mpirun -n [numproc] pyMPI GEOCUBIT.py --build\_volume --cfg=[file]
 \end{lyxcode}
@@ -194,10 +197,10 @@ mpirun -n [nproc] pyMPI GEOCUBIT.py --build\_volume --mesh --cfg=[file]
 
 \subsection{Finalizing and Exporting}
 
-It is possible to collect, merge, set the absorbing boundary conditions and to export the resulting mesh in a format readable by SPECFEM3D.
+It is possible to collect, merge, set the absorbing boundary conditions and to export the resulting mesh in a format readable by \specfem.
 \begin{itemize}
 \item
-Collecting some cubit files, setting the absorbing boundary conditions and merging in a single free mesh cubitfile
+Collecting some \cubit\ files, setting the absorbing boundary conditions and merging in a single free mesh cubitfile
 \begin{lyxcode}
 GEOCUBIT.py --collect --merge --meshfiles=[files] --cpux=N --cpuy=N (--rangecpux=[cpuxmin,cpuxmax] --rangecpuy=[cpuymin,cpuymax])
 \end{lyxcode}
@@ -221,7 +224,7 @@ GEOCUBIT.py --collect --meshfiles=[list of files] --curverefining=[file]\\
 \end{figure}
 
 \begin{itemize}
-\item Exporting a cubit mesh file in a SPECFEM3D mesh
+\item Exporting a \cubit\ mesh file to a \specfem\ mesh
 \begin{lyxcode}
 GEOCUBIT.py --export2SPECFEM3D=[output directory] --meshfiles=[filename] (--listblock=[list of cubit blocks] --listflag=[list of specfem3d flags])
 \end{lyxcode}
@@ -229,9 +232,9 @@ GEOCUBIT.py --export2SPECFEM3D=[output directory] --meshfiles=[filename] (--list
 \end{itemize}
 
 \clearpage
-\section{GEOCUBIT and CUBIT Graphical Interface}
+\section{\geocubit\ and \cubit\ Graphical Interface}
 
-In the python script tab of CUBIT GUI, type:
+In the Python script tab of \cubit\ GUI, type:
 
 \begin{lyxcode}
 >f="volume.cfg" $\to$  \textrm{\small{\textit{store the name of the configuration file, see next section}}}\\
@@ -254,7 +257,7 @@ See the media/iterative.mov for a live example.
 
 
 \section{Examples of Configuration Files}
-In the current section a few configuration files will be described. Please, see the files in the examples directory of the GEOCUBIT distribution for reference.\\
+In the current section a few configuration files will be described. Please, see the files in the examples directory of the \geocubit\ distribution for reference.\\
 
 \subsection{General Options}
 
@@ -287,7 +290,7 @@ nodes = 1  $\to$   \textrm{\small{\textit{number of nodes/process}}}\\
 
 \footnotesize See stromboli.cfg, execute with: \verb!GEOCUBIT.py --build\_surface --cfg=./example/stromboli.cfg. !\normalsize\\
 ~\\
-GEOCUBIT is able to create a topographic surface based upon the CUBIT command \verb!create skin curve! and \verb!create surface net! (Figure~\ref{fig:surfacetype}). See the CUBIT manual for details.
+\geocubit\ is able to create a topographic surface based upon the \cubit\ command \verb!create skin curve! and \verb!create surface net! (Figure~\ref{fig:surfacetype}). See the \cubit\ manual for details.
 
 \begin{lyxcode}
 [geometry.surfaces]
@@ -330,7 +333,7 @@ ny=5
     \caption{Topography of Stromboli volcano (Italy) using the net surface method.}
     \label{fig:stromboli}
   \end{subfigure}
-  \caption{Two methods of creating a topographic surface in GEOCUBIT.}
+  \caption{Two methods of creating a topographic surface in \geocubit.}
   \label{fig:surfacetype}
 \end{figure}
 
@@ -394,10 +397,10 @@ The \texttt{meshing} section contains the parameters request for the meshing pro
 \texttt{map\_meshing\_type} set the meshing scheme and is regularmap by default (other schemes are in preliminary phase).\\
 \texttt{iv\_interval} set the number of "horizontal" hex sheets for each layer.
 \texttt{size} is the dimension of hexahedral (horizontally)\\
-\texttt{or\_mesh\_scheme} is the meshing scheme for the topography (\texttt{map} or \texttt{pave} are possible, see the CUBIT manual for more information).\\
+\texttt{or\_mesh\_scheme} is the meshing scheme for the topography (\texttt{map} or \texttt{pave} are possible, see the \cubit\ manual for more information).\\
 \texttt{ntripl} is the number of tripling layer in the mesh (in this case 1).\\
 \texttt{tripl} means in this case that the the refinement layer is located at the second surface (the topography). The surfaces are ordered from the bottom (surface 1) to the top (surface 2).\\
-\texttt{smoothing} performes the smoothing command in Cubit.\\
+\texttt{smoothing} performs the smoothing command in \cubit.\\
 
 
 \subsection{Layered Volume and Mesh for Central Italy (in Parallel)}
@@ -464,9 +467,7 @@ TO DO
 Checking the stability
 For execution type: \texttt{GEOCUBIT.py --meshfiles=[filename] --stability (--tomofile=[tomographic file]/--vp=[vp text value] --vs=[vs text value])}.
 
-or
-
-in the script tab of the CUBIT GUI, type:
+Or in the script tab of the \cubit\ GUI, type:
 
 \begin{lyxcode}
 >from geocubitlib.hex_metric import SEM_stability_3D $\to$  \textrm{\small{\textit{load the geocubit modules}}}\\
@@ -486,7 +487,7 @@ TO DO: picture
 
 
 
-\section{TODO: SPECFEM3D Mesh Format}
+\section{TODO: \specfem\ Mesh Format}
 
 TO DO
 
