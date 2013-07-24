@@ -13,7 +13,7 @@
 \usepackage{babel}
 \usepackage{setspace}
 \usepackage{listings}
-\usepackage{graphicx,subfigure}
+\usepackage{graphicx,subcaption}
 \usepackage{colortbl}
 \usepackage[unicode=true,pdfusetitle,
  bookmarks=true,bookmarksnumbered=true,bookmarksopen=false,
@@ -147,14 +147,20 @@ mpirun -n [numproc] pyMPI GEOCUBIT.py --build\_volume --cfg=[file]
 \end{lyxcode}
 
 
-\begin{figure}\begin{center}
-    \subfigure[]{\includegraphics[scale=.5]{media/geocubitmanual_grid2.jpg}
-    \label{fig:vol}}%
-    \subfigure[]{\includegraphics[scale=.9]{media/geocubitmanual_grid.jpg}
-    \label{fig:table}}%
-\caption{a) Volume divided in slices. b) Parallel map of the IDs for volume in Figure~\ref{fig:vol} divided in (16 slices, 4 along x-axis and 4 along y-axis).}
-\label{fig:grid}
-\end{center}
+\begin{figure}
+  \centering
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth,keepaspectratio]{media/geocubitmanual_grid2.jpg}
+    \caption{Volume divided in slices.}
+    \label{fig:vol}
+  \end{subfigure}
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth,keepaspectratio]{media/geocubitmanual_grid.jpg}
+    \caption{Parallel map of the IDs for volume in Figure~\ref{fig:vol} divided in 16 slices (4 along x-axis and 4 along y-axis).}
+    \label{fig:table}
+  \end{subfigure}
+  \caption{Volume slicing.}
+  \label{fig:grid}
 \end{figure}
 
 In this parallel application, the volume is separated in N slices, each one is assigned at a single process and one file for each slice is created (see Figure~\ref{fig:grid} as example).
@@ -301,16 +307,26 @@ nx=5 $\to$   \textrm{\small{\textit{In case of} \texttt{regular\_grid}: \texttt{
 ny=5
 \end{lyxcode}
 
-\begin{figure}\begin{center}
-    \subfigure[]{\includegraphics[scale=.4]{media/skinsurface.png}
-    \label{fig:skin}}%
-    \subfigure[]{\includegraphics[scale=.4]{media/netsurface.png}
-    \label{fig:net}}%
-    \subfigure[]{\includegraphics[scale=.25]{media/strombolisurface.png}
-    \label{fig:stromboli}}%
-\caption{GEOCUBIT creates a topographic surface in 2 ways: a) skin topography, \texttt{directionx=0} and \texttt{directiony=1}, b) topography from a net of structured distritibuted points, \texttt{nx=4} and \texttt{ny=4}, c) Topography of Stromboli volcano (Italy) using the net surface method.}
-\label{fig:surfacetype}
-\end{center}
+\begin{figure}
+  \centering
+  \begin{subfigure}{0.4\textwidth}
+    \includegraphics[width=\textwidth,keepaspectratio]{media/skinsurface.png}
+    \caption{Skin topography, \texttt{directionx=0} and \texttt{directiony=1}}
+    \label{fig:skin}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \includegraphics[width=\textwidth,keepaspectratio]{media/netsurface.png}
+    \caption{Topography from a net of structured distributed points, \texttt{nx=4} and \texttt{ny=4}}
+    \label{fig:net}
+  \end{subfigure}
+
+  \begin{subfigure}{0.4\textwidth}
+    \includegraphics[width=\textwidth,keepaspectratio]{media/strombolisurface.png}
+    \caption{Topography of Stromboli volcano (Italy) using the net surface method.}
+    \label{fig:stromboli}
+  \end{subfigure}
+  \caption{Two methods of creating a topographic surface in GEOCUBIT.}
+  \label{fig:surfacetype}
 \end{figure}
 
 
@@ -409,14 +425,20 @@ The interfaces defines 2 geological layers. Each layer has \texttt{iv\_interval=
 
 In this example we create a simple layercake box \texttt{geometry\_format=regmesh} with 3 layers at depth defined by \texttt{zdepth=-7000,-3000,-600,0}. The initial mesh has hex with horizontal size \texttt{size=2000} and the numbers of vertical hex sheets is iv\_interval=3,1,1 respectively for the bottom, middle and top layer. We include a refinement layer (\texttt{ntripl=1}) at \texttt{tripl=2,} interface (the second from the bottom). Since the refinement occurs on the vertical direction, the vertical dimensions of the hexes in the top layer is too small and the quality of the mesh decreases. \texttt{coarsening\_top\_layer=True} remesh the top layer and the number of vertical hex sheet in the vertical is defined by \texttt{actual\_vertical\_interval\_top\_layer=1}. (see Figure~\ref{fig:regrid}) 
 
-\begin{figure}\begin{center}
-    \subfigure[]{\includegraphics[scale=.2]{media/regrid.png}
-    \label{fig:regrid_nocoarse}}%
-    \subfigure[]{\includegraphics[scale=.47]{media/regrid_coarse.png}
-    \label{fig:regrid_coarse}}%
-\caption{Regular mesh with one tripling layer, a) mesh with coarsening\_top\_layer=False, b) mesh with \texttt{coarsening\_top\_layer=True}, the top layer is remeshed with \texttt{actual\_vertical\_interval\_top\_layer=1} vertical hex sheet.}
-\label{fig:regrid}
-\end{center}
+\begin{figure}
+  \centering
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth,keepaspectratio]{media/regrid.png}
+    \caption{Mesh with \texttt{coarsening\_top\_layer=False}}
+    \label{fig:regrid_nocoarse}
+  \end{subfigure}
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth,keepaspectratio]{media/regrid_coarse.png}
+    \caption{Mesh with \texttt{coarsening\_top\_layer=True}. The top layer is remeshed with \texttt{actual\_vertical\_interval\_top\_layer=1} vertical hex sheet.}
+    \label{fig:regrid_coarse}
+  \end{subfigure}
+  \caption{Regular mesh with one tripling layer.}
+  \label{fig:regrid}
 \end{figure}
 
 
