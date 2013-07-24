@@ -371,11 +371,13 @@ filename = ./example/topo.dat
 geometry_format=ascii
 \end{lstlisting}
 
-\texttt{nz} is the number of the horizontal surfaces in the volume (in this case: topography and bottom).\\
-\texttt{bottomflat} is True if the bottom is flat.\\
-\texttt{depth\_bottom} is the depth of the bottom.\\
-\texttt{filename} is a list of files. Each one defines a surface (in this case there is only the topography file in a regular\_grid format).\\
-\texttt{geometry\_format} is set to ascii since the definition of the surfaces comes from ascii files (structured xyz points). \\
+\begin{description}
+\item[nz] is the number of the horizontal surfaces in the volume (in this case: topography and bottom).
+\item[bottomflat] is \lstinline|True| if the bottom is flat.
+\item[depth\_bottom] is the depth of the bottom.
+\item[filename] is a list of files. Each one defines a surface (in this case there is only the topography file in a \lstinline|regular_grid| format).
+\item[geometry\_format] is set to \lstinline|ascii| since the definition of the surfaces comes from ASCII files (structured xyz points).
+\end{description}
 
 \begin{lstlisting}
 [meshing]
@@ -388,14 +390,17 @@ tripl=2, # if only one value is present, append the comma
 smoothing=False
 \end{lstlisting}
 
-The \texttt{meshing} section contains the parameters request for the meshing process.
-\texttt{map\_meshing\_type} set the meshing scheme and is regularmap by default (other schemes are in preliminary phase).\\
-\texttt{iv\_interval} set the number of "horizontal" hex sheets for each layer.
-\texttt{size} is the dimension of hexahedral (horizontally)\\
-\texttt{or\_mesh\_scheme} is the meshing scheme for the topography (\texttt{map} or \texttt{pave} are possible, see the \cubit\ manual for more information).\\
-\texttt{ntripl} is the number of tripling layer in the mesh (in this case 1).\\
-\texttt{tripl} means in this case that the the refinement layer is located at the second surface (the topography). The surfaces are ordered from the bottom (surface 1) to the top (surface 2).\\
-\texttt{smoothing} performs the smoothing command in \cubit.\\
+The \lstinline|[meshing]| section contains the parameters requested for the meshing process.
+
+\begin{description}
+\item[map\_meshing\_type] sets the meshing scheme and is \lstinline|regularmap| by default (other schemes are in preliminary phase).
+\item[iv\_interval] sets the number of "horizontal" hex sheets for each layer.
+\item[size] is the dimension of hexahedral (horizontally).
+\item[or\_mesh\_scheme] is the meshing scheme for the topography (\lstinline|map| or \lstinline|pave| are possible, see the \cubit\ manual for more information).
+\item[ntripl] is the number of tripling layer in the mesh (in this case 1).
+\item[tripl] means in this case that the refinement layer is located at the second surface (the topography). The surfaces are ordered from the bottom (surface 1) to the top (surface 2).
+\item[smoothing] performs the smoothing command in \cubit.
+\end{description}
 
 
 \subsection{Layered Volume and Mesh for Central Italy (in Parallel)}
