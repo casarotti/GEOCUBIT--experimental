@@ -1,31 +1,43 @@
-build/*
 
-*.pyc
+# Editor files
+*~
+.*.sw?
 
-build/lib/GEOCUBIT.py
+# Python files
+*.py[cod]
+build/
 
-build/scripts-2.5/GEOCUBIT.py
+# LaTeX docs
+*.acn
+*.acr
+*.alg
+*.aux
+*.bbl
+*.blg
+*.dvi
+*.fdb_latexmk
+*.glg
+*.glo
+*.gls
+*.idx
+*.ilg
+*.ind
+*.ist
+*.lof
+*.log
+*.lot
+*.maf
+*.mtc
+*.mtc0
+*.nav
+*.nlo
+*.out
+*.pdfsync
+*.ps
+*.snm
+*.synctex.gz
+*.toc
+*.vrb
+*.xdy
+*.tdo
 
-build/lib/geocubitlib/volumes.py
-
-build/lib/geocubitlib/utilities.py
-
-build/lib/geocubitlib/utilities.py
-
-build/lib/geocubitlib/start.py
-
-build/lib/geocubitlib/read_parameter_cfg.py
-
-build/lib/geocubitlib/mesh_volume.py
-
-build/lib/geocubitlib/menu.py
-
-build/lib/geocubitlib/local_volume.py
-
-build/lib/geocubitlib/exportlib.py
-
-build/lib/geocubitlib/cubit2specfem3d.py
-
-build/lib/geocubitlib/boundary_definition.py
-
-build/lib/geocubitlib/boundary_definition.py
