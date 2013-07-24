@@ -187,7 +187,7 @@ GEOCUBIT.py --build\_volume --mesh --cfg=[file] (--id\_proc=n)
 \begin{lyxcode}
 GEOCUBIT.py --mesh --cfg=[file] (--id\_proc=[n, def=0])
 \end{lyxcode}
-\footnotesize note: without the --build\_volume flag the script recall an old "geometry\_vol\_[id\_proc].cub" file
+{\footnotesize note: without the --build\_volume flag the script recall an old "geometry\_vol\_[id\_proc].cub" file}
 \end{itemize}
 
 \begin{itemize}
@@ -215,7 +215,7 @@ Following the example in Figure~\ref{fig:grid}, the parameters \texttt{--cpux=4 
 GEOCUBIT.py --collect --meshfiles=[list of files] --curverefining=[file]\\
 \end{lyxcode}
 
-\footnotesize note: the curves must be stored in acis format (sat) and must be closed.
+{\footnotesize note: the curves must be stored in acis format (sat) and must be closed.}
 
 \end{itemize}
 
@@ -232,7 +232,7 @@ GEOCUBIT.py --collect --meshfiles=[list of files] --curverefining=[file]\\
 \begin{lyxcode}
 GEOCUBIT.py --export2SPECFEM3D=[output directory] --meshfiles=[filename] (--listblock=[list of cubit blocks] --listflag=[list of specfem3d flags])
 \end{lyxcode}
-\footnotesize If required, it is possible to assign personalized flags to each block using --listblock and the correspondent 	listflag (for example: --listblock=3,4 --listflag=1,-1)
+{\footnotesize If required, it is possible to assign personalized flags to each block using --listblock and the correspondent 	listflag (for example: --listblock=3,4 --listflag=1,-1)}
 \end{itemize}
 
 \clearpage
@@ -289,11 +289,11 @@ nodes = 1  $\to$   \textrm{\small{\textit{number of nodes/process}}}\\
 
 \end{lyxcode}
 
-\footnotesize note: Usually the *\_info options are turn off by default for improving the performances.\normalsize
+{\footnotesize note: Usually the *\_info options are turn off by default for improving the performances.}
 
 \subsection{Creating a Topographic Surface}
 
-\footnotesize See stromboli.cfg, execute with: \verb!GEOCUBIT.py --build\_surface --cfg=./example/stromboli.cfg. !\normalsize
+{\footnotesize See stromboli.cfg, execute with: \verb!GEOCUBIT.py --build\_surface --cfg=./example/stromboli.cfg!}
 
 \geocubit\ is able to create a topographic surface based upon the \cubit\ command \verb!create skin curve! and \verb!create surface net! (Figure~\ref{fig:surfacetype}). See the \cubit\ manual for details.
 
@@ -345,7 +345,7 @@ ny=5
 
 \subsection{Creating and Meshing a Volume}
 
-\footnotesize see volume.cfg, for executioning: \verb!GEOCUBIT.py --build\_volume --mesh --cfg=./example/volume.cfg !\normalsize
+{\footnotesize see volume.cfg, for executioning: \verb!GEOCUBIT.py --build\_volume --mesh --cfg=./example/volume.cfg!}
 
 The example is for a volume with topography with dimension of the hexahedra increasing with depth by means of a refinement layer (Figure~\ref{fig:volume}).
 
@@ -410,7 +410,7 @@ The \texttt{meshing} section contains the parameters request for the meshing pro
 
 \subsection{Layered Volume and Mesh for Central Italy (in Parallel)}
 
-\footnotesize In the example abruzzo.cfg, the layers are 2. For execution type: \texttt{mpirun -n 150 GEOCUBIT.py --build\_volume --mesh --cfg=./example/abruzzo.cfg}.\normalsize
+{\footnotesize In the example abruzzo.cfg, the layers are 2. For execution type: \texttt{mpirun -n 150 GEOCUBIT.py --build\_volume --mesh --cfg=./example/abruzzo.cfg}.}
 
 Comparing the previous cfg files, there are few modifications:
 %
@@ -432,7 +432,7 @@ The interfaces defines 2 geological layers. Each layer has \texttt{iv\_interval=
 
 \subsection{Creation of a Regular Mesh}
 
-\footnotesize In the example grid.cfg, the layers are 3. For execution type: \texttt{GEOCUBIT.py --build\_volume --mesh --cfg=./example/grid.cfg}.\normalsize
+{\footnotesize In the example grid.cfg, the layers are 3. For execution type: \texttt{GEOCUBIT.py --build\_volume --mesh --cfg=./example/grid.cfg}.}
 
 In this example we create a simple layercake box \texttt{geometry\_format=regmesh} with 3 layers at depth defined by \texttt{zdepth=-7000,-3000,-600,0}. The initial mesh has hex with horizontal size \texttt{size=2000} and the numbers of vertical hex sheets is iv\_interval=3,1,1 respectively for the bottom, middle and top layer. We include a refinement layer (\texttt{ntripl=1}) at \texttt{tripl=2,} interface (the second from the bottom). Since the refinement occurs on the vertical direction, the vertical dimensions of the hexes in the top layer is too small and the quality of the mesh decreases. \texttt{coarsening\_top\_layer=True} remesh the top layer and the number of vertical hex sheet in the vertical is defined by \texttt{actual\_vertical\_interval\_top\_layer=1}. (see Figure~\ref{fig:regrid}) 
 
