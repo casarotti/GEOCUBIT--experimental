@@ -169,14 +169,14 @@ mpirun -n [numproc] pyMPI GEOCUBIT.py --build_volume --cfg=[file]
   \end{subfigure}
   \begin{subfigure}{0.45\textwidth}
     \includegraphics[width=\textwidth,keepaspectratio]{media/geocubitmanual_grid.jpg}
-    \caption{Parallel map of the IDs for volume in Figure~\ref{fig:vol} divided in 16 slices (4 along x-axis and 4 along y-axis).}
+    \caption{Parallel map of the IDs for volume in \autoref{fig:vol} divided in 16 slices (4 along x-axis and 4 along y-axis).}
     \label{fig:table}
   \end{subfigure}
   \caption{Volume slicing.}
   \label{fig:grid}
 \end{figure}
 
-In this parallel application, the volume is separated in N slices, each one is assigned at a single process and one file for each slice is created (see Figure~\ref{fig:grid} as example).
+In this parallel application, the volume is separated in N slices, each one is assigned at a single process and one file for each slice is created (see \autoref{fig:grid} as example).
 \end{itemize}
 
 \subsection{Meshing}
@@ -212,9 +212,9 @@ GEOCUBIT.py --collect --merge --meshfiles=[files] --cpux=N --cpuy=N (--rangecpux
 
 \lstinline{cpux, cpuy} set the number of cpus used for creating the mesh files; \lstinline{rangecpux} and \lstinline{rangecpuy} set the range of slices that are used in the mesh.
 
-Following the example in Figure~\ref{fig:grid}, the parameters \lstinline{--cpux=4 --cpuy=4 --rangecpux=1,2 --rangecpuy=2,3} select the slices with id $10, 11, 14, 15$. Only these slices are going to be collected and merged with the appropriate absorbing boundary conditions.
+Following the example in \autoref{fig:grid}, the parameters \lstinline{--cpux=4 --cpuy=4 --rangecpux=1,2 --rangecpuy=2,3} select the slices with id $10, 11, 14, 15$. Only these slices are going to be collected and merged with the appropriate absorbing boundary conditions.
 
-\item Collecting a single free mesh cubitfile and refine the hex inside some curves (ex. alluvial basin, Figure~\ref{fig:refcurve})
+\item Collecting a single free mesh cubitfile and refine the hex inside some curves (ex. alluvial basin, \autoref{fig:refcurve})
 \begin{lstlisting}
 GEOCUBIT.py --collect --meshfiles=[list of files] --curverefining=[file]
 \end{lstlisting}
@@ -291,7 +291,7 @@ nodes = 1  # number of nodes/process
 
 {\footnotesize See stromboli.cfg, execute with: \lstinline|GEOCUBIT.py --build_surface --cfg=./example/stromboli.cfg|.}
 
-\geocubit\ is able to create a topographic surface based upon the \cubit\ command \lstinline|create skin curve| and \lstinline|create surface net| (Figure~\ref{fig:surfacetype}). See the \cubit\ manual for details.
+\geocubit\ is able to create a topographic surface based upon the \cubit\ command \lstinline|create skin curve| and \lstinline|create surface net| (\autoref{fig:surfacetype}). See the \cubit\ manual for details.
 
 \begin{lstlisting}
 [geometry.surfaces]
@@ -340,7 +340,7 @@ ny=5
 
 {\footnotesize see volume.cfg, for executioning: \lstinline|GEOCUBIT.py --build_volume --mesh --cfg=./example/volume.cfg|}
 
-The example is for a volume with topography with dimension of the hexahedra increasing with depth by means of a refinement layer (Figure~\ref{fig:volume}).
+The example is for a volume with topography with dimension of the hexahedra increasing with depth by means of a refinement layer (\autoref{fig:volume}).
 
 \begin{figure}\begin{center}
 \includegraphics[scale=.4]{media/geometryvolume.png}%
@@ -423,7 +423,7 @@ The interfaces defines 2 geological layers. Each layer has \lstinline|iv_interva
 
 In the example grid.cfg, the layers are 3. For execution, type: \lstinline|GEOCUBIT.py --build_volume --mesh --cfg=./example/grid.cfg|.
 
-In this example we create a simple layercake box \lstinline|geometry_format=regmesh| with 3 layers at depth defined by \lstinline|zdepth=-7000,-3000,-600,0|. The initial mesh has hex with horizontal size \lstinline|size=2000| and the numbers of vertical hex sheets is \lstinline|iv_interval=3,1,1| respectively for the bottom, middle and top layer. We include a refinement layer (\lstinline|ntripl=1|) at \lstinline|tripl=2,| interface (the second from the bottom). Since the refinement occurs on the vertical direction, the vertical dimensions of the hexes in the top layer is too small and the quality of the mesh decreases. \lstinline|coarsening_top_layer=True| remesh the top layer and the number of vertical hex sheet in the vertical is defined by \lstinline|actual_vertical_interval_top_layer=1|. (see Figure~\ref{fig:regrid})
+In this example we create a simple layercake box \lstinline|geometry_format=regmesh| with 3 layers at depth defined by \lstinline|zdepth=-7000,-3000,-600,0|. The initial mesh has hex with horizontal size \lstinline|size=2000| and the numbers of vertical hex sheets is \lstinline|iv_interval=3,1,1| respectively for the bottom, middle and top layer. We include a refinement layer (\lstinline|ntripl=1|) at \lstinline|tripl=2,| interface (the second from the bottom). Since the refinement occurs on the vertical direction, the vertical dimensions of the hexes in the top layer is too small and the quality of the mesh decreases. \lstinline|coarsening_top_layer=True| remesh the top layer and the number of vertical hex sheet in the vertical is defined by \lstinline|actual_vertical_interval_top_layer=1|. (see \autoref{fig:regrid})
 
 \begin{figure}
   \centering
