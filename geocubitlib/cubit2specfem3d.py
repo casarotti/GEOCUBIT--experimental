@@ -842,6 +842,7 @@ class mesh(object,mesh_tools):
                     name=cubit.get_exodus_entity_name('block',block)
                     print '  block name:',name,'id:',block
                     cknormal=True
+                    abshex_local=False
                     if re.search('xmin',name):
                         print 'xmin'
                         abshex_local=open(absname+'_xmin','w')
@@ -889,24 +890,25 @@ class mesh(object,mesh_tools):
                             normal=(0,0,-1)
                     #
                     #
-                    quads_all=cubit.get_block_faces(block)
-                    dic_quads_all=dict(zip(quads_all,quads_all))
-                    print '  number of faces = ',len(quads_all)
-                    abshex_local.write('%10i\n' % len(quads_all))
-                    #command = "group 'list_hex' add hex in face "+str(quads_all)
-                    #command = command.replace("["," ").replace("]"," ").replace("("," ").replace(")"," ")
-                    #cubit.cmd(command)
-                    #group=cubit.get_id_from_name("list_hex")
-                    #list_hex=cubit.get_group_hexes(group)
-                    #command = "delete group "+ str(group)
-                    #cubit.cmd(command)
-                    for h in list_hex:
-                        faces=cubit.get_sub_elements('hex',h,2)
-                        for f in faces:
-                            if dic_quads_all.has_key(f):
-                                txt=self.create_facenode_string(h,f,normal=normal,cknormal=True)
-                                abshex_local.write(txt)
-                    abshex_local.close()   
+                    if abshex_local:
+                        quads_all=cubit.get_block_faces(block)
+                        dic_quads_all=dict(zip(quads_all,quads_all))
+                        print '  number of faces = ',len(quads_all)
+                        abshex_local.write('%10i\n' % len(quads_all))
+                        #command = "group 'list_hex' add hex in face "+str(quads_all)
+                        #command = command.replace("["," ").replace("]"," ").replace("("," ").replace(")"," ")
+                        #cubit.cmd(command)
+                        #group=cubit.get_id_from_name("list_hex")
+                        #list_hex=cubit.get_group_hexes(group)
+                        #command = "delete group "+ str(group)
+                        #cubit.cmd(command)
+                        for h in list_hex:
+                            faces=cubit.get_sub_elements('hex',h,2)
+                            for f in faces:
+                                if dic_quads_all.has_key(f):
+                                    txt=self.create_facenode_string(h,f,normal=normal,cknormal=cknormal)
+                                    abshex_local.write(txt)
+                        abshex_local.close()   
             cubit.cmd('set info on')
             cubit.cmd('set echo on')
     def surface_write(self,pathdir=None):
