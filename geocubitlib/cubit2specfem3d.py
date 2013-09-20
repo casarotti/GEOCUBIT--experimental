@@ -361,6 +361,7 @@ class mesh(object,mesh_tools):
         self.hex27=hex27
         self.edge='BAR2'
         self.topo='face_topo'
+        self.freetxt='free'
         self.rec='receivers'
         self.cpml=cpml
         if cpml:
@@ -462,11 +463,18 @@ class mesh(object,mesh_tools):
                 elif flag==0 or nattrib == 1:
                     par=tuple([imaterial,flag,name])
                 material[block]=par
-            elif ty == self.face: #Stacey condition, we need hex here for pml
+            elif ty == self.face:
                 block_bc_flag.append(4)
                 block_bc.append(block)
                 bc[block]=4 #face has connectivity = 4
-                if name == self.topo or block == 1001: topography_face=block
+                if name == self.topo or block == 1001: 
+                    topography_face=block
+                else:
+                    topography_face=None
+                if self.freetxt in name:
+                    free_face=block
+                else:
+                    free_face=None
             elif ty == 'SPHERE':
                 pass
             else:
@@ -494,13 +502,13 @@ class mesh(object,mesh_tools):
             else:
                 print 'nodeset '+name+' not defined'
                 self.receivers=None
-        print block_mat
-        print block_flag
-        print block_bc
-        print block_bc_flag
-        print material
-        print bc
-        print topography_face
+        #print block_mat
+        #print block_flag
+        #print block_bc
+        #print block_bc_flag
+        #print material
+        #print bc
+        #print topography_face
         #
         try:
             self.block_mat=block_mat
@@ -510,6 +518,7 @@ class mesh(object,mesh_tools):
             self.material=material
             self.bc=bc
             self.topography=topography_face
+            self.free=free_face
         except:
             print '****************************************'
             print 'sorry, no blocks or blocks not properly defined'
@@ -716,7 +725,23 @@ class mesh(object,mesh_tools):
                             #print f
                             txt=self.create_facenode_string(h,f,normal,cknormal=True)
                             freehex.write(txt)
-                freehex.close()   
+                freehex.close()
+            elif block == self.free: 
+                name=cubit.get_exodus_entity_name('block',block)
+                print '  block name:',name,'id:',block
+                quads_all=cubit.get_block_faces(block)
+                print '  number of faces = ',len(quads_all)
+                dic_quads_all=dict(zip(quads_all,quads_all))
+                freehex.write('%10i\n' % len(quads_all))
+                list_hex=cubit.parse_cubit_list('hex','all')
+                for h in list_hex:
+                    faces=cubit.get_sub_elements('hex',h,2)
+                    for f in faces:
+                        if dic_quads_all.has_key(f):
+                            #print f
+                            txt=self.create_facenode_string(h,f,normal,cknormal=False)
+                            freehex.write(txt)
+                freehex.close()
         cubit.cmd('set info on')
         cubit.cmd('set echo on')
     def check_cmpl_size(self,case='x'):
