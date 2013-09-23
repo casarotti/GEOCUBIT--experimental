@@ -85,8 +85,12 @@ try:
     opts, args = getopt.getopt(sys.argv[1:], "sjmohbp1", ["hex27","cpml_size=","top_absorbing","cpml","decimate","addsea","SEMoutput=","qlog","mfast","curverefining=","output=","rangecpux=","rangecpuy=","equivalence","listflag=","listblock=","cpux=","cpuy=","exofiles=","partitioner","plane","x1=","x2=","x3=","x4=","unit=","chkcfg","mat=","merge_tolerance=","export2SPECFEM3D","mesh","chklib","cfg=","job=","basin","help", "id_proc=", "surface=","script","jou","strat","MPI","regulargrid=",'skin=',"build_surface","build_volume","merge1","merge2","merge","collect","meshfiles="])
     print opts, args
 except Exception,e:
-    usage()
-    print e
+    #if 'argv' in e:
+    #    pass
+    #else:
+    #    if '__console__' != __name__: #if you are in the cubitGUI/pythonprompt you don't want usage()
+    #        usage()
+    #        print e
     sys.exit()
     
 output='totalmesh_merged'
