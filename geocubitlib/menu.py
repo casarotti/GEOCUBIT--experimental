@@ -220,6 +220,13 @@ if opts:
             sys.exit()
         if o in ("--cfg"):
             cfg_name=value
+            try:
+               if open(cfg_name): pass
+            except IOError,e:
+               print 'error opening ',cfg_name
+               print e
+               import sys
+               sys.exit()
         if o == ('--surface'):
             surface=True
             surface_name=value
