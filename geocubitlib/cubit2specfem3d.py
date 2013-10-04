@@ -358,7 +358,12 @@ class mesh(object,mesh_tools):
         else:
             self.face='QUAD4'
         self.hex='HEX'
-        self.hex27=hex27
+        if version_cubit <= 13:
+            if hex27: 
+                print "ATTENTION **********************\n\nCubit <= 12.2 doesn't support HEX27\nassuming HEX8 .....\n\n"
+            self.hex27=False
+        else:
+            self.hex27=hex27
         self.edge='BAR2'
         self.topo='face_topo'
         self.topography=None
@@ -539,6 +544,7 @@ class mesh(object,mesh_tools):
                 cubit.silent_cmd('group "nh" add Node in hex '+str(ind))
                 group1 = cubit.get_id_from_name("nh")
                 result=cubit.get_group_nodes(group1)
+                if len(result) != 27: print 'error hex27'
                 cubit.cmd('del group '+str(group1))
         else:
             result=cubit.get_connectivity('hex',ind)
