@@ -335,20 +335,17 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
     #
     #!create volume
     if not cfg.debugsurface:
-        if  cfg.osystem == 'macosx':
-            pass
-        elif cfg.osystem == 'linux':
-            if cfg.nz == 1:
-                nsurface=2
-            else:
-                nsurface=cfg.nz
-            for inz in range(1,nsurface):
-                ner=cubit.get_error_count()
-                cubitcommand= 'create volume loft surface '+ str( inz+1 )+' '+str( inz )
-                cubit.cmd(cubitcommand)
-                ner2=cubit.get_error_count()
-                isurf=isurf+6
-        if ner == ner2:
+        if cfg.nz == 1:
+            nsurface=2
+        else:
+            nsurface=cfg.nz
+        for inz in range(1,nsurface):
+            ner=cubit.get_error_count()
+            cubitcommand= 'create volume loft surface '+ str( inz+1 )+' '+str( inz )
+            cubit.cmd(cubitcommand)
+            ner2=cubit.get_error_count()
+            isurf=isurf+6
+        if ner == ner2 and not cfg.debug_geometry:
             cubitcommand= 'del surface 1 to '+ str( cfg.nz )
             cubit.cmd(cubitcommand)
             list_vol=cubit.parse_cubit_list("volume","all")
