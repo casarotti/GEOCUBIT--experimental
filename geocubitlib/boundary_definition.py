@@ -604,27 +604,27 @@ def check_bc(iproc,xmin,xmax,ymin,ymax,cpux,cpuy,cpuxmin,cpuxmax,cpuymin,cpuymax
             build_block_side(abs_ymax,refname,obj=entity,id_0=1006)
         ##
         refname=entity+'_topo'
-        block=3 #change here..... must be 1 @@@@@@@@@
-        ty=None
-        ty=cubit.get_block_element_type(block)
-        if ty=='':
-            pass
-        elif ty == 'HEX8':
-            pass
-        else:
-            cubit.cmd('del block '+str(block))
+        #block=3 
+        #ty=None
+        #ty=cubit.get_block_element_type(block)
+        #if ty=='':
+        #    pass
+        #elif ty == 'HEX8':
+        #    pass
+        #else:
+        #    cubit.cmd('del block '+str(block))
         build_block_side(top_surf,refname,obj=entity,id_0=1001)
         #
         refname=entity+'_bottom'
-        block=4 #change here..... must be 2 @@@@@@@@
-        ty=None
-        ty=cubit.get_block_element_type(block)
-        if ty=='':
-            pass
-        elif ty == 'HEX8':
-            pass
-        else:
-            cubit.cmd('del block '+str(block))
+        #block=4
+        #ty=None
+        #ty=cubit.get_block_element_type(block)
+        #if ty=='':
+        #    pass
+        #elif ty == 'HEX8':
+        #    pass
+        #else:
+        #    cubit.cmd('del block '+str(block))
         build_block_side(bottom_surf,refname,obj=entity,id_0=1002)
     #
     #

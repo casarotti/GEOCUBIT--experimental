@@ -240,7 +240,7 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
     boundary_dict={}
     ##
     try:
-        from boundary_definition import check_bc, map_boundary
+        from boundary_definition import check_bc, map_boundary,define_block,build_block
     except:
         pass
     #
@@ -261,7 +261,11 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
                         cubit.cmd('import cubit "'+filename+'"')
                     else:
                         cubit.cmd('import mesh geometry "'+filename+'" block all use nodeset sideset feature_angle 135.00 linear merge')
-                    if decimate: cubit.cmd('refine volume all numsplit 1 bias 1.0 depth 1 ')
+                    if decimate: 
+                        cubit.cmd('refine volume all numsplit 1 bias 1.0 depth 1 ')
+                        cubit.cmd('del block 1 to 999') #canceling all the block of the volumes
+                        v_list,name_list=define_block()
+                        build_block(v_list,name_list)                        
                     boundary=check_bc(ip,xmin,xmax,ymin,ymax,cpux,cpuy,cpuxmin,cpuxmax,cpuymin,cpuymax)
                     boundary_dict[ip]=boundary
                     list_vol=list(cubit.parse_cubit_list('volume','all'))
@@ -271,7 +275,11 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
                         cubit.cmd(command)
             except:
                 cubit.cmd('import mesh geometry "'+filename+'" block all use nodeset sideset feature_angle 135.00 linear merge')
-                if decimate: cubit.cmd('refine volume all numsplit 1 bias 1.0 depth 1 ')
+                if decimate: 
+                    cubit.cmd('refine volume all numsplit 1 bias 1.0 depth 1 ')
+                    v_list,name_list=define_block()
+                    build_block(v_list,name_list)
+                    cubit.cmd('del block 1 to 999') #canceling all the block of the volumes
                 ip=0
                 boundary=check_bc(ip,xmin,xmax,ymin,ymax,cpux,cpuy,cpuxmin,cpuxmax,cpuymin,cpuymax)
                 boundary_dict[ip]=boundary
@@ -282,7 +290,13 @@ def collecting_merging(cpuxmin=0,cpuxmax=1,cpuymin=0,cpuymax=1,cpux=1,cpuy=1,cub
                     cubit.cmd(command)
         cubit.cmd('export mesh "tmp_collect_NOmerging.e" dimension 3 block all overwrite')
     else:
-        if decimate: cubit.cmd('refine volume all numsplit 1 bias 1.0 depth 1 ')
+        if decimate: 
+            cubit.cmd('refine volume all numsplit 1 bias 1.0 depth 1 ')
+            cubit.cmd('del block 1 to 999') #canceling all the block of the volumes
+            v_list,name_list=define_block()
+            build_block(v_list,name_list)
+            
+            
         boundary=check_bc(ip,xmin,xmax,ymin,ymax,cpux,cpuy,cpuxmin,cpuxmax,cpuymin,cpuymax)
     #
     #
