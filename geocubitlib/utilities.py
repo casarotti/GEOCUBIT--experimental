@@ -347,13 +347,13 @@ def savegeometry(iproc=0,surf=False,filename=None):
         import start as start
         cubit                   = start.start_cubit()
         cfg                         = start.start_cfg(filename=filename)
-        flag=0
+        flag=[0]
         ner=cubit.get_error_count()
         cubitcommand= 'save as "'+ cfg.output_dir+'/'+geometryfile+ '"  overwrite' 
         cubit.cmd(cubitcommand)                                                    
         ner2=cubit.get_error_count()                                             
         if ner == ner2:
-            flag=1
+            flag=[1]
         return flag
         
     if surf:
@@ -361,7 +361,7 @@ def savegeometry(iproc=0,surf=False,filename=None):
     else:
         geometryfile='geometry_vol_'+str(iproc)+'.cub'
         
-    flagsaved=0
+    flagsaved=[0]
     infosave=(iproc,flagsaved)
     
     mpi.barrier()
@@ -373,10 +373,10 @@ def savegeometry(iproc=0,surf=False,filename=None):
     while saving:
         if len(total_saved) != sum(total_saved):
             #
-            if not flagsaved: 
+            if not flagsaved[0]: 
                 flagsaved=runsave(geometryfile,iproc,filename=filename)
-                if flagsaved:
-                    infosave=(iproc,flagsaved)        
+                if flagsaved[0]:
+                    infosave=(iproc,flagsaved[0])        
                     if numproc > 1:
                         f=open('geometry_saved'+str(iproc),'w')
                         f.close()
