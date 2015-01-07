@@ -245,6 +245,14 @@ if opts:
             ckbound_method2=True
         if o in ("--meshfiles"):
             cubfiles=value
+            import glob
+            nf=glob.glob(cubfiles)
+            if len(nf) > 0:
+                print 'cubfiles ',nf
+            else:
+                print 'files not found: ',cubfiles
+                import sys
+                sys.exit()
         if o in ("--exofiles"):
             exofiles=value
         if o in ("--export2SPECFEM3D"):
