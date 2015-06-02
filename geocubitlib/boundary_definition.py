@@ -345,7 +345,7 @@ def define_bc(*args,**keys):
         if type(args)==list:
             entities=args[0]
         else:
-            entities='face'
+            entities=['face']
         print entities
         for entity in entities:
             print "##entity: "+str(entity)
