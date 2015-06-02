@@ -1074,6 +1074,9 @@ def e2SEM(files=False,listblock=None,listflag=None,outdir='.',cpml=False,cpml_si
         cubit.cmd("block "+str(ib)+" attribute index 1 "+ str(iflag)            )
     #
     import cubit2specfem3d
+    import os
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
     cubit2specfem3d.export2SPECFEM3D(outdir,cpml=cpml,cpml_size=cpml_size,top_absorbing=top_absorbing,hex27=hex27)
 
 
