@@ -349,6 +349,12 @@ def collecting_merging_new(cpuxmin=0,cpuxmax=0,cpuymin=0,cpuymax=0,cpux=1,cpuy=1
     else:
         #if decimate: cubit.cmd('refine volume all numsplit 1 bias 1.0 depth 1 ')
         boundary=check_bc(ip,xmin,xmax,ymin,ymax,cpux,cpuy,cpuxmin,cpuxmax+1,cpuymin,cpuymax+1)
+        cubit.cmd('disassociate mesh from volume all')
+        cubit.cmd('del vol all')
+        cubit.cmd('set info on')
+        cubit.cmd('set echo on')
+        cubit.cmd('set journal on')
+        return
 
     
     if check_merging:
@@ -433,6 +439,7 @@ def collecting_merging_new(cpuxmin=0,cpuxmax=0,cpuymin=0,cpuymax=0,cpux=1,cpuy=1
     cubit.cmd('set echo on')
     cubit.cmd('set journal on')
     #cubit.cmd('set error on')
+
     
     
     
