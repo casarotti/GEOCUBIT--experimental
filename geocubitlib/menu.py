@@ -252,7 +252,7 @@ if opts:
         if o in ("--mfast"):
             ckbound_method1=True
             ckbound_method2=True
-        if o in ("--meshfiles"):
+        if o == ("--meshfiles"):
             cubfiles=value
             import glob
             nf=glob.glob(cubfiles)

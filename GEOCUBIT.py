@@ -57,7 +57,7 @@ if __name__ == '__main__':
     
     #MERGING and EXPORTING
     if menu.collect:
-        from geocubitlib.exportlib import collect
+        from geocubitlib.exportlib import collect_new
         try:
             output=menu.output
         except:
