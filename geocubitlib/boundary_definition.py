@@ -342,7 +342,7 @@ def define_bc(*args,**keys):
         v_list,name_list=define_block()
         build_block(v_list,name_list,id_0,top_surf,optionsea=optionsea)
         # entities
-        if type(args)==list:
+        if type(['e'])==list:
             entities=args[0]
         else:
             entities=['face']
