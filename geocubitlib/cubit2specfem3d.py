@@ -354,7 +354,9 @@ class mesh(object,mesh_tools):
         self.freename='free_or_absorbing_surface_file_zmax'
         self.recname='STATIONS'
         version_cubit=get_cubit_version()
-        if version_cubit >= 12:
+        if version_cubit >= 15:
+           self.face='SHELL'
+        elif version_cubit >= 12:
             self.face='SHELL4'
         else:
             self.face='QUAD4'
@@ -723,7 +725,6 @@ class mesh(object,mesh_tools):
 
 
     def mesh_write(self,mesh_name):
-        meshfile=open(mesh_name,'w')
         print 'Writing '+mesh_name+'.....'
         num_elems=cubit.get_hex_count()
         print ' total number of elements:',str(num_elems)
