@@ -7,18 +7,19 @@
 #                                                                           #
 #############################################################################
 #                                                                           #
-# GEOCUBIT is free software: you can redistribute it and/or modify          #
+# This program is free software; you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by      #
-# the Free Software Foundation, either version 3 of the License, or         #
+# the Free Software Foundation; either version 2 of the License, or         #
 # (at your option) any later version.                                       #
 #                                                                           #
-# GEOCUBIT is distributed in the hope that it will be useful,               #
+# This program is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of            #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
 # GNU General Public License for more details.                              #
 #                                                                           #
-# You should have received a copy of the GNU General Public License         #
-# along with GEOCUBIT.  If not, see <http://www.gnu.org/licenses/>.         #
+# You should have received a copy of the GNU General Public License along   #
+# with this program; if not, write to the Free Software Foundation, Inc.,   #
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.               #
 #                                                                           #
 #############################################################################
 try:
@@ -67,10 +68,9 @@ def read_irregular_surf(filename):
     except:
         txt='error reading '+filename
         raise Exception(txt)
-    px = xyz[:,0]
-    py = xyz[:,1]
+    gridpoints = xyz[:,0:2]
     z = xyz[:,2]
-    return (px,py),z
+    return gridpoints,z
     
 def get_interpolated_elevation(point,gridpoints,z,k=1):
     """for x0 and y0 return the interpolated z point of a irregular x,y,z grid
@@ -91,10 +91,9 @@ def get_interpolated_elevation(point,gridpoints,z,k=1):
 
 def create_grid(xmin,xmax,ymin,ymax,xstep,ystep):
     """create regular grid with xmin,xmax by xstep and  ymin,ymax by ystep"""
-    xi = numpy.arange(xmin,xmax,xstep)
-    yi = numpy.arange(ymin,ymax,ystep)
-    XI, YI = numpy.meshgrid(xi, yi) #this includes the bounds
-    return XI,YI
+    x,y=numpy.mgrid[xmin:xmax+xstep/2.:xstep,ymin:ymax+ystep/2.:ystep] #this includes the bounds
+    gridpoints = numpy.vstack([x.ravel(), y.ravel()]).T
+    return x,y,gridpoints
     
 
 def process_surfacefiles(iproc,nx,ny,nstep,grdfile,unit,lat_orientation):
@@ -157,13 +156,19 @@ def process_surfacefiles(iproc,nx,ny,nstep,grdfile,unit,lat_orientation):
 
 
 
-
 def process_irregular_surfacefiles(iproc,nx,ny,xmin,xmax,ymin,ymax,xstep,ystep,grdfile):
-    from scipy.interpolate import griddata
     gridpoints,z=read_irregular_surf(grdfile)
-    XI,YI=create_grid(xmin,xmax,ymin,ymax,xstep,ystep)
-    elev = griddata(gridpoints, z, (XI,YI), method='nearest')
-    return XI,YI,elev
+    coordx,coordy,points=create_grid(xmin,xmax,ymin,ymax,xstep,ystep)
+
+    elev = numpy.empty([len(points)])
+    for i in xrange(len(points)):
+        elev[i] = get_interpolated_elevation(points[i],gridpoints,z,k=4)
+        
+    coordx.shape=(nx,ny)
+    coordy.shape=(nx,ny)
+    elev.shape=(nx,ny)
+    
+    return coordx,coordy,elev
 
 
 def read_grid(filename=None):

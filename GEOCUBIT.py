@@ -7,19 +7,19 @@ Created by Emanuele Casarotti
 Copyright (c) 2011 Istituto Nazionale di Geofisica e Vulcanologia 
 
 ---------------------------------------------------------------------------
- GEOCUBIT is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- GEOCUBIT is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with GEOCUBIT.  If not, see <http://www.gnu.org/licenses/>.
-
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License along
+  with this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ---------------------------------------------------------------------------
 
 GEOCUBIT requires:
@@ -64,7 +64,7 @@ if __name__ == '__main__':
             output='totalmesh_merged'
         output=output.upper()
         #
-        collect(menu.cpuxmin,menu.cpuxmax,menu.cpuymin,menu.cpuymax,menu.cpux,menu.cpuy,menu.cubfiles,menu.ckbound_method1,menu.ckbound_method2,menu.merge_tolerance,curverefining=menu.curverefining,outfilename=output,qlog=menu.qlog,export2SPECFEM3D=menu.export2SPECFEM3D,listblock=menu.listblock,listflag=menu.listflag,outdir=menu.SPECFEM3D_output_dir,add_sea=menu.add_sea,decimate=menu.decimate,cpml=menu.cpml,cpml_size=menu.cpml_size,top_absorbing=menu.top_absorbing,hex27=menu.hex27)
+        collect_new(menu.cpuxmin,menu.cpuxmax,menu.cpuymin,menu.cpuymax,menu.cpux,menu.cpuy,menu.cubfiles,menu.ckbound_method1,menu.ckbound_method2,menu.merge_tolerance,curverefining=menu.curverefining,outfilename=output,qlog=menu.qlog,export2SPECFEM3D=menu.export2SPECFEM3D,listblock=menu.listblock,listflag=menu.listflag,outdir=menu.SPECFEM3D_output_dir,add_sea=menu.add_sea,decimate=menu.decimate,cpml=menu.cpml,cpml_size=menu.cpml_size,top_absorbing=menu.top_absorbing,hex27=menu.hex27,check_merging=menu.check_merging,save_cubfile=menu.save_cubfile)
         
     if menu.export2SPECFEM3D and not menu.collect:
         from geocubitlib.exportlib import e2SEM

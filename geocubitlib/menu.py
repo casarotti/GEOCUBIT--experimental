@@ -7,18 +7,19 @@
 #                                                                           #
 #############################################################################
 #                                                                           #
-# GEOCUBIT is free software: you can redistribute it and/or modify          #
+# This program is free software; you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by      #
-# the Free Software Foundation, either version 3 of the License, or         #
+# the Free Software Foundation; either version 2 of the License, or         #
 # (at your option) any later version.                                       #
 #                                                                           #
-# GEOCUBIT is distributed in the hope that it will be useful,               #
+# This program is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of            #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
 # GNU General Public License for more details.                              #
 #                                                                           #
-# You should have received a copy of the GNU General Public License         #
-# along with GEOCUBIT.  If not, see <http://www.gnu.org/licenses/>.         #
+# You should have received a copy of the GNU General Public License along   #
+# with this program; if not, write to the Free Software Foundation, Inc.,   #
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.               #
 #                                                                           #
 #############################################################################
 
@@ -67,22 +68,23 @@ def usage():
     4) FINALIZING AND EXPORTING
     
          collect some cubit files and merge in a single free mesh cubitfile
-         GEOCUBIT.py --collect   --merge --meshfiles=[list of files] --cpux=N --cpuy=N (--rangecpux=[cpuxmin,cpuxmax], --rangecpuy=[cpuymin,cpuymax])
+         GEOCUBIT.py --collect   --merge --meshfiles=[list of files] --cpux=N --cpuy=N (--rangecpux=[cpuxmin,cpuxmax], --rangecpuy=[cpuymin,cpuymax] --output=[YourMeshName] --outdir=[YourDir] --check_merging --save_cubfile)
 
-         collect some cubit files and merge in a single free mesh cubitfile (and decimate!!! (refine by 2))
+         collect some cubit files and merge in a single free mesh cubitfile (and decimate!!! (refine by 2)) - only with CUBIT < 13
          GEOCUBIT.py --collect   --decimate --merge --meshfiles=[list of files] --cpux=N --cpuy=N (--rangecpux=[cpuxmin,cpuxmax], --rangecpuy=[cpuymin,cpuymax])
 
 
          
-         collect a single free mesh cubitfile and refine the hex inside some curve (ex. basin)
+         collect a single free mesh cubitfile and refine the hex inside some curve (ex. basin) - only with CUBIT < 13
          GEOCUBIT.py --collect --meshfiles=[list of files] --curverefining=[list of SAT files]       
          
          export a cubit mesh file (with blocks defined following the note)  in a SPECFEM3D_SESAME mesh
          GEOCUBIT.py --export2SPECFEM3D --meshfiles=[filename] (--listblock=block1,block2,..,blockN --listflag=[list of specfem flag, i.e. --listflag=1,2,3,-1])
+         GEOCUBIT.py --export2SPECFEM3D --meshfiles=[filename] (--listblock=block1,block2,..,blockN --listflag=[list of specfem flag, i.e. --listflag=1,2,3,-1] --SEMoutput=[YourOutputDir])
          
     """
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "sjmohbp1", ["hex27","cpml_size=","top_absorbing","cpml","decimate","addsea","SEMoutput=","qlog","mfast","curverefining=","output=","rangecpux=","rangecpuy=","equivalence","listflag=","listblock=","cpux=","cpuy=","exofiles=","partitioner","plane","x1=","x2=","x3=","x4=","unit=","chkcfg","mat=","merge_tolerance=","export2SPECFEM3D","mesh","chklib","cfg=","job=","basin","help", "id_proc=", "surface=","script","jou","strat","MPI","regulargrid=",'skin=',"build_surface","build_volume","merge1","merge2","merge","collect","meshfiles="])
+    opts, args = getopt.getopt(sys.argv[1:], "sjmohbp1", ["save_cubfile","check_merging","hex27","cpml_size=","top_absorbing","cpml","decimate","addsea","SEMoutput=","qlog","mfast","curverefining=","output=","rangecpux=","rangecpuy=","equivalence","listflag=","listblock=","cpux=","cpuy=","exofiles=","partitioner","plane","x1=","x2=","x3=","x4=","unit=","chkcfg","mat=","merge_tolerance=","export2SPECFEM3D","mesh","chklib","cfg=","job=","basin","help", "id_proc=", "surface=","script","jou","strat","MPI","regulargrid=",'skin=',"build_surface","build_volume","merge1","merge2","merge","collect","meshfiles="])
     print opts, args
 except Exception,e:
     #if 'argv' in e:
@@ -139,12 +141,20 @@ top_absorbing=False
 qlog=False
 hex27=False
 
+check_merging=False
+save_cubfile=False
+
+from utilities import get_cubit_version
+cubit_version=get_cubit_version()
+
 
 if opts: 
     for o, value in opts:
         #print o,value
-        if o in ('--hex27'):
-            hex27=True
+        if o in ('--save_cubfile'): save_cubfile=True
+        if o in ('--check_merging'): check_merging=True
+        if o in ('--hex27'): hex27=True
+        
         if o in ('--cpml'):
             cpml=True
             if '--cpml_size' in o:
@@ -156,8 +166,7 @@ if opts:
         if '--cpml_size' in o:
             cpml=True
             cpml_size=float(value)          
-        if o in ('--decimate'):
-            decimate=True
+        if o in ('--decimate'): decimate=True
         if o in ('--partitioner'):
             create_partitioner=True
         if o == ('--surface'):
@@ -263,10 +272,16 @@ if opts:
             id_proc=int(value)
         if o in ('--rangecpux'):
             cpuxmin=int(value.split(',')[0])
-            cpuxmax=int(value.split(',')[1])+1
+            if cubit_version >= 14.0:
+                cpuxmax=int(value.split(',')[1])
+            else:
+                cpuxmax=int(value.split(',')[1])+1
         if o in ('--rangecpuy'):
+            if cubit_version >= 14.0:
+                cpuymax=int(value.split(',')[1])
+            else:
+                cpuymax=int(value.split(',')[1])+1
             cpuymin=int(value.split(',')[0])
-            cpuymax=int(value.split(',')[1])+1
         if o in ('--cpux'):
             cpux=int(value)
         if o in ('--cpuy'):
