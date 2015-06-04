@@ -125,13 +125,12 @@ def start_cubit(init=False):
                 cubit.cmd("set echo "+cfg.echo_info)
                 cubit.cmd("set info "+cfg.cubit_info)
                 version_cubit=utilities.get_cubit_version()
-                if version_cubit <= 13:
-                    print 'VERSION CUBIT ',version_cubit
-                elif version_cubit > 13:
-                    print 'CAVEAT:'
+                if version_cubit > 13 and version_cubit < 15:
                     print 'VERSION CUBIT ',version_cubit
                     print 'VERSIONs of CUBIT > 13 have bugs with merge node commands and equivalence'
                     print 'the merge option is not operative with this version, please download CUBIT 13'
+                else:
+                    print 'VERSION CUBIT ',version_cubit
         except:
             print 'error start cubit'
             sys.exit()
