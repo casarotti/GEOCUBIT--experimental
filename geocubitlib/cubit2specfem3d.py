@@ -491,7 +491,7 @@ class mesh(object,mesh_tools):
                 elif flag==0 or nattrib == 1:
                     par=tuple([imaterial,flag,name])
                 material[block]=par
-            elif ty == self.face:
+            elif ty == self.face or ty == 'SHELL4':
                 block_bc_flag.append(4)
                 block_bc.append(block)
                 bc[block]=4 #face has connectivity = 4
@@ -506,7 +506,7 @@ class mesh(object,mesh_tools):
                 print '****************************************'
                 print 'block not properly defined:'
                 print '  name:',name
-                print '  type:',type
+                print '  type:',ty
                 print
                 print 'please check your block definitions!'
                 print
@@ -725,8 +725,9 @@ class mesh(object,mesh_tools):
 
 
     def mesh_write(self,mesh_name):
-        print 'Writing '+mesh_name+'.....'
+        print 'Writing '+mesh_name+'..... v2'
         num_elems=cubit.get_hex_count()
+        meshfile=open(mesh_name,'w')
         print ' total number of elements:',str(num_elems)
         meshfile.write(str(num_elems)+'\n')
         for block,flag in zip(self.block_mat,self.block_flag):
