@@ -284,7 +284,10 @@ def prepare_equivalence_new(name_group='lateral'):
     factor=(maxvalue-minvalue)/nbin
     dic_new={}
     for k in length.keys():
-        dic_new[k]=int((length[k]-minvalue)/factor)
+        if factor!=0.:
+            dic_new[k]=int((length[k]-minvalue)/factor)
+        else:
+            dic_new[k]=0.
     inv_length=invert_dict(dic_new)
     print inv_length.keys(),factor,minvalue
     ks=inv_length.keys()
@@ -1105,7 +1108,10 @@ def prepare_equivalence(nodes1,nodes2):
     factor=(maxvalue-minvalue)/nbin
     dic_new={}
     for k in length.keys():
-        dic_new[k]=int((length[k]-minvalue)/factor)
+        if factor!=0.:
+            dic_new[k]=int((length[k]-minvalue)/factor)
+        else:
+            dic_new[k]=0.
     inv_length=invert_dict(dic_new)
     print inv_length.keys(),factor,minvalue
     ks=inv_length.keys()
@@ -1224,7 +1230,10 @@ def prepare_equivalence_4(nodes1,nodes2,nodes3,nodes4):
     factor=(maxvalue-minvalue)/nbin
     dic_new={}
     for k in length.keys():
-        dic_new[k]=int((length[k]-minvalue)/factor)
+        if factor!=0.:
+            dic_new[k]=int((length[k]-minvalue)/factor)
+        else:
+            dic_new[k]=0.
     inv_length=invert_dict(dic_new)
     print inv_length.keys(),factor,minvalue
     ks=inv_length.keys()
