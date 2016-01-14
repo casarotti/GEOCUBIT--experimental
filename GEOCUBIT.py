@@ -24,7 +24,7 @@ Copyright (c) 2011 Istituto Nazionale di Geofisica e Vulcanologia
 
 GEOCUBIT requires:
 
-- CUBIT 12.2 - www.cubit.sandia.gov
+- CUBIT 12.2+ - www.cubit.sandia.gov
 - python 2.5 
 - numpy 1.0+  - http://downloads.sourceforge.net/numpy
 
@@ -41,6 +41,8 @@ else:
     cubit                   = start.start_cubit()
 
 if __name__ == '__main__':
+
+	print 'VERSION 3.0b'
     
     #GEOMETRY
     if menu.build_surface:              
