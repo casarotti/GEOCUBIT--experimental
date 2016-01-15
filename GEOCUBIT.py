@@ -42,7 +42,7 @@ else:
 
 if __name__ == '__main__':
 
-	print 'VERSION 3.0b'
+    print 'VERSION 3.0b'
     
     #GEOMETRY
     if menu.build_surface:              
