@@ -24,8 +24,14 @@ Copyright (c) 2011 Istituto Nazionale di Geofisica e Vulcanologia
 
 GEOCUBIT requires:
 
-- CUBIT 12.2+ - www.cubit.sandia.gov
-- python 2.5 
+- CUBIT 12.2 - www.cubit.sandia.gov
+- python 2.5
+
+or 
+
+- CUBIT 15+ - www.cubit.sandia.gov
+- python 2.7
+
 - numpy 1.0+  - http://downloads.sourceforge.net/numpy
 
   -- optional for parallel mesh
