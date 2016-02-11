@@ -164,7 +164,7 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
     dcfg['seaup']=False
     dcfg['sea_level']=False
     dcfg['sea_threshold']=False
-    dcfg['subduction']=True
+    dcfg['subduction']=False
     dcfg['subduction_thres']=500
     dcfg['debugsurface']=False #if true it creates only the surface not the lofted volumes
     dcfg['lat_orientation']=False
