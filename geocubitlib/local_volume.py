@@ -228,17 +228,20 @@ def read_grid(filename=None):
     if cfg.sea:
         elev[:,:,inz]=elev[:,:,inz-1]
     else:
-        #try:
-        grdfile = cfg.filename[inz-bottomsurface]
-        print 'reading ',cfg.filename[inz-bottomsurface]
-        if cfg.irregulargridded_surf:
-            coordx,coordy,elev_1=process_irregular_surfacefiles(iproc,nx,ny,cfg.xmin,cfg.xmax,cfg.ymin,cfg.ymax,xstep,ystep,grdfile)
+        if cfg.topflat:
+            elev[:,:,inz]=cfg.depth_top
         else:
-            coordx,coordy,elev_1=process_surfacefiles(iproc,nx,ny,nstep,grdfile,cfg.unit,cfg.lat_orientation)
-        elev[:,:,inz]=elev_1[:,:]
-        #except:
-        #     txt='error reading: '+  str( cfg.filename[inz-bottomsurface] )
-        #    raise NameError, txt
+            #try:
+            grdfile = cfg.filename[inz-bottomsurface]
+            print 'reading ',cfg.filename[inz-bottomsurface]
+            if cfg.irregulargridded_surf:
+                coordx,coordy,elev_1=process_irregular_surfacefiles(iproc,nx,ny,cfg.xmin,cfg.xmax,cfg.ymin,cfg.ymax,xstep,ystep,grdfile)
+            else:
+                coordx,coordy,elev_1=process_surfacefiles(iproc,nx,ny,nstep,grdfile,cfg.unit,cfg.lat_orientation)
+            elev[:,:,inz]=elev_1[:,:]
+            #except:
+            #     txt='error reading: '+  str( cfg.filename[inz-bottomsurface] )
+            #    raise NameError, txt
         
         
         if cfg.subduction:

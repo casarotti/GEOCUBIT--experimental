@@ -302,6 +302,38 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
                     cubit.cmd(cubitcommand)
                     #
                     isurf = isurf + 1
+                    
+        if  cfg.topflat and inz == nlayer-1:
+            
+            if cfg.geometry_format == 'ascii' and not verticalsandwich:
+                lv=cubit.get_last_id("vertex")     
+                
+                x_current,y_current=(coordx[nxmin_cpu,nymin_cpu],coordy[nxmin_cpu,nymin_cpu])
+                cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_top )
+                cubit.cmd(cubitcommand)
+                #
+                x_current,y_current=(coordx[nxmin_cpu,nymax_cpu],coordy[nxmin_cpu,nymax_cpu])
+                cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_top )
+                cubit.cmd(cubitcommand)                                                                              
+                #
+                x_current,y_current=(coordx[nxmax_cpu,nymax_cpu],coordy[nxmax_cpu,nymax_cpu])
+                cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_top )
+                cubit.cmd(cubitcommand)
+                #
+                x_current,y_current=(coordx[nxmax_cpu,nymin_cpu],coordy[nxmax_cpu,nymin_cpu])
+                cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_top )
+                cubit.cmd(cubitcommand)
+                #
+                lv2=cubit.get_last_id("vertex")     
+                
+                cubitcommand= 'create surface vertex '+str(lv+1)+' to '+str(lv2)
+                cubit.cmd(cubitcommand)
+                #
+                isurf = isurf + 1
+            else:
+                print "top_flat is not a valid option for sandwich"
+            
+            
         else:
             if cfg.geometry_format == 'regmesh':
                 if verticalsandwich:
@@ -408,9 +440,11 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
                     command = "del curve all"
                     cubit.cmd(command)
                     isurf=isurf+1
+                else:
+                    raise ValueError('error creating the surface')
                 #
             else:
-                raise NameError, 'error, check geometry_format, it should be ascii or regmesh'   #
+                raise ValueError('error, check geometry_format, it should be ascii or regmesh')
                 #
         cubitcommand= 'del vertex all'
         cubit.cmd(cubitcommand)

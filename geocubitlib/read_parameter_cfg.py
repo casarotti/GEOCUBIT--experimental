@@ -173,6 +173,7 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
     dcfg['smoothing']=False
     dcfg['ntripl']=0
     dcfg['debug_geometry']=False
+    dcfg['topflat']=False
     
     if float(dcfg['version_cubit']) >= 13.1:
         dcfg['volumecreation_method']=None
