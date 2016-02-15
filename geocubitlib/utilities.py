@@ -75,8 +75,10 @@ def cubit_command_check(iproc,command,stop=True):
     return status variable (0 ok, -1 fail)
     
     """
+    flag=True
     er=cubit.get_error_count()
     cubit.cmd(command)
+    print command
     ner=cubit.get_error_count()
     flag=0
     if ner > er:
@@ -87,7 +89,7 @@ def cubit_command_check(iproc,command,stop=True):
         f.write("CUBIT ERROR: \n"+text)
         f.close()
         if stop: raise Exception("CUBIT ERROR: "+text)
-        flag=-1
+        flag=False
     return flag
 
     
