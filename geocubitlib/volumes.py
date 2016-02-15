@@ -303,8 +303,8 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
                     #
                     isurf = isurf + 1
                     
-        if  cfg.topflat and inz == nlayer-1:
-            
+        elif  cfg.topflat and inz == nlayer-1:
+            print 'topflat' 
             if cfg.geometry_format == 'ascii' and not verticalsandwich:
                 lv=cubit.get_last_id("vertex")     
                 
@@ -335,6 +335,7 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
             
             
         else:
+            print inz,'layer'  
             if cfg.geometry_format == 'regmesh':
                 if verticalsandwich:
                     zvertex=cfg.xwidth[inz]
