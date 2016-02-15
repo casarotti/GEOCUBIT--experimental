@@ -304,11 +304,6 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
                     isurf = isurf + 1
                     
         elif  cfg.topflat and inz == nlayer-1:
-<<<<<<< HEAD
-            print 'topflat' 
-=======
-            
->>>>>>> da30efa1b19c7b9474862b8fe7d2800a64005946
             if cfg.geometry_format == 'ascii' and not verticalsandwich:
                 lv=cubit.get_last_id("vertex")     
                 
