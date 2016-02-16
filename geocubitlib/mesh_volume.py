@@ -212,8 +212,15 @@ def mesh_layercake_regularmap(filename=None):
                 command_surf="mesh surf "+str(s)
                 cubit.cmd(command_surf)
             command_set_meshvol='volume all redistribute nodes on\nvolume all autosmooth target off\nvolume all scheme Sweep Vector 0 0 -1\nvolume all sweep smooth Auto\n'
-            status=cubit_command_check(iproc,command_set_meshvol,stop=False)
-            status=cubit_command_check(iproc,command,stop=True)    
+            status2=cubit_command_check(iproc,command_set_meshvol,stop=False)
+            status2=cubit_command_check(iproc,command,stop=False)
+            if not status2:
+                _surf=cubit.get_relatives('volume',vol[id_volume].ID,'surface')
+                local_o_surf=[x for x in _surf if x in surf_or]
+                cubit.cmd('volume '+str(vol[id_volume].ID)+' redistribute nodes off') 
+                cubit.cmd('volume '+str(vol[id_volume].ID)+' scheme Sweep  source surface '+' '.join(str(x) for x in local_o_surf[0:-1])+' target surface '+str(local_o_surf[-1])+' sweep_transform least_squares' 
+                cubit.cmd('volume '+str(vol[id_volume].ID)+' autosmooth_target off')
+                status3=cubit_command_check(iproc,command,stop=True)
     
     #
     #smoothing
