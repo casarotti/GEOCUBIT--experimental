@@ -30,7 +30,7 @@ except:
     try:
         import cubit
     except:
-        print 'error importing cubit, check if cubit is installed'
+        print "error importing cubit, check if cubit is installed"
         pass
     
 
@@ -218,7 +218,7 @@ def mesh_layercake_regularmap(filename=None):
                 _surf=cubit.get_relatives('volume',vol[id_volume].ID,'surface')
                 local_o_surf=[x for x in _surf if x in surf_or]
                 cubit.cmd('volume '+str(vol[id_volume].ID)+' redistribute nodes off') 
-                cubit.cmd('volume '+str(vol[id_volume].ID)+' scheme Sweep  source surface '+' '.join(str(x) for x in local_o_surf[0:-1])+' target surface '+str(local_o_surf[-1])+' sweep_transform least_squares' 
+                cubit.cmd('volume '+str(vol[id_volume].ID)+' scheme Sweep  source surface '+' '.join(str(x) for x in local_o_surf[0:-1])+' target surface '+str(local_o_surf[-1])+' sweep_transform least_squares') 
                 cubit.cmd('volume '+str(vol[id_volume].ID)+' autosmooth_target off')
                 status3=cubit_command_check(iproc,command,stop=True)
     
