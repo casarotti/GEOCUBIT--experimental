@@ -675,7 +675,7 @@ def create_volume(surf1,surf2,method='loft'):
             cmd='create surface skin curve '+str(cs[1])+' '+str(cs[0])
             cubit.cmd(cmd)
         is_stop=cubit.get_last_id('surface')
-        cmd="create volume surface "+str(surf1)+' '+str(surf2)+' '+str(is_start)+' to '+str(is_stop)+"  heal"
+        cmd="create volume surface "+str(surf1)+' '+str(surf2)+' '+str(is_start)+' to '+str(is_stop)+"  heal keep"
         cubit.cmd(cmd)
 
 
