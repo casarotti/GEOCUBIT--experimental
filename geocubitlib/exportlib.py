@@ -372,11 +372,11 @@ def collecting_merging_new(cpuxmin=0,cpuxmax=0,cpuymin=0,cpuymax=0,cpux=1,cpuy=1
     cubit.cmd('set journal off')
     #cubit.cmd('set error off')
     for k in inv_length.keys():
-        print k, 'tolerance', str(k*factor+minvalue/2.)
+        print k, 'tolerance', str(k*factor+minvalue/3.)
         check_lateral_nodes()
         if len(inv_length[k]) > 0:
-            print 'equivalence node in '+str(len(inv_length[k]))+' edges  tolerance '+str(k*factor+minvalue/2.)
-            cmd='equivalence node in edge '+' '.join(str(x) for x in inv_length[k])+' tolerance '+str(k*factor+minvalue/2.)
+            print 'equivalence node in '+str(len(inv_length[k]))+' edges  tolerance '+str(k*factor+minvalue/3.)
+            cmd='equivalence node in edge '+' '.join(str(x) for x in inv_length[k])+' tolerance '+str(k*factor+minvalue/3.)
             cubit.cmd(cmd)
 
     if check_merging:
@@ -1105,9 +1105,9 @@ def merge_node_ck(n1,n2):
 
     for k in inv_length.keys()[:-1]:
         if len(inv_length[k]) > 0:
-            cmd='equivalence node '+' '.join(' '.join(str(n) for n in x) for x in inv_length[k])+' tolerance '+str(k*factor+minvalue/2.)
+            cmd='equivalence node '+' '.join(' '.join(str(n) for n in x) for x in inv_length[k])+' tolerance '+str(k*factor+minvalue/3.)
             cubit.cmd(cmd)
-            print 'equivalence '+str(len(inv_length[k]))+' couples of nodes -  tolerance '+str(k*factor+minvalue/2.)
+            print 'equivalence '+str(len(inv_length[k]))+' couples of nodes -  tolerance '+str(k*factor+minvalue/3.)
 
 
     cubit.cmd('group "checkmerge" add node '+' '.join(str(n) for n in n1)+' '+' '.join(str(n) for n in n2))
@@ -1115,11 +1115,11 @@ def merge_node_ck(n1,n2):
     remainnodes=cubit.get_group_nodes(idg)
     print 'from '+str(len(n1)+len(n2))+' nodes -> '+str(len(remainnodes)) +' nodes'
     if len(n1) != len(remainnodes):
-        print 'equivalence '+str(len(remainnodes))+' couples of nodes -  tolerance '+str(minvalue/2.)
+        print 'equivalence '+str(len(remainnodes))+' couples of nodes -  tolerance '+str(minvalue/3.)
         cubit.cmd('set info on')
         cubit.cmd('set echo on')
         cubit.cmd('set journal on')
-        cmd='equivalence node in group '+str(idg)+' tolerance '+str(minvalue/2.)
+        cmd='equivalence node in group '+str(idg)+' tolerance '+str(minvalue/3.)
         cubit.cmd(cmd)
         cmd='block 3000 node in group '+str(idg)
         cubit.cmd(cmd)
@@ -1152,9 +1152,9 @@ def merge_node(n1,n2):
 
     for k in inv_length.keys()[:-1]:
         if len(inv_length[k]) > 0:
-            cmd='equivalence node '+' '.join(' '.join(str(n) for n in x) for x in inv_length[k])+' tolerance '+str(k*factor+minvalue/2.)
+            cmd='equivalence node '+' '.join(' '.join(str(n) for n in x) for x in inv_length[k])+' tolerance '+str(k*factor+minvalue/3.)
             cubit.cmd(cmd)
-            print 'equivalence '+str(len(inv_length[k]))+' couples of nodes -  tolerance '+str(k*factor+minvalue/2.)
+            print 'equivalence '+str(len(inv_length[k]))+' couples of nodes -  tolerance '+str(k*factor+minvalue/3.)
 
     cubit.cmd('set info on')
     cubit.cmd('set echo on')
@@ -1252,14 +1252,14 @@ def merge_node_4(n1,n2,n3,n4,newmethod=True):
                             x=[x]
                         else:
                             pass
-                    cmd='equivalence node '+' '.join(' '.join(str(n) for n in x) )+' tolerance '+str(k*factor+minvalue/2.)
+                    cmd='equivalence node '+' '.join(' '.join(str(n) for n in x) )+' tolerance '+str(k*factor+minvalue/3.)
                 except:
                     print k,"***************************************** s"
                     print inv_length[k]
 
                 cubit.cmd(cmd)
-                print 'equivalence '+str(len(inv_length[k]))+' couples of nodes -  tolerance '+str(k*factor+minvalue/2.)
+                print 'equivalence '+str(len(inv_length[k]))+' couples of nodes -  tolerance '+str(k*factor+minvalue/3.)
             if len(inv_length[k]) == 1:
-                cmd='equivalence node '+' '.join(' '.join(str(n) for n in inv_length[k]))+' tolerance '+str(k*factor+minvalue/2.)
+                cmd='equivalence node '+' '.join(' '.join(str(n) for n in inv_length[k]))+' tolerance '+str(k*factor+minvalue/3.)
                 cubit.cmd(cmd)
-                print 'equivalence '+str(len(inv_length[k]))+' couples of nodes -  tolerance '+str(k*factor+minvalue/2.)
+                print 'equivalence '+str(len(inv_length[k]))+' couples of nodes -  tolerance '+str(k*factor+minvalue/3.)

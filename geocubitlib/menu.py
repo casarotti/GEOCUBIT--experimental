@@ -279,29 +279,29 @@ if opts:
         if o in ("--export2SPECFEM3D"):
                 export2SPECFEM3D = True
         if o in ("--merge_tolerance") and o != '--merge' and o != '--merge2' and o != '--merge1':
-            merge_tolerance = map(float, value.split(', '))
+            merge_tolerance = map(float, value.split(','))
         if o in ("--mat"):
-            material_assignement.append([value.split(', ')[0], value.split(', ')[1]])
+            material_assignement.append([value.split(',')[0], value.split(',')[1]])
         if o in ("--listblock"):
-            listblock = map(int, value.split(', '))
+            listblock = map(int, value.split(','))
         if o in ("--listflag"):
-            listflag = map(int, value.split(', '))
+            listflag = map(int, value.split(','))
         if o in ("--chkcfg"):
             chkcfg = True
         if o in ('--id_proc'):
             id_proc = int(value)
         if o in ('--rangecpux'):
-            cpuxmin = int(value.split(', ')[0])
+            cpuxmin = int(value.split(',')[0])
             if cubit_version >= 14.0:
-                cpuxmax = int(value.split(', ')[1])
+                cpuxmax = int(value.split(',')[1])
             else:
-                cpuxmax = int(value.split(', ')[1])+1
+                cpuxmax = int(value.split(',')[1])+1
         if o in ('--rangecpuy'):
             if cubit_version >= 14.0:
-                cpuymax = int(value.split(', ')[1])
+                cpuymax = int(value.split(',')[1])
             else:
-                cpuymax = int(value.split(', ')[1])+1
-            cpuymin = int(value.split(', ')[0])
+                cpuymax = int(value.split(',')[1])+1
+            cpuymin = int(value.split(',')[0])
         if o in ('--cpux'):
             cpux = int(value)
         if o in ('--cpuy'):
@@ -311,7 +311,7 @@ if opts:
         if o in ("--output", "-o"):
             output = value
         if o in ("--curverefining"):
-            curverefining = value.split(', ')
+            curverefining = value.split(',')
         if o in ("--SEMoutput"):
             SPECFEM3D_output_dir = value
             import os
