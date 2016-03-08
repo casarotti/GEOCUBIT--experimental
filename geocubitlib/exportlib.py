@@ -279,7 +279,7 @@ def prepare_equivalence_new(name_group='lateral'):
     maxvalue=max(length.values())
     #
     print 'min lentgh: ',minvalue,'max lentgh: ',maxvalue
-    nbin= int((maxvalue/minvalue)/2.)+1
+    nbin= int((maxvalue/minvalue)/5.0)+1
     factor=(maxvalue-minvalue)/nbin
     dic_new={}
     for k in length.keys():
