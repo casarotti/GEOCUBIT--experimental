@@ -157,13 +157,13 @@ cubit_version = get_cubit_version()
 
 if opts:
     for o, value in opts:
-        if o in ('--starting_tolerance'):
-            starting_tolerance = int(value)
+        #if o in ('--starting_tolerance'):
+        #    starting_tolerance = int(value)
         # print o, value
         if o in ('--save_cubfile'):
             save_cubfile = True
-        if o in ('--check_merging'):
-            check_merging = True
+        #if o in ('--check_merging'):
+        #    check_merging = True
         if o in ('--hex27'):
             hex27 = True
 
