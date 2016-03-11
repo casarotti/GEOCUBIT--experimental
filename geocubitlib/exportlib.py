@@ -307,6 +307,7 @@ def collecting_merging_new(cpuxmin=0,cpuxmax=0,cpuymin=0,cpuymax=0,cpux=1,cpuy=1
     #
     print 'cpu',cpuxmin,cpuxmax,cpuymin,cpuymax
     xmin,xmax,ymin,ymax,listfull=map_boundary(cpuxmin,cpuxmax,cpuymin,cpuymax,cpux,cpuy)
+    print xmin,xmax,ymin,ymax,listfull
     #
     if cubfiles:
         nf,listip,filenames,cubflag=importing_cubfiles(cubfiles)
