@@ -427,7 +427,7 @@ def collecting_merging_new(cpuxmin=0,cpuxmax=0,cpuymin=0,cpuymax=0,cpux=1,cpuy=1
 
     cubit.cmd('group \'coincident_lateral_nodes\' add Node in face in group lateral')
     isempty=False
-    while isempty:
+    while not isempty:
         isempty=merging_node_new(tol,clean=True,graphic_debug=False)
         tol=tol+step_tol
         if tol > maxvalue*1.5:
