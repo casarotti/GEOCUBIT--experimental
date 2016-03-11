@@ -327,13 +327,19 @@ if opts:
     if cpuymax:
         pass
     elif cpuy > 1:
-        cpuymax = cpuy
+        if cubit_version >= 14.0:
+            cpuymax = cpuy-1
+        else:
+            cpuymax = cpuy
     else:
         cpuymax = 1
     if cpuxmax:
         pass
     elif cpux > 1:
-        cpuxmax = cpux
+        if cubit_version >= 14.0:
+            cpuxmax = cpux-1
+        else:
+            cpuxmax = cpux
     else:
         cpuxmax = 1
     print cpuxmax, cpuymax
