@@ -346,7 +346,7 @@ def graphic_merging(tol,step_tol=None,maxtol=None):
 
 
 
-def collecting_merging_new(cpuxmin=0,cpuxmax=0,cpuymin=0,cpuymax=0,cpux=1,cpuy=1,cubfiles=False,check_merging=False,starting_tolerance=100):
+def collecting_merging_new(cpuxmin=0,cpuxmax=0,cpuymin=0,cpuymax=0,cpux=1,cpuy=1,cubfiles=False,check_merging=False,starting_tolerance=None,step_tolerance=None):
     # import glob
     # import re
     #
@@ -422,8 +422,14 @@ def collecting_merging_new(cpuxmin=0,cpuxmax=0,cpuymin=0,cpuymax=0,cpux=1,cpuy=1
     cubit.cmd('set info off')
     cubit.cmd('set echo off')
     cubit.cmd('set journal off')
-    tol=minvalue/20.
-    step_tol=minvalue/20.
+    if starting_tolerance:
+        tol=starting_tolerance
+    else:
+        tol=minvalue/20.
+    if step_tolerance:
+        step_tol=step_tolerance
+    else:
+        step_tol=minvalue/20.
 
     cubit.cmd('group \'coincident_lateral_nodes\' add Node in face in group lateral')
     isempty=False

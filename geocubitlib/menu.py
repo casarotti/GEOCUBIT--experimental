@@ -72,7 +72,7 @@ def usage():
     4) FINALIZING AND EXPORTING
 
          collect some cubit files and merge in a single free mesh cubitfile
-         GEOCUBIT.py --collect   --merge --meshfiles = [list of files] --cpux = N --cpuy = N (--rangecpux = [cpuxmin, cpuxmax], --rangecpuy = [cpuymin, cpuymax] --output = [YourMeshName] --outdir = [YourDir] --check_merging --save_cubfile --starting_tolerance = 100)
+         GEOCUBIT.py --collect   --merge --meshfiles = [list of files] --cpux = N --cpuy = N (--rangecpux = [cpuxmin, cpuxmax], --rangecpuy = [cpuymin, cpuymax] --output = [YourMeshName] --outdir = [YourDir] --step_tolerance=1 --save_cubfile --starting_tolerance = 100)
 
          collect some cubit files and merge in a single free mesh cubitfile (and decimate!!! (refine by 2)) - only with CUBIT < 13
          GEOCUBIT.py --collect   --decimate --merge --meshfiles = [list of files] --cpux = N --cpuy = N (--rangecpux = [cpuxmin, cpuxmax], --rangecpuy = [cpuymin, cpuymax])
@@ -89,7 +89,7 @@ def usage():
     """
 print 'reading options....'
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "sjmohbp1", ["starting_tolerance=", "save_cubfile", "check_merging", "hex27", "cpml_size=", "top_absorbing", "cpml", "decimate", "addsea", "SEMoutput=", "qlog", "mfast", "curverefining=", "output=",
+    opts, args = getopt.getopt(sys.argv[1:], "sjmohbp1", ["starting_tolerance=", "save_cubfile", "step_tolerance=", "hex27", "cpml_size=", "top_absorbing", "cpml", "decimate", "addsea", "SEMoutput=", "qlog", "mfast", "curverefining=", "output=",
                                "rangecpux=", "rangecpuy=", "equivalence", "listflag=", "listblock=", "cpux=", "cpuy=", "exofiles=", "partitioner", "plane", "x1 = ", "x2 = ", "x3 = ", "x4 = ", "unit=", "chkcfg", "mat=", "merge_tolerance=", "export2SPECFEM3D", "mesh", "chklib", "cfg=", "job = ", "basin", "help", "id_proc=", "surface=", "script", "jou", "strat", "MPI", "regulargrid=", 'skin=', "build_surface", "build_volume", "merge1", "merge2", "merge", "collect", "meshfiles="])
     print opts, args
 except Exception, e:
@@ -157,13 +157,13 @@ cubit_version = get_cubit_version()
 
 if opts:
     for o, value in opts:
-        #if o in ('--starting_tolerance'):
-        #    starting_tolerance = int(value)
+        if o in ('--starting_tolerance'):
+            starting_tolerance = float(value)
         # print o, value
         if o in ('--save_cubfile'):
             save_cubfile = True
-        #if o in ('--check_merging'):
-        #    check_merging = True
+        if o in ('--step_tolerance'):
+            step_tolerance = float(value)
         if o in ('--hex27'):
             hex27 = True
 
