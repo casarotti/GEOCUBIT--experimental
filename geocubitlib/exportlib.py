@@ -356,9 +356,16 @@ def collecting_merging_new(cpuxmin=0,cpuxmax=0,cpuymin=0,cpuymax=0,cpux=1,cpuy=1
     except:
         pass
     #
-    print 'cpu',cpuxmin,cpuxmax,cpuymin,cpuymax
+    print 'number of chunks: ', cpux*cpuy
+    number_of_chunks = cpux*cpuy
     xmin,xmax,ymin,ymax,listfull=map_boundary(cpuxmin,cpuxmax,cpuymin,cpuymax,cpux,cpuy)
-    print xmin,xmax,ymin,ymax,listfull
+    print 'xmin: ',xmin
+    print 'xmax: ',xmax
+    print 'ymin: ',ymin
+    print 'ymax: ',ymax
+    print 'full list: ',listfull
+    if number_of_chunks < max(listfull):
+        raise MergingError('error mapping the chunks')
     #
     if cubfiles:
         nf,listip,filenames,cubflag=importing_cubfiles(cubfiles)
