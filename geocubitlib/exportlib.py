@@ -261,7 +261,7 @@ def check_lateral_nodes(name_group='lateral'):
     lateral_nodes=cubit.get_group_nodes(ilateral_nodes)
     cubit.cmd('del group '+str(ilateral_nodes))
     print name_group, ' nodes ',len(lateral_nodes)
-    return len(lateral_nodes)
+    return lateral_nodes
 
 
 def prepare_equivalence_new(name_group='lateral'):
@@ -279,7 +279,7 @@ def prepare_equivalence_new(name_group='lateral'):
     maxvalue=max(length.values())
     #
     print 'min lentgh: ',minvalue,'max lentgh: ',maxvalue
-    nbin= int((maxvalue/minvalue)/5.0)+1
+    nbin= int((maxvalue/minvalue))+1
     factor=(maxvalue-minvalue)/nbin
     dic_new={}
     for k in length.keys():
@@ -293,9 +293,60 @@ def prepare_equivalence_new(name_group='lateral'):
     ks.sort()
     for k in range(0,len(inv_length.keys()) - 1):
         inv_length[ks[k]]=inv_length[ks[k]]+inv_length[ks[k+1]]
-    return factor,minvalue,inv_length
+    return factor,minvalue,maxvalue,inv_length
 
-def collecting_merging_new(cpuxmin=0,cpuxmax=0,cpuymin=0,cpuymax=0,cpux=1,cpuy=1,cubfiles=False,check_merging=False,starting_tolerance=100):
+
+def merging_node_new(tol,clean=True,graphic_debug=False):
+    empty=False
+    print 'tolerance ',tol
+    cubit.cmd("topology check coincident node node in group coincident_lateral_nodes tolerance "+str(tol)+" highlight brief result group 'merging_lateral_nodes'")
+    group_exist=cubit.get_id_from_name("merging_lateral_nodes")
+    if not group_exist:
+        print 'no nodes in this tolerance range'
+    else:
+        merging_nodes=cubit.get_group_nodes(group_exist)
+        if graphic_debug:
+            cubit.cmd('draw group lateral')
+            cubit.cmd('high group merging_lateral_nodes')
+        print 'merging ',len(merging_nodes),' nodes.....'
+        cubit.cmd("equivalence node in merging_lateral_nodes tolerance "+str(tol*2))
+        if clean:
+            cubit.cmd("group coincident_lateral_nodes remove node in group merging_lateral_nodes")
+            cubit.cmd("delete Group merging_lateral_nodes")
+        ic_nodes=cubit.get_id_from_name('coincident_lateral_nodes')
+        c_nodes=cubit.get_group_nodes(ic_nodes)
+        print len(c_nodes)
+        if len(c_nodes) == 0:
+            empty=True
+        if graphic_debug:
+            cubit.cmd('draw group lateral')
+            cubit.cmd('high group coincident_lateral_nodes')
+            cubit.cmd('quality hex all jacobian global high 0 draw mesh draw add')
+        return empty
+
+def graphic_merging(tol,step_tol=None,maxtol=None):
+    """
+    routine for merging chunks in cubit/trelis GUI
+    tol :: tolerance starting value
+    step_tol :: the value that iteratively increases tol
+    maxtol :: max value of tolerance
+    """
+    if not step_tol:
+        step_tol=tol/10.
+    if not maxtol:
+        maxtol=tol*100
+
+    cubit.cmd('group \'coincident_lateral_nodes\' add Node in face in group lateral')
+    isempty=False
+    while isempty:
+        isempty=merging_node_new(tol,clean=True,graphic_debug=True)
+        tol=tol+step_tol
+        if tol > maxtol:
+            print 'tolerance greater than the max length of the edges, please check the mesh'
+
+
+
+def collecting_merging_new(cpuxmin=0,cpuxmax=0,cpuymin=0,cpuymax=0,cpux=1,cpuy=1,cubfiles=False,check_merging=False,starting_tolerance=None,step_tolerance=None):
     # import glob
     # import re
     #
@@ -305,8 +356,16 @@ def collecting_merging_new(cpuxmin=0,cpuxmax=0,cpuymin=0,cpuymax=0,cpux=1,cpuy=1
     except:
         pass
     #
-    print 'cpu',cpuxmin,cpuxmax,cpuymin,cpuymax
+    print 'number of chunks: ', cpux*cpuy
+    number_of_chunks = cpux*cpuy
     xmin,xmax,ymin,ymax,listfull=map_boundary(cpuxmin,cpuxmax,cpuymin,cpuymax,cpux,cpuy)
+    print 'xmin: ',xmin
+    print 'xmax: ',xmax
+    print 'ymin: ',ymin
+    print 'ymax: ',ymax
+    print 'full list: ',listfull
+    if 1 < number_of_chunks < max(listfull):
+        raise MergingError('error mapping the chunks')
     #
     if cubfiles:
         nf,listip,filenames,cubflag=importing_cubfiles(cubfiles)
@@ -341,7 +400,7 @@ def collecting_merging_new(cpuxmin=0,cpuxmax=0,cpuymin=0,cpuymax=0,cpux=1,cpuy=1
             store_tmp=collecting_block(store_group_name,ip,xmin,xmax,ymin,ymax,index_block)
             if len(store_tmp) != 0:
                 store_group_name=store_tmp
-            print check_lateral_nodes()
+            lateral_nodes=check_lateral_nodes()
 
         #cubit.cmd('export mesh "tmp_collect_NOmerging.e" dimension 3 block all overwrite')
         cubit.cmd('save as "tmp_nomerging.cub" overwrite ')
@@ -356,83 +415,102 @@ def collecting_merging_new(cpuxmin=0,cpuxmax=0,cpuymin=0,cpuymax=0,cpux=1,cpuy=1
         cubit.cmd('set journal on')
         return
 
-    if check_merging:
-        print 'cpu',cpuxmin,cpuxmax,cpuymin,cpuymax
-        nodes_before_ymin=check_lateral_nodes('ymin')
-        nlatline_ymin=(cpuxmax-cpuxmin)-1
-        print 'lines',nlatline_ymin
-        nodes_before_xmin=check_lateral_nodes('xmin')
-        nlatline_xmin=(cpuymax-cpuymin)-1
-        print 'lines',nlatline_xmin
-        nodes_before_all=check_lateral_nodes()
+    #if check_merging:
+    #    print 'cpu',cpuxmin,cpuxmax,cpuymin,cpuymax
+    #    nodes_before_ymin=check_lateral_nodes('ymin')
+    #    nlatline_ymin=(cpuxmax-cpuxmin)-1
+    #    print 'lines',nlatline_ymin
+    #    nodes_before_xmin=check_lateral_nodes('xmin')
+    #    nlatline_xmin=(cpuymax-cpuymin)-1
+    #    print 'lines',nlatline_xmin
+    #    nodes_before_all=check_lateral_nodes()
 
-    factor,minvalue,inv_length=prepare_equivalence_new()
+    factor,minvalue,maxvalue,inv_length=prepare_equivalence_new()
     cubit.cmd('set info off')
     cubit.cmd('set echo off')
     cubit.cmd('set journal off')
-    #cubit.cmd('set error off')
-    for k in inv_length.keys():
-        print k, 'tolerance', str(k*factor+minvalue/3.)
-        check_lateral_nodes()
-        if len(inv_length[k]) > 0:
-            print 'equivalence node in '+str(len(inv_length[k]))+' edges  tolerance '+str(k*factor+minvalue/3.)
-            cmd='equivalence node in edge '+' '.join(str(x) for x in inv_length[k])+' tolerance '+str(k*factor+minvalue/3.)
-            cubit.cmd(cmd)
-
-    if check_merging:
-        nodes_after_all=check_lateral_nodes()
-        nodes_after_ymin=check_lateral_nodes('ymin')
-        if nlatline_ymin !=0:
-            node_lines_ymin=(nodes_before_ymin-nodes_after_ymin)/nlatline_ymin
-        else:
-            node_lines_ymin=0
-        nodes_after_xmin=check_lateral_nodes('xmin')
-        if nlatline_xmin !=0:
-            node_lines_xmin=(nodes_before_xmin-nodes_after_xmin)/nlatline_xmin
-        else:
-            node_lines_xmin=0
-        if node_lines_xmin and nlatline_ymin:
-            checklines = node_lines_xmin == node_lines_ymin
-        else:
-            checklines=True
-
-        checknodes = nodes_before_all == 2*(nodes_after_all+node_lines_xmin*(nlatline_xmin*nlatline_ymin))
-        print 'check lines',checklines
-        print 'check nodes',checknodes
-        if not checknodes:
-            diff_nodes=-nodes_before_all + 2*(nodes_after_all+node_lines_xmin*(nlatline_xmin*nlatline_ymin))
-            print diff_nodes
-            for tol in range(starting_tolerance,10000,100):
-                cubit.cmd('topology check coincident node node in face in group lateral tolerance '+str(tol)+' draw brief result group "diff_node"')
-                idiff=cubit.get_id_from_name('diff_node')
-                idnodes=cubit.get_group_nodes(idiff)
-                if len(idnodes)==diff_nodes:
-                    print diff_nodes,idnodes
-                    cmd='equivalence node '+' '.join(str(x) for x in idnodes)+' tolerance '+str(tol)
-                    cubit.cmd(cmd)
-                    break
-
-            nodes_after_all=check_lateral_nodes()
-            checknodes = nodes_before_all == 2*(nodes_after_all+node_lines_xmin*(nlatline_xmin*nlatline_ymin))
-            print 'check nodes',checknodes
-
+    if starting_tolerance:
+        tol=starting_tolerance
     else:
-        print 'no merging check'
-        checklines = True
-        checknodes = True
-
-    if checknodes and checklines:
-        for ig,g in enumerate(store_group_name):
-            cubit.cmd('block '+str(ig+1)+' hex in group '+g)
-            cubit.cmd('block '+str(ig+1)+' name "vol'+str(ig+1)+'"')
-            print 'block '+str(ig+1)+' hex in group '+g
-        for ig,g in enumerate(side_name):
-            cubit.cmd('block '+side_val[ig]+' face in group '+g)
-            print 'block '+side_val[ig]+' face in group '+g
-            cubit.cmd('block '+side_val[ig]+' name "'+side_block_name[ig]+'"')
-        cubit.cmd('del group all')
+        tol=minvalue/20.
+    if step_tolerance:
+        step_tol=step_tolerance
     else:
-        raise MergingError('merging failed... please check the blocks')
+        step_tol=minvalue/20.
+
+    cubit.cmd('group \'coincident_lateral_nodes\' add Node in face in group lateral')
+    isempty=False
+    while not isempty:
+        isempty=merging_node_new(tol,clean=True,graphic_debug=False)
+        tol=tol+step_tol
+        if tol > maxvalue*1.5:
+            raise MergingError('tolerance greater than the max length of the edges, please check the mesh')
+
+
+
+    ##cubit.cmd('set error off')
+    #for k in inv_length.keys():
+    #    print k, 'tolerance', str(k*factor+minvalue/3.)
+    #    check_lateral_nodes()
+    #    if len(inv_length[k]) > 0:
+    #        print 'equivalence node in '+str(len(inv_length[k]))+' edges  tolerance '+str(k*factor+minvalue/3.)
+    #        cmd='equivalence node in edge '+' '.join(str(x) for x in inv_length[k])+' tolerance '+str(k*factor+minvalue/3.)
+    #        cubit.cmd(cmd)
+
+    #if check_merging:
+    #    nodes_after_all=check_lateral_nodes()
+    #    nodes_after_ymin=check_lateral_nodes('ymin')
+    #    if nlatline_ymin !=0:
+    #        node_lines_ymin=(nodes_before_ymin-nodes_after_ymin)/nlatline_ymin
+    #    else:
+    #        node_lines_ymin=0
+    #    nodes_after_xmin=check_lateral_nodes('xmin')
+    #    if nlatline_xmin !=0:
+    #        node_lines_xmin=(nodes_before_xmin-nodes_after_xmin)/nlatline_xmin
+    #    else:
+    #        node_lines_xmin=0
+    #    if node_lines_xmin and nlatline_ymin:
+    #        checklines = node_lines_xmin == node_lines_ymin
+    #    else:
+    #        checklines=True
+
+    #    checknodes = nodes_before_all == 2*(nodes_after_all+node_lines_xmin*(nlatline_xmin*nlatline_ymin))
+    #    print 'check lines',checklines
+    #    print 'check nodes',checknodes
+    #    if not checknodes:
+    #        diff_nodes=-nodes_before_all + 2*(nodes_after_all+node_lines_xmin*(nlatline_xmin*nlatline_ymin))
+    #        print diff_nodes
+    #        for tol in range(starting_tolerance,10000,100):
+    #            cubit.cmd('topology check coincident node node in face in group lateral tolerance '+str(tol)+' draw brief result group "diff_node"')
+    #            idiff=cubit.get_id_from_name('diff_node')
+    #            idnodes=cubit.get_group_nodes(idiff)
+    #            if len(idnodes)==diff_nodes:
+    #                print diff_nodes,idnodes
+    #                cmd='equivalence node '+' '.join(str(x) for x in idnodes)+' tolerance '+str(tol)
+    #                cubit.cmd(cmd)
+    #                break
+
+    #        nodes_after_all=check_lateral_nodes()
+    #        checknodes = nodes_before_all == 2*(nodes_after_all+node_lines_xmin*(nlatline_xmin*nlatline_ymin))
+    #        print 'check nodes',checknodes
+#
+    #else:
+    #    print 'no merging check'
+    #    checklines = True
+    #    checknodes = True
+
+    #if checknodes and checklines:
+    for ig,g in enumerate(store_group_name):
+        cubit.cmd('block '+str(ig+1)+' hex in group '+g)
+        cubit.cmd('block '+str(ig+1)+' name "vol'+str(ig+1)+'"')
+        print 'block '+str(ig+1)+' hex in group '+g
+    for ig,g in enumerate(side_name):
+        cubit.cmd('block '+side_val[ig]+' face in group '+g)
+        print 'block '+side_val[ig]+' face in group '+g
+        cubit.cmd('block '+side_val[ig]+' name "'+side_block_name[ig]+'"')
+    cubit.cmd('del group all')
+    #else:
+    #    raise MergingError('merging failed... please check the blocks')
 
     cubit.cmd('set info on')
     cubit.cmd('set echo on')
