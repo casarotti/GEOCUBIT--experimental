@@ -364,7 +364,7 @@ def collecting_merging_new(cpuxmin=0,cpuxmax=0,cpuymin=0,cpuymax=0,cpux=1,cpuy=1
     print 'ymin: ',ymin
     print 'ymax: ',ymax
     print 'full list: ',listfull
-    if number_of_chunks < max(listfull):
+    if 1 < number_of_chunks < max(listfull):
         raise MergingError('error mapping the chunks')
     #
     if cubfiles:
