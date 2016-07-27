@@ -1,5 +1,5 @@
 #############################################################################
-# read_parameter_cfg.py                                                    
+# read_parameter_cfg.py
 # this file is part of GEOCUBIT                                             #
 #                                                                           #
 # Created by Emanuele Casarotti                                             #
@@ -64,7 +64,7 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
         else:
             if s.count(',') != 0:
                 value=s.split(',')
-                while value.count(''):                
+                while value.count(''):
                     value.remove('')
             else:
                 value=s
@@ -93,7 +93,7 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
             except:
                 dict_o[option] = None
         return dict_o
-    
+
     class attrdict(dict):
         def __init__(self, *args, **kwargs):
             dict.__init__(self, *args, **kwargs)
@@ -112,8 +112,9 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
                 if o[0][0] != arc: print
                 print o[0],' -> ',o[1]
                 arc=o[0][0]
+            print __name__
             return '____'
-    
+
     #
     dcfg={}
     #
@@ -127,7 +128,7 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
     dcfg['precision'] =0.02 #precision for the boundary check (0.02 m)
     #
     #INIT
-    dcfg['debug']=True 
+    dcfg['debug']=True
     dcfg['cubit_info']="on"
     dcfg['echo_info']="on"
     dcfg['jou_info']="on"
@@ -136,7 +137,7 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
     dcfg['parallel_import']=True
     dcfg['save_geometry_cubit']=True
     dcfg['save_surface_cubit']=False
-    dcfg['save_geometry_paraview'] = False #not implemented 
+    dcfg['save_geometry_paraview'] = False #not implemented
     dcfg['save_geometry_ACIS'] = False #not implemented
     dcfg['export_exodus_mesh']=False
     dcfg['manual_adj']                  =False
@@ -174,29 +175,29 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
     dcfg['ntripl']=0
     dcfg['debug_geometry']=False
     dcfg['topflat']=False
-    
+
     if float(dcfg['version_cubit']) >= 13.1:
         dcfg['volumecreation_method']=None
     else:
         dcfg['volumecreation_method']='loft'
-    
-    
-    
+
+
+
     dcfg['nsurf'] = None
     if cfgname:
         config.read(cfgname)
         sections=['cubit.options','simulation.cpu_parameters','geometry.surfaces','geometry.volumes','geometry.volumes.layercake','geometry.volumes.flatcake','geometry.volumes.partitioner','geometry.partitioner','meshing']
-        
-        
+
+
         for section in sections:
             try:
                 d=section_dict(section)
                 dcfg.update(d)
             except:
                 pass
-        
-        print dcfg
-        
+
+        # print dcfg
+
         if dcfg['nsurf']:
            surface_name=[]
            num_x=[]
@@ -230,17 +231,17 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
                    directionx.append(d['directionx'])
                    directiony.append(d['directiony'])
            dcfg['surface_name']=surface_name
-           dcfg['num_x']=num_x       
-           dcfg['num_y']=num_y       
-           dcfg['xstep']=xstep       
-           dcfg['ystep']=ystep       
-           dcfg['step']=step        
-           dcfg['directionx']=directionx  
-           dcfg['directiony']=directiony  
-           dcfg['unit2']=unit2       
-           dcfg['surf_type']=surf_type   
-           dcfg['delimiter']=delimiter  
-           
+           dcfg['num_x']=num_x
+           dcfg['num_y']=num_y
+           dcfg['xstep']=xstep
+           dcfg['ystep']=ystep
+           dcfg['step']=step
+           dcfg['directionx']=directionx
+           dcfg['directiony']=directiony
+           dcfg['unit2']=unit2
+           dcfg['surf_type']=surf_type
+           dcfg['delimiter']=delimiter
+
         try:
             tres=0
             xmin,ymin=geo2utm(dcfg['longitude_min'],dcfg['latitude_min'],dcfg['unit'])
@@ -264,48 +265,48 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
             dcfg['tres_boundarydetection']=tres
         except:
             pass
-            
+
         if dcfg['irregulargridded_surf']:
             print 'test'
             dcfg['xmin']=dcfg['longitude_min']
             dcfg['ymin']=dcfg['latitude_min']
             dcfg['xmax']=dcfg['longitude_max']
             dcfg['ymax']=dcfg['latitude_max']
-                
-                
-                
-            
+
+
+
+
         if dcfg['sea']:
             if not dcfg['sea_level']: dcfg['sea_level']=0
             if not dcfg['sea_threshold']: dcfg['sea_threshold']=-200
             dcfg['actual_vertical_interval_top_layer']=1
             dcfg['coarsening_top_layer']=True
-        
-    
+
+
     dcfg['optionsea']={'sea':dcfg['sea'],'seaup':dcfg['seaup'],'sealevel':dcfg['sea_level'],'seathres':dcfg['sea_threshold']}
     cfg=attrdict(dcfg)
-    
+
     if menu:
         try:
             if cfg.working_dir[-1] == '/': cfg.working_dir=cfg.working_dir[:-1]
             if cfg.working_dir[0] != '/': cfg.working_dir='./'+cfg.working_dir
         except:
             cfg.working_dir=os.getcwd()
-        
+
         try:
             if cfg.output_dir[-1] == '/': cfg.output_dir=cfg.output_dir[:-1]
             if cfg.output_dir[0] != '/': cfg.output_dir='./'+cfg.output_dir
         except:
             cfg.output_dir=os.getcwd()
-        
+
         try:
             if cfg.SPECFEM3D_output_dir[-1] == '/': cfg.SPECFEM3D_output_dir=cfg.SPECFEM3D_output_dir[:-1]
             if cfg.SPECFEM3D_output_dir[0] != '/': cfg.SPECFEM3D_output_dir='./'+cfg.SPECFEM3D_output_dir
         except:
             cfg.SPECFEM3D_output_dir=os.getcwd()
-        
+
         cfg.single=single
-        
+
         if menusurface:
             cfg.nsurf=1
             cfg.name=[menu.surface_name]
@@ -321,13 +322,13 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
             cfg.directiony=[menu.directiony]
     else:
         cfg.SPECFEM3D_output_dir=os.getcwd()
-        
-        
+
+
     if not cfg.number_processor_eta and cfg.nodes:
         cfg.number_processor_xi,cfg.number_processor_eta=split(cfg.nodes)
-        
+
     if isinstance(cfg.filename,str): cfg.filename=[cfg.filename]
-    
+
     try:
         cfg.nproc_eta=cfg.number_processor_eta
         cfg.nproc_xi=cfg.number_processor_xi
@@ -335,7 +336,7 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
         cfg.cpux=cfg.number_processor_xi
     except:
         pass
-    
+
     if create_plane:
         cfg.x1=map(float,menu.x1.split(','))
         cfg.x2=map(float,menu.x2.split(','))
@@ -352,21 +353,21 @@ def readcfg(filename=None,importmenu=False,mpiflag=False):
         if isinstance(cfg.tripl,int): cfg.tripl=[cfg.tripl]
     except:
         pass
-        
+
     try:
         if isinstance(cfg.iv_interval,int): cfg.iv_interval=[cfg.iv_interval]
     except:
         pass
-        
+
     try:
         if isinstance(cfg.refinement_depth,int): cfg.refinement_depth=[cfg.refinement_depth]
     except:
         pass
-    
+
     return cfg
 
 
-class getparameter(dict): 
+class getparameter(dict):
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
         self.__dict__ = self

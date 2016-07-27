@@ -1,5 +1,5 @@
 #############################################################################
-# start.py                                                    
+# start.py
 # this file is part of GEOCUBIT                                             #
 #                                                                           #
 # Created by Emanuele Casarotti                                             #
@@ -28,21 +28,25 @@
 #method to call the library
 
 def start_mpi():
-    """ 
+    """
     start mpi, fakempi mimick the mpi function when the run is serial. The object mpi is based upon pyMPI.
     it returns: mpiflag,iproc,numproc,mpi
-    where 
-        mpiflag is True if parallel mesh is on 
+    where
+        mpiflag is True if parallel mesh is on
         iproc is the id of the processor (0 if the run is serial)
         numproc is the number of the processor (1 if the run is serial)
         mpi is the mpi object
     """
     import sys
     try:
-        import menu as menu
-        iproc=menu.id_proc
+        if __name__ != '__console__':
+            import menu as menu
+            iproc = menu.id_proc
+        else:
+            iproc = 0
     except:
-        iproc=0
+        iproc = 0
+
     try:
         import mpi
         numproc=mpi.size
@@ -76,7 +80,7 @@ def start_mpi():
     return mpiflag,iproc,numproc,mpi
 
 def start_cubit(init=False):
-    """ 
+    """
     start cubit, it return the cubit object
     init argument set the monitotr files
     """
@@ -142,7 +146,7 @@ def start_cfg(filename=None,importmenu=True):
     """
     import read_parameter_cfg
     mpiflag,iproc,numproc,mpi=start_mpi()
-    if filename: importmenu=False 
+    if filename: importmenu=False
     cfg=read_parameter_cfg.readcfg(filename=filename,importmenu=importmenu,mpiflag=mpiflag)
     import os
     try:
@@ -157,7 +161,7 @@ def start_cfg(filename=None,importmenu=True):
          os.makedirs(cfg.SPECFEM3D_output_dir)
     except OSError:
          pass
-    
+
     return cfg
 
 def start_numpy():
@@ -171,5 +175,3 @@ def start_numpy():
         print 'error importing numpy, please check if numpy is correctly installed'
         sys.exit()
     return numpy
-
-    

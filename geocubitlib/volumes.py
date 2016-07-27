@@ -1,5 +1,5 @@
 #############################################################################
-# volumes.py                                                    
+# volumes.py
 # this file is part of GEOCUBIT                                             #
 #                                                                           #
 # Created by Emanuele Casarotti                                             #
@@ -32,13 +32,13 @@ except:
         print 'error importing cubit, check if cubit is installed'
         pass
 
-    
+
 def volumes(filename=None):
     """create the volumes"""
     import start as start
     print'volume'
     cfg                     = start.start_cfg(filename=filename)
-    print cfg
+    # print cfg
     #
     if cfg.volume_type == 'layercake_volume_ascii_regulargrid_regularmap':
             layercake_volume_ascii_regulargrid_mpiregularmap(filename=filename)
@@ -46,7 +46,7 @@ def volumes(filename=None):
             layercake_volume_fromacis_mpiregularmap(filename=filename)
     elif cfg.volume_type == 'verticalsandwich_volume_ascii_regulargrid_mpiregularmap':
             layercake_volume_ascii_regulargrid_mpiregularmap(filename=filename,verticalsandwich=True)
-    
+
 def ordering_surfaces(list_surfaces):
     list_z=[]
     for s in list_surfaces:
@@ -64,7 +64,7 @@ def onlyvolumes():
     cubitcommand= 'del surface all'
     cubit.cmd(cubitcommand)
     list_vol=cubit.parse_cubit_list("volume","all")
-    if len(list_vol) > 1:     
+    if len(list_vol) > 1:
         cubitcommand= 'imprint volume all'
         cubit.cmd(cubitcommand)
         cubitcommand= 'merge all'
@@ -83,12 +83,12 @@ def surfaces(filename=None):
             layercake_volume_fromacis_mpiregularmap(filename=filename,onlysurface=True)
     elif cfg.volume_type == 'verticalsandwich_volume_ascii_regulargrid_mpiregularmap':
             layercake_volume_ascii_regulargrid_mpiregularmap(filename=filename,verticalsandwich=True,onlysurface=True)
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
 
 
 def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandwich=False,onlysurface=False):
@@ -98,10 +98,10 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
     mpiflag,iproc,numproc,mpi   = start.start_mpi()
     #
     numpy                       = start.start_numpy()
-    cfg                         = start.start_cfg(filename=filename)                       
-    
+    cfg                         = start.start_cfg(filename=filename)
+
     from utilities import geo2utm, savegeometry,savesurf,cubit_command_check
-    
+
     from math import sqrt
     #
     try:
@@ -121,7 +121,7 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
     else:
         icpuy=int(cfg.id_proc/cfg.nproc_xi)
         icpux=cfg.id_proc%cfg.nproc_xi
-    
+
     #
     if  cfg.geometry_format == 'ascii':
         #for the original surfaces
@@ -148,7 +148,7 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
             if iproc == 0 or not mpiflag:
                 nx=mpi.bcast(nx_0)
             else:
-                nx=mpi.bcast()       
+                nx=mpi.bcast()
             if iproc == 0 or not mpiflag:
                 ny=mpi.bcast(ny_0)
             else:
@@ -158,9 +158,9 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
         print str(iproc)+ ' end of receving grd files '
         nx_segment=int(nx/cfg.nproc_xi)+1
         ny_segment=int(ny/cfg.nproc_eta)+1
-        
+
     elif cfg.geometry_format=='regmesh': # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        
+
         if cfg.depth_bottom != cfg.zdepth[0]:
             if iproc == 0: print 'the bottom of the block is at different depth than depth[0] in the configuration file'
         nx= cfg.nproc_xi+1
@@ -181,10 +181,10 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
         #
         xlength=(cfg.xmax-cfg.xmin)/float(cfg.nproc_xi) #length of x slide for chunk
         ylength=(cfg.ymax-cfg.ymin)/float(cfg.nproc_eta) #length of y slide for chunk
-        nelem_chunk_x=1    
+        nelem_chunk_x=1
         nelem_chunk_y=1
         ivxtot=nelem_chunk_x+1
-        ivytot=nelem_chunk_y+1 
+        ivytot=nelem_chunk_y+1
         xstep=xlength #distance between vertex on x
         ystep=ylength
         if verticalsandwich:
@@ -193,14 +193,14 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
         else:
             for i in range(0,cfg.nz):
                 elev[:,:,i] = cfg.zdepth[i]
-        
+
         icoord=0
         for iy in range(0,ny):
             for ix in range(0,nx):
                 icoord=icoord+1
                 coordx[ix,iy]=cfg.xmin+xlength*(ix)
                 coordy[ix,iy]=cfg.ymin+ylength*(iy)
-        
+
         #print coordx,coordy,nx,ny
     #
     print 'end of building grid '+str(iproc)
@@ -230,7 +230,7 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
         nlayer=cfg.nxvol
     else:
         nlayer=cfg.nz
-    
+
     for inz in range(0,nlayer):
         if cfg.sea and inz==cfg.nz-1: #sea layer
             sealevel=True
@@ -242,19 +242,19 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
             sealevel=False
             bathymetry=False
         print sealevel,bathymetry
-        
+
         if  cfg.bottomflat and inz == 0: #bottom layer
                 #
                 if cfg.geometry_format == 'ascii' and not verticalsandwich:
-                    lv=cubit.get_last_id("vertex")     
-                    
+                    lv=cubit.get_last_id("vertex")
+
                     x_current,y_current=(coordx[nxmin_cpu,nymin_cpu],coordy[nxmin_cpu,nymin_cpu])
                     cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
                     cubit.cmd(cubitcommand)
                     #
                     x_current,y_current=(coordx[nxmin_cpu,nymax_cpu],coordy[nxmin_cpu,nymax_cpu])
                     cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
-                    cubit.cmd(cubitcommand)                                                                              
+                    cubit.cmd(cubitcommand)
                     #
                     x_current,y_current=(coordx[nxmax_cpu,nymax_cpu],coordy[nxmax_cpu,nymax_cpu])
                     cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
@@ -264,21 +264,21 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
                     cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
                     cubit.cmd(cubitcommand)
                     #
-                    lv2=cubit.get_last_id("vertex")     
-                    
+                    lv2=cubit.get_last_id("vertex")
+
                     cubitcommand= 'create surface vertex '+str(lv+1)+' to '+str(lv2)
                     cubit.cmd(cubitcommand)
                     #
                     isurf = isurf + 1
                 else:
-                    lv=cubit.get_last_id("vertex") 
+                    lv=cubit.get_last_id("vertex")
                     x_current,y_current=geo2utm(coordx[nxmin_cpu,nymin_cpu],coordy[nxmin_cpu,nymin_cpu],'utm')
                     cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
                     cubit.cmd(cubitcommand)
                     #
                     x_current,y_current=geo2utm(coordx[nxmin_cpu,nymax_cpu],coordy[nxmin_cpu,nymax_cpu],'utm')
                     cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
-                    cubit.cmd(cubitcommand)                                                                              
+                    cubit.cmd(cubitcommand)
                     #
                     if verticalsandwich:
                         x_current,y_current=geo2utm(coordx[nxmin_cpu,nymax_cpu],coordy[nxmin_cpu,nymax_cpu],'utm')
@@ -297,23 +297,23 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
                         cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
                         cubit.cmd(cubitcommand)
                     #
-                    lv2=cubit.get_last_id("vertex") 
+                    lv2=cubit.get_last_id("vertex")
                     cubitcommand= 'create surface vertex '+str(lv+1)+' to '+str(lv2)
                     cubit.cmd(cubitcommand)
                     #
                     isurf = isurf + 1
-                    
+
         elif  cfg.topflat and inz == nlayer-1:
             if cfg.geometry_format == 'ascii' and not verticalsandwich:
-                lv=cubit.get_last_id("vertex")     
-                
+                lv=cubit.get_last_id("vertex")
+
                 x_current,y_current=(coordx[nxmin_cpu,nymin_cpu],coordy[nxmin_cpu,nymin_cpu])
                 cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_top )
                 cubit.cmd(cubitcommand)
                 #
                 x_current,y_current=(coordx[nxmin_cpu,nymax_cpu],coordy[nxmin_cpu,nymax_cpu])
                 cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_top )
-                cubit.cmd(cubitcommand)                                                                              
+                cubit.cmd(cubitcommand)
                 #
                 x_current,y_current=(coordx[nxmax_cpu,nymax_cpu],coordy[nxmax_cpu,nymax_cpu])
                 cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_top )
@@ -323,22 +323,22 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
                 cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_top )
                 cubit.cmd(cubitcommand)
                 #
-                lv2=cubit.get_last_id("vertex")     
-                
+                lv2=cubit.get_last_id("vertex")
+
                 cubitcommand= 'create surface vertex '+str(lv+1)+' to '+str(lv2)
                 cubit.cmd(cubitcommand)
                 #
                 isurf = isurf + 1
             else:
                 print "top_flat is not a valid option for sandwich"
-            
-            
+
+
         else:
-            print inz,'layer'  
+            print inz,'layer'
             if cfg.geometry_format == 'regmesh':
                 if verticalsandwich:
                     zvertex=cfg.xwidth[inz]
-                    lv=cubit.get_last_id("vertex")                        
+                    lv=cubit.get_last_id("vertex")
                     x_current,y_current=geo2utm(coordx[nxmax_cpu,nymin_cpu],coordy[nxmax_cpu,nymin_cpu],'utm')
                     x_current = x_current + zvertex;
                     cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
@@ -347,7 +347,7 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
                     x_current,y_current=geo2utm(coordx[nxmax_cpu,nymax_cpu],coordy[nxmax_cpu,nymax_cpu],'utm')
                     x_current = x_current + zvertex;
                     cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( cfg.depth_bottom )
-                    cubit.cmd(cubitcommand)                                                                              
+                    cubit.cmd(cubitcommand)
                     #
                     x_current,y_current=geo2utm(coordx[nxmax_cpu,nymax_cpu],coordy[nxmax_cpu,nymax_cpu],'utm')
                     x_current = x_current + zvertex;
@@ -360,14 +360,14 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
                     cubit.cmd(cubitcommand)
                 else:
                     zvertex=cfg.zdepth[inz]
-                    lv=cubit.get_last_id("vertex")                        
+                    lv=cubit.get_last_id("vertex")
                     x_current,y_current=geo2utm(coordx[nxmin_cpu,nymin_cpu],coordy[nxmin_cpu,nymin_cpu],'utm')
                     cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( zvertex )
                     cubit.cmd(cubitcommand)
                     #
                     x_current,y_current=geo2utm(coordx[nxmin_cpu,nymax_cpu],coordy[nxmin_cpu,nymax_cpu],'utm')
                     cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( zvertex )
-                    cubit.cmd(cubitcommand)                                                                              
+                    cubit.cmd(cubitcommand)
                     #
                     x_current,y_current=geo2utm(coordx[nxmax_cpu,nymax_cpu],coordy[nxmax_cpu,nymax_cpu],'utm')
                     cubitcommand= 'create vertex '+ str( x_current )+ ' ' + str( y_current) +' '+ str( zvertex )
@@ -382,9 +382,9 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
                 #
                 isurf = isurf + 1
             elif cfg.geometry_format == 'ascii':
-                
+
                 vertex=[]
-                
+
                 for iy in range(nymin_cpu,nymax_cpu+1):
                     ivx=0
                     for ix in range(nxmin_cpu,nxmax_cpu+1):
@@ -399,11 +399,11 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
                 uline=[]
                 vline=[]
                 iv=0
-                
+
                 cubit.cmd("set info off")
                 cubit.cmd("set echo off")
                 cubit.cmd("set journal off")
-                
+
                 for iy in range(0,nymax_cpu-nymin_cpu+1):
                     positionx=''
                     for ix in range(0,nxmax_cpu-nxmin_cpu+1):
@@ -436,7 +436,7 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
                 cubitcommand= 'create surface net u curve '+ str( umin )+' to '+str( umax )+ ' v curve '+ str( vmin )+ ' to '+str( vmax )+' heal'
                 cubit.cmd(cubitcommand)
                 ner2=cubit.get_error_count()
-                if ner == ner2: 
+                if ner == ner2:
                     command = "del curve all"
                     cubit.cmd(command)
                     isurf=isurf+1
@@ -471,7 +471,7 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
                 sv=cubit.get_relatives("volume",v,"surface")
                 if len(sv) <=1: cubit.cmd("del vol "+str(v))
             list_vol=cubit.parse_cubit_list("volume","all")
-            if len(list_vol) > 1:     
+            if len(list_vol) > 1:
                 cubitcommand= 'imprint volume all'
                 cubit.cmd(cubitcommand)
                 cubitcommand= 'merge all'
@@ -485,19 +485,19 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,verticalsandw
     #    outdir=cfg.working_dir
     #    imprint_topography_with_geological_outline(curvesname,outdir)
     #
-    #        
+    #
     cubit.cmd("set info "+cfg.cubit_info)
     cubit.cmd("set echo "+cfg.echo_info)
     cubit.cmd("set journal "+cfg.jou_info)
-    
-    
+
+
 def layercake_volume_fromacis_mpiregularmap(filename=None):
     import sys
     import start as start
     #
     mpiflag,iproc,numproc,mpi   = start.start_mpi()
     #
-    cfg                         = start.start_cfg(filename=filename)                       
+    cfg                         = start.start_cfg(filename=filename)
     #
     from utilities import geo2utm, savegeometry
     #
@@ -521,7 +521,7 @@ def layercake_volume_fromacis_mpiregularmap(filename=None):
         cubit.cmd(command)
         command="del surf "+str(last_surface)
         cubit.cmd(command)
-        
+
     def ywebcut(x):
         command='create planar surface with plane yplane offset '+str(x)
         cubit.cmd(command)
@@ -530,7 +530,7 @@ def layercake_volume_fromacis_mpiregularmap(filename=None):
         cubit.cmd(command)
         command="del surf "+str(last_surface)
         cubit.cmd(command)
-        
+
     def translate2zero():
         ss=cubit.parse_cubit_list('surface','all')
         box = cubit.get_total_bounding_box("surface", ss)
@@ -538,10 +538,10 @@ def layercake_volume_fromacis_mpiregularmap(filename=None):
         ymin=box[3]
         cubit.cmd('move surface all x '+str(-1*xmin)+' y '+str(-1*ymin))
         return xmin,ymin
-        
+
     def translate2original(xmin,ymin):
         cubit.cmd('move surface all x '+str(xmin)+' y '+str(ymin))
-        
+
     if mpiflag:
         icpux = iproc % cfg.nproc_xi
         icpuy = int(iproc / cfg.nproc_xi)
@@ -570,8 +570,8 @@ def layercake_volume_fromacis_mpiregularmap(filename=None):
         else:
             command = "import cubit '"+cfg.filename[inz]+"'"
             cubit.cmd(command)
-            
-            
+
+
     #translate
     xmin,ymin=translate2zero()
     print 'translate ...', -xmin,-ymin
@@ -579,7 +579,7 @@ def layercake_volume_fromacis_mpiregularmap(filename=None):
     ymin_cpu=ymin_cpu-ymin
     xmax_cpu=xmax_cpu-xmin
     ymax_cpu=ymax_cpu-ymin
-    
+
     ss=cubit.parse_cubit_list('surface','all')
     box = cubit.get_total_bounding_box("surface", ss)
     print 'dimension... ', box
@@ -606,7 +606,7 @@ def layercake_volume_fromacis_mpiregularmap(filename=None):
         isurf=[k for k, v in dict_surf.iteritems() if v == val][0]
         list_surf.append(int(isurf))
     #
-    
+
     #lofting the volume
     for i,j in zip(list_surf,list_surf[1:]):
         ner=cubit.get_error_count()
@@ -616,8 +616,8 @@ def layercake_volume_fromacis_mpiregularmap(filename=None):
         ner2=cubit.get_error_count()
     #
     translate2original(xmin,ymin)
-    
-    
+
+
     if ner == ner2:
         cubitcommand= 'del surface all'
         cubit.cmd(cubitcommand)
@@ -626,7 +626,7 @@ def layercake_volume_fromacis_mpiregularmap(filename=None):
         #cubitcommand= 'composite create curve in vol all'
         #cubit.cmd(cubitcommand)
         list_vol=cubit.parse_cubit_list("volume","all")
-        if len(list_vol) > 1:     
+        if len(list_vol) > 1:
             cubitcommand= 'imprint volume all'
             cubit.cmd(cubitcommand)
             #cubit_error_stop(iproc,cubitcommand,ner)
@@ -694,26 +694,26 @@ def create_volume(surf1,surf2,method='loft'):
 #    from sets import Set
 #    #
 #    from utilities import load_curves,project_curves,get_v_h_list
-#    
+#
 #    list_vol=cubit.parse_cubit_list("volume","all")
 #    surf_or,surf_vertical,list_curve_or,list_curve_vertical,bottom,top=get_v_h_list(list_vol)
-#    
-#    
-#    
+#
+#
+#
 #    outlinebasin_curve=load_curves(curvesname[0])
 #    transition_curve=load_curves(curvesname[1])
 #    faulttrace_curve=load_curves(curvesname[2])
-#    
+#
 #    curves=[]
 #    if outlinebasin_curve: curves=curves+outlinebasin_curve
 #    if transition_curve: curves=curves+transition_curve
 #    if faulttrace_curve: curves=curves+faulttrace_curve
-#    
+#
 #    if curves:
 #            command='imprint tolerant surface '+str(top)+' with curve '+' '.join(str(x) for x in curves)+'  merge'
 #            cubit.cmd(command)
-#             
-#    
+#
+#
 #    command = "merge surf all"
 #    cubit.cmd(command)
 #    command = "compress vol all"
@@ -721,6 +721,6 @@ def create_volume(surf1,surf2,method='loft'):
 #    command = "compress surf all"
 #    cubit.cmd(command)
 #    command = "save as '"+outdirs+"/"+"imprinted_vol_"+str(iproc)+".cub' overwrite"
-#    cubit.cmd(command)    
+#    cubit.cmd(command)
 #
 #

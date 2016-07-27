@@ -1,5 +1,5 @@
 #############################################################################
-# mesh_volume.py                                                    
+# mesh_volume.py
 # this file is part of GEOCUBIT                                             #
 #                                                                           #
 # Created by Emanuele Casarotti                                             #
@@ -32,7 +32,7 @@ except:
     except:
         print "error importing cubit, check if cubit is installed"
         pass
-    
+
 
 def mesh(filename=None):
     """create the mesh"""
@@ -51,13 +51,15 @@ def mesh_layercake_regularmap(filename=None):
     import sys,os
     import start as start
     mpiflag,iproc,numproc,mpi   = start.start_mpi()
-    from utilities import  importgeometry,savemesh,get_v_h_list,cubit_command_check
+    from utilities import importgeometry,savemesh,get_v_h_list
+    from utilities import cubit_command_check, get_cubit_version
     #
     numpy                       = start.start_numpy()
     cfg                         = start.start_cfg(filename=filename)
     from math import sqrt
     from sets import Set
 
+    version_cubit = get_cubit_version()
     #
     class cubitvolume:
           def __init__(self,ID,intervalv,centerpoint,dimension):
@@ -65,10 +67,10 @@ def mesh_layercake_regularmap(filename=None):
               self.intervalv=intervalv
               self.centerpoint=centerpoint
               self.dim=dimension
-          
+
           def __repr__(self):
               msg="(vol:%3i, vertical interval: %4i, centerpoint: %8.2f)" % (self.ID, self.intervalv,self.centerpoint)
-              return msg       
+              return msg
     #
     def by_z(x,y):
         return cmp(x.centerpoint,y.centerpoint)
@@ -89,7 +91,7 @@ def mesh_layercake_regularmap(filename=None):
     command = "compress all"
     cubit.cmd(command)
     list_vol=cubit.parse_cubit_list("volume","all")
-    nvol=len(list_vol)                                 
+    nvol=len(list_vol)
     vol=[]
     for id_vol in list_vol:
         p=cubit.get_center_point("volume",id_vol)
@@ -115,8 +117,8 @@ def mesh_layercake_regularmap(filename=None):
     #
     #interval assignement
     surf_or,surf_vertical,list_curve_or,list_curve_vertical,bottom,top = get_v_h_list(list_vol,chktop=cfg.chktop)
-    print 'vertical surfaces: ',surf_vertical    
-    
+    print 'vertical surfaces: ',surf_vertical
+
     for k in surf_vertical:
         command = "surface "+str(k)+" scheme submap"
         cubit.cmd(command)
@@ -192,14 +194,14 @@ def mesh_layercake_regularmap(filename=None):
                 #cubit_error_stop(iproc,command,ner)
         command = "surface "+str(s)+" scheme submap"
         cubit.cmd(command)
-        
+
     #cubit_error_stop(iproc,command,ner)
     #
     #meshing
     if cfg.or_mesh_scheme == 'pave' or schemepave:
         command='mesh surf '+' '.join(str(t) for t in top)
         status=cubit_command_check(iproc,command,stop=True)
-        #cubit.cmd(command)    
+        #cubit.cmd(command)
     elif cfg.or_mesh_scheme == 'map':
         command='mesh surf '+' '.join(str(t) for t in bottom)
         status=cubit_command_check(iproc,command,stop=True)
@@ -211,17 +213,27 @@ def mesh_layercake_regularmap(filename=None):
             for s in surf_vertical:
                 command_surf="mesh surf "+str(s)
                 cubit.cmd(command_surf)
-            command_set_meshvol='volume all redistribute nodes on\nvolume all autosmooth target off\nvolume all scheme Sweep Vector 0 0 -1\nvolume all sweep smooth Auto\n'
+            if version_cubit < 16:
+                command_set_meshvol = '''volume all redistribute nodes on
+                volume all autosmooth target off
+                volume all scheme Sweep Vector 0 0 -1
+                volume all sweep smooth Auto
+                '''
+            else:
+                command_set_meshvol = '''volume all redistribute nodes on
+                volume all autosmooth target off
+                volume all scheme Sweep Vector 0 0 -1
+                '''
             status2=cubit_command_check(iproc,command_set_meshvol,stop=False)
             status2=cubit_command_check(iproc,command,stop=False)
             if not status2:
                 _surf=cubit.get_relatives('volume',vol[id_volume].ID,'surface')
                 local_o_surf=[x for x in _surf if x in surf_or]
-                cubit.cmd('volume '+str(vol[id_volume].ID)+' redistribute nodes off') 
-                cubit.cmd('volume '+str(vol[id_volume].ID)+' scheme Sweep  source surface '+' '.join(str(x) for x in local_o_surf[0:-1])+' target surface '+str(local_o_surf[-1])) 
+                cubit.cmd('volume '+str(vol[id_volume].ID)+' redistribute nodes off')
+                cubit.cmd('volume '+str(vol[id_volume].ID)+' scheme Sweep  source surface '+' '.join(str(x) for x in local_o_surf[0:-1])+' target surface '+str(local_o_surf[-1]))
                 cubit.cmd('volume '+str(vol[id_volume].ID)+' autosmooth_target off')
                 status3=cubit_command_check(iproc,command,stop=True)
-    
+
     #
     #smoothing
     print iproc, 'untangling...'
@@ -229,9 +241,9 @@ def mesh_layercake_regularmap(filename=None):
     cubit.cmd(cmd)
     cmd="smooth volume all"
     cubit.cmd(cmd)
-    
-    
-    
+
+
+
     if  cfg.smoothing:
         print 'smoothing .... '+str(cfg.smoothing)
         cubitcommand= 'surf all smooth scheme laplacian '
@@ -246,11 +258,11 @@ def mesh_layercake_regularmap(filename=None):
     #
     #
     ##vertical refinement
-    ##for nvol = 3 
+    ##for nvol = 3
     ##
     ##___________________________ interface 4
-    ##                 
-    ##vol 2              
+    ##
+    ##vol 2
     ##___________________________ interface 3
     ##
     ##vol 1
@@ -287,7 +299,7 @@ def mesh_layercake_regularmap(filename=None):
         command = "del sideset all"
         cubit.cmd(command)
     n=cubit.get_block_id_list()
-    if len(n) != 0:    
+    if len(n) != 0:
         command = "del block all"
         cubit.cmd(command)
     #
@@ -296,13 +308,13 @@ def mesh_layercake_regularmap(filename=None):
     print iproc, 'hex block definition...'
     boundary_definition.define_bc(entities,parallel=True,cpux=cfg.cpux,cpuy=cfg.cpuy,cpuxmin=0,cpuymin=0,optionsea=False)
     #save mesh
-    
+
     print iproc, 'untangling...'
     cmd="volume all smooth scheme untangle beta 0.02 cpu 10"
     cubit.cmd(cmd)
     cmd="smooth volume all"
     cubit.cmd(cmd)
-    
+
     print iproc, 'saving...'
     savemesh(mpiflag,iproc=iproc,filename=filename)
     #
@@ -313,11 +325,11 @@ def refinement(nvol,vol,filename=None):
     from utilities import get_v_h_list
     #
     #vertical refinement
-    #for nvol = 3 
+    #for nvol = 3
     #
     #___________________________ interface 4
-    #                 
-    #vol 2              
+    #
+    #vol 2
     #___________________________ interface 3
     #
     #vol 1
@@ -446,7 +458,7 @@ def curve2poly(line):
     for n in orientnode:
         v=cubit.get_nodal_coordinates(n)
         vx.append(v[0])
-        vy.append(v[1])    
+        vy.append(v[1])
     return vx,vy,orientnode
 
 def get_nodes_inside_curve(nodes, curve):
@@ -458,7 +470,7 @@ def get_nodes_inside_curve(nodes, curve):
     return nodes_inside
 
 def refine_inside_curve(curves,ntimes=1,depth=1,block=1,surface=False):
-    if not isinstance(curves,list): 
+    if not isinstance(curves,list):
        if isinstance(curves,str):
           curves=map(int,curves.split())
        else:
@@ -486,7 +498,7 @@ def refine_inside_curve(curves,ntimes=1,depth=1,block=1,surface=False):
     #
     #
     cmd='group "negativejac" add quality hex all Jacobian high'
-    cubit.cmd(cmd) 
+    cubit.cmd(cmd)
     group_id_1=cubit.get_id_from_name("negativejac")
     n1=cubit.get_group_nodes(group_id_1)
     if len(n1) != 0:
@@ -514,7 +526,7 @@ def get_uv_curve(list_curve_or):
       if -1 < angletmp < 1:
         angle=math.sin(np.arccos(angletmp))
       else:
-        angle=0.        
+        angle=0.
       angles[curve]=angle
     a=angles.values()
     diff=max(a)-min(a)
