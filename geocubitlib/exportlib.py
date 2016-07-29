@@ -208,8 +208,9 @@ def collect_new(cpuxmin=0, cpuxmax=1, cpuymin=0, cpuymax=1, cpux=1, cpuy=1,
 
     if save_cubfile:
         vol_blocks = [x for x in blocks if x <= 1000]
-        cubit.cmd("create mesh geometry block " + ' '.join(str(x)
-                  for x in vol_blocks) + " feature_angle 135.0")
+        cubit.cmd("create mesh geometry block " +
+                  ' '.join(str(x) for x in vol_blocks) +
+                  " feature_angle 135.0")
         command = "save as '" + outdir2 + outfilename + ".cub' overwrite"
         print command
         cubit.cmd(command)
@@ -430,8 +431,10 @@ def collecting_merging_new(cpuxmin=0, cpuxmax=0, cpuymin=0, cpuymax=0, cpux=1,
 
     index_block = -1
     store_group_name = []
-    side_name = ['topo', 'xmin', 'ymin', 'xmax', 'ymax', 'bot']
-    side_val = ['1001', '1003', '1004', '1005', '1006', '1002']
+    side_name = ['topo', 'xmin', 'ymin',
+                 'xmax', 'ymax', 'bot']
+    side_val = ['1001', '1003', '1004',
+                '1005', '1006', '1002']
     side_block_name = ['face_topo', 'face_abs_xmin', 'face_abs_ymin',
                        'face_abs_xmax', 'face_abs_ymax', 'face_abs_bottom']
     cubit.cmd('set duplicate block elements on')
