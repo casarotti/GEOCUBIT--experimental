@@ -24,11 +24,6 @@ Copyright (c) 2011 Istituto Nazionale di Geofisica e Vulcanologia
 
 GEOCUBIT requires:
 
-- CUBIT 12.2 - www.cubit.sandia.gov
-- python 2.5
-
-or
-
 - CUBIT 15+ - www.cubit.sandia.gov
 - python 2.7
 
@@ -40,7 +35,8 @@ or
 """
 import geocubitlib.menu as menu
 import geocubitlib.start as start
-mpiflag,iproc,numproc,mpi = start.start_mpi()
+
+mpiflag, iproc, numproc, mpi = start.start_mpi()
 if menu.build_surface or menu.build_volume or menu.meshing:
     cubit = start.start_cubit(init=True)
 else:
@@ -48,7 +44,7 @@ else:
 
 if __name__ == '__main__':
 
-    print 'VERSION 3.0b'
+    print 'VERSION 4.0b'
 
     # GEOMETRY
     if menu.build_surface:
@@ -58,24 +54,40 @@ if __name__ == '__main__':
         from geocubitlib import volumes
         volumes.volumes()
 
-    #MESHING
+    # MESHING
     if menu.meshing:
         from geocubitlib import mesh_volume
         mesh_volume.mesh()
 
-    #MERGING and EXPORTING
+    # MERGING and EXPORTING
     if menu.collect:
         from geocubitlib.exportlib import collect_new
         try:
-            output=menu.output
+            output = menu.output
         except:
-            output='totalmesh_merged'
-        output=output.upper()
+            output = 'totalmesh_merged'
+        output = output.upper()
         #
-        collect_new(menu.cpuxmin,menu.cpuxmax,menu.cpuymin,menu.cpuymax,menu.cpux,menu.cpuy,menu.cubfiles,menu.ckbound_method1,menu.ckbound_method2,menu.merge_tolerance,curverefining=menu.curverefining,outfilename=output,qlog=menu.qlog,export2SPECFEM3D=menu.export2SPECFEM3D,listblock=menu.listblock,listflag=menu.listflag,outdir=menu.SPECFEM3D_output_dir,add_sea=menu.add_sea,decimate=menu.decimate,cpml=menu.cpml,cpml_size=menu.cpml_size,top_absorbing=menu.top_absorbing,hex27=menu.hex27,check_merging=menu.check_merging,save_cubfile=menu.save_cubfile,starting_tolerance=menu.starting_tolerance)
+        collect_new(menu.cpuxmin, menu.cpuxmax, menu.cpuymin, menu.cpuymax,
+                    menu.cpux, menu.cpuy, menu.cubfiles, menu.ckbound_method1,
+                    menu.ckbound_method2, menu.merge_tolerance,
+                    curverefining=menu.curverefining, outfilename=output,
+                    qlog=menu.qlog, export2SPECFEM3D=menu.export2SPECFEM3D,
+                    listblock=menu.listblock, listflag=menu.listflag,
+                    outdir=menu.SPECFEM3D_output_dir, add_sea=menu.add_sea,
+                    decimate=menu.decimate,
+                    cpml=menu.cpml, cpml_size=menu.cpml_size,
+                    top_absorbing=menu.top_absorbing, hex27=menu.hex27,
+                    check_merging=menu.check_merging,
+                    save_cubfile=menu.save_cubfile,
+                    starting_tolerance=menu.starting_tolerance)
 
     if menu.export2SPECFEM3D and not menu.collect:
         from geocubitlib.exportlib import e2SEM
         print menu.cubfiles
-        print 'hex27 ',menu.hex27
-        e2SEM(files=menu.cubfiles,listblock=menu.listblock,listflag=menu.listflag,outdir=menu.SPECFEM3D_output_dir,hex27=menu.hex27)
+        print 'hex27 ', menu.hex27
+        e2SEM(files=menu.cubfiles,
+              listblock=menu.listblock,
+              listflag=menu.listflag,
+              outdir=menu.SPECFEM3D_output_dir,
+              hex27=menu.hex27)
