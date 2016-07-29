@@ -29,64 +29,70 @@ from utilities import get_cubit_version
 
 
 def usage():
-    print """
-    GEOCUBIT HELP...
+    txt = """
+GEOCUBIT HELP...
 
-    1) UTILITIES
+1) UTILITIES
 
-         check the configuration of the libraries and dependencies:
-         GEOCUBIT.py --chklib
+ check the configuration of the libraries and dependencies:
+ GEOCUBIT.py --chklib
 
-         check the parameter file:
-         GEOCUBIT.py --chkcfg --cfg = [filename]
+ check the parameter file:
+ GEOCUBIT.py --chkcfg --cfg = [filename]
 
-    2) CREATE GEOMETRY
+2) CREATE GEOMETRY
 
-         create a surface for regular ascii grid or ascii lines defining a skin
-         GEOCUBIT.py --surface = [surface file] (--regulargrid = [options]) (--skin = [options])
+ create a surface for regular ascii grid or ascii lines defining a skin
+ GEOCUBIT.py --surface = [surface file] (--regulargrid = [...] --skin = [...])
 
-         create a plane surface
-         GEOCUBIT.py --plane --x1 = [x, y, z] --x2 = [x, y, z] --x3 = [x, y, z] --x4 = [x, y, z] --unit = [utm/geo]
+ create a plane surface
+ GEOCUBIT.py --plane --x1 = [x, y, z]
+                     --x2 = [x, y, z]
+                     --x3 = [x, y, z]
+                     --x4 = [x, y, z]
+                     --unit = [utm/geo]
 
-         create acis surfaces using a parameter file:
-         GEOCUBIT.py --build_surface --cfg = [filename]
+ create acis surfaces using a parameter file:
+ GEOCUBIT.py --build_surface --cfg = [filename]
 
-         **SERIAL**: create cubit volumes using a parameter file:
-         GEOCUBIT.py --build_volume --cfg = [filename] (--id_proc = [num_processor, default = 0])
-
-         **PARALLEL**: create a volume from a parameter file
-         mpirun -n [numproc] pyMPI GEOCUBIT.py --build_volume --cfg = [filename
-
-    3) MESHING
-
-         **SERIAL**: meshing a volumes
-         GEOCUBIT.py --mesh --cfg = [filename] (--id_proc = [num_processor, default = 0])       - note: without the --build_volume flag the script recall an old 'geometry_vol_[id_proc].cub' file
-
-         build a volume and mesh it....
-         GEOCUBIT.py --build_volume --mesh --cfg = [filename] (--id_proc = [num_processor, default = 0])
-
-         **PARALLEL**: meshing a volume from a parameter file
-         (it is possible to skip the build_volume and use some geometry files already created, but only with a parallel file system and it is risky)
-         mpirun -n [numproc] pyMPI GEOCUBIT.py --build_volume --mesh --cfg = [filename]
-
-    4) FINALIZING AND EXPORTING
-
-         collect some cubit files and merge in a single free mesh cubitfile
-         GEOCUBIT.py --collect   --merge --meshfiles = [list of files] --cpux = N --cpuy = N (--rangecpux = [cpuxmin, cpuxmax], --rangecpuy = [cpuymin, cpuymax] --output = [YourMeshName] --outdir = [YourDir] --step_tolerance=1 --save_cubfile --starting_tolerance = 100)
-
-         collect some cubit files and merge in a single free mesh cubitfile (and decimate!!! (refine by 2)) - only with CUBIT < 13
-         GEOCUBIT.py --collect   --decimate --merge --meshfiles = [list of files] --cpux = N --cpuy = N (--rangecpux = [cpuxmin, cpuxmax], --rangecpuy = [cpuymin, cpuymax])
+ create cubit volumes using a parameter file:
+ GEOCUBIT.py --build_volume --cfg = [filename] (--id_proc = [num_processor])
 
 
+3) MESHING
 
-         collect a single free mesh cubitfile and refine the hex inside some curve (ex. basin) - only with CUBIT < 13
-         GEOCUBIT.py --collect --meshfiles = [list of files] --curverefining = [list of SAT files]
+meshing a volumes
+ GEOCUBIT.py --mesh --cfg = [filename] (--id_proc = [num_processor])
+ - note: without the --build_volume flag the script recall
+ an old 'geometry_vol_[id_proc].cub' file
 
-         export a cubit mesh file (with blocks defined following the note)  in a SPECFEM3D_SESAME mesh
-         GEOCUBIT.py --export2SPECFEM3D --meshfiles = [filename] (--listblock = block1, block2, .., blockN --listflag = [list of specfem flag, i.e. --listflag = 1, 2, 3, -1])
-         GEOCUBIT.py --export2SPECFEM3D --meshfiles = [filename] (--listblock = block1, block2, .., blockN --listflag = [list of specfem flag, i.e. --listflag = 1, 2, 3, -1] --SEMoutput = [YourOutputDir])
+ build a volume and mesh it....
+ GEOCUBIT.py --build_volume --mesh --cfg = [filename]
+             (--id_proc = [num_processor, default = 0])
 
-    """
+4) FINALIZING AND EXPORTING
+
+ collect some cubit files and merge in a single free mesh cubitfile
+ GEOCUBIT.py --collect --merge --meshfiles = [files] --cpux = N --cpuy = N
+             (--rangecpux = [cpuxmin, cpuxmax],
+             --rangecpuy = [cpuymin, cpuymax]
+             --output = [YourMeshName]
+             --outdir = [YourDir]
+             --step_tolerance=1
+             --save_cubfile
+             --starting_tolerance = 100)
+
+
+ export a single cubit mesh file (with defined blocks) in a SPECFEM3D mesh
+ GEOCUBIT.py --export2SPECFEM3D --meshfiles = [filename]
+             (--listblock = block1, block2, .., blockN
+              --listflag = [specfem flag, i.e. --listflag = 1, 2, 3, -1])
+              --SEMoutput = [YourOutputDir])
+
+"""
+    print (txt)
+
+
 # print 'reading options....'
 try:
     if hasattr(sys, 'argv'):
@@ -108,15 +114,8 @@ try:
                                     "regulargrid=", 'skin=', "build_surface",
                                     "build_volume", "merge1", "merge2",
                                     "merge", "collect", "meshfiles="])
-        # print opts, args
 
 except Exception, e:
-    # if 'argv' in e:
-    #    pass
-    # else:
-    #    if '__console__' ! =  __name__: #if you are in the cubitGUI/pythonprompt you don't want usage()
-    #        usage()
-    #        print e
     print e
     sys.exit()
 
@@ -297,11 +296,13 @@ if opts:
         if o in ("--exofiles"):
             exofiles = value
         if o in ("--export2SPECFEM3D"):
-                export2SPECFEM3D = True
-        if o in ("--merge_tolerance") and o != '--merge' and o != '--merge2' and o != '--merge1':
-            merge_tolerance = map(float, value.split(','))
+            export2SPECFEM3D = True
+        if o in ("--merge_tolerance"):
+            if o != '--merge' and o != '--merge2' and o != '--merge1':
+                merge_tolerance = map(float, value.split(','))
         if o in ("--mat"):
-            material_assignement.append([value.split(',')[0], value.split(',')[1]])
+            material_assignement.append(
+                [value.split(',')[0], value.split(',')[1]])
         if o in ("--listblock"):
             listblock = map(int, value.split(','))
         if o in ("--listflag"):
@@ -315,12 +316,12 @@ if opts:
             if cubit_version >= 14.0:
                 cpuxmax = int(value.split(',')[1])
             else:
-                cpuxmax = int(value.split(',')[1])+1
+                cpuxmax = int(value.split(',')[1]) + 1
         if o in ('--rangecpuy'):
             if cubit_version >= 14.0:
                 cpuymax = int(value.split(',')[1])
             else:
-                cpuymax = int(value.split(',')[1])+1
+                cpuymax = int(value.split(',')[1]) + 1
             cpuymin = int(value.split(',')[0])
         if o in ('--cpux'):
             cpux = int(value)
@@ -346,7 +347,7 @@ if opts:
         pass
     elif cpuy > 1:
         if cubit_version >= 14.0:
-            cpuymax = cpuy-1
+            cpuymax = cpuy - 1
         else:
             cpuymax = cpuy
     else:
@@ -355,7 +356,7 @@ if opts:
         pass
     elif cpux > 1:
         if cubit_version >= 14.0:
-            cpuxmax = cpux-1
+            cpuxmax = cpux - 1
         else:
             cpuxmax = cpux
     else:
@@ -380,9 +381,10 @@ if opts:
         ks.sort()
         for k in ks:
             if '__' not in k and '<' not in str(d[k]) and d[k] is not None:
-                txt = str(k)+' -----> '+str(d[k])                              #
-                txt = txt.replace("'", "").replace('"', '')                      #
-                print txt                               #
+                txt = str(k) + ' -----> ' + \
+                    str(d[k])
+                txt = txt.replace("'", "").replace('"', '')
+                print txt
     else:
         try:
             import start as start
@@ -394,10 +396,10 @@ if opts:
             ks.sort()
             for k in ks:
                 if '__' not in k and '<' not in str(d[k]) and d[k] is not None:
-                    txt = str(k)+' -----> '+str(d[k])                              #
-                    txt = txt.replace("'", "").replace('"', '')                      #
+                    txt = str(k) + ' -----> ' + str(d[k])
+                    txt = txt.replace("'", "").replace('"', '')
                     print>>f, txt
-            f.close()                               #
+            f.close()
         except:
             pass
 elif opts == []:
