@@ -66,16 +66,15 @@ def by_z(x, y):
 
 
 def mesh_layercake_regularmap(filename=None):
-    import sys
-    import os
+
     import start as start
     mpiflag, iproc, numproc, mpi = start.start_mpi()
     from utilities import importgeometry, savemesh, get_v_h_list
     from utilities import cubit_command_check, get_cubit_version
     #
-    numpy = start.start_numpy()
+    # numpy = start.start_numpy()
     cfg = start.start_cfg(filename=filename)
-    from math import sqrt
+    # from math import sqrt
     from sets import Set
 
     version_cubit = get_cubit_version()
@@ -108,15 +107,15 @@ def mesh_layercake_regularmap(filename=None):
     #
     surf_vertical = []
     surf_or = []
-    top_surface = 0
-    top_surface_add = ''
-    bottom_surface = 0
-    #
-    zmin_box = cubit.get_total_bounding_box("volume", list_vol)[6]
-    xmin_box = cubit.get_total_bounding_box("volume", list_vol)[0]
-    xmax_box = cubit.get_total_bounding_box("volume", list_vol)[1]
-    ymin_box = cubit.get_total_bounding_box("volume", list_vol)[3]
-    ymax_box = cubit.get_total_bounding_box("volume", list_vol)[4]
+    # top_surface = 0
+    # top_surface_add = ''
+    # bottom_surface = 0
+    # #
+    # zmin_box = cubit.get_total_bounding_box("volume", list_vol)[6]
+    # xmin_box = cubit.get_total_bounding_box("volume", list_vol)[0]
+    # xmax_box = cubit.get_total_bounding_box("volume", list_vol)[1]
+    # ymin_box = cubit.get_total_bounding_box("volume", list_vol)[3]
+    # ymax_box = cubit.get_total_bounding_box("volume", list_vol)[4]
     #
     #
     # interval assignement
@@ -244,7 +243,7 @@ def mesh_layercake_regularmap(filename=None):
                           ' target surface ' + str(local_o_surf[-1]))
                 cubit.cmd('volume ' + str(vol[id_volume].ID) +
                           ' autosmooth_target off')
-                status3 = cubit_command_check(iproc, command, stop=True)
+                status = cubit_command_check(iproc, command, stop=True)
 
     #
     # smoothing
@@ -286,7 +285,6 @@ def mesh_layercake_regularmap(filename=None):
     # top layer vertical coarsening
     print 'coarsening top layer... ', cfg.coarsening_top_layer
     if cfg.coarsening_top_layer:
-        from sets import Set
         cubitcommand = 'del mesh vol ' + str(vol[-1].ID) + ' propagate'
         cubit.cmd(cubitcommand)
         s1 = Set(list_curve_vertical)
@@ -498,7 +496,7 @@ def refine_inside_curve(curves, ntimes=1, depth=1, block=1, surface=False):
             command = "group 'hex_ref' add hex propagate face in node " +\
                       ' '.join(str(x) for x in ni) + "times " + str(ntimes)
             cubit.cmd(command)
-            id_group = cubit.get_id_from_name('hex_ref')
+            # id_group = cubit.get_id_from_name('hex_ref')
             cmd = 'refine hex in group "hex_ref" numsplit 1 bias 1 depth ' + \
                 str(depth) + ' smooth'
             cubit.cmd(cmd)
@@ -515,8 +513,6 @@ def refine_inside_curve(curves, ntimes=1, depth=1, block=1, surface=False):
     n1 = cubit.get_group_nodes(group_id_1)
     if len(n1) != 0:
         print 'error, negative jacobian after the refining'
-        import sys
-        # sys.exit()
 
 
 def get_uv_curve(list_curve_or):

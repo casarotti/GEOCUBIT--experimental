@@ -55,7 +55,7 @@ def ordering_surfaces(list_surfaces):
     for s in list_surfaces:
         _, _, z = cubit.get_center_point("surface", s)
         list_z.append(z)
-    ord_list_surfaces = [s for s, z in sorted(
+    ord_list_surfaces = [s for s, _z in sorted(
         zip(list_surfaces, list_z), key=lambda x: (x[1]))]
     return ord_list_surfaces
 
@@ -96,7 +96,6 @@ def surfaces(filename=None,):
 def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,
                                                      verticalsandwich=False,
                                                      onlysurface=False):
-    import sys
     import start as start
     #
     mpiflag, iproc, numproc, mpi = start.start_mpi()
@@ -104,9 +103,8 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,
     numpy = start.start_numpy()
     cfg = start.start_cfg(filename=filename)
 
-    from utilities import geo2utm, savegeometry, savesurf, cubit_command_check
+    from utilities import geo2utm, savegeometry, cubit_command_check
 
-    from math import sqrt
     #
     try:
         mpi.barrier()
@@ -160,7 +158,7 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,
             else:
                 ny = mpi.bcast()
         else:
-            coordx, coordy, elev, nx, ny = local_volume.read_grid(filename)
+            coordx, coordy, elev, nx, ny = lvolume.read_grid(filename)
         print str(iproc) + ' end of receving grd files '
         nx_segment = int(nx / cfg.nproc_xi) + 1
         ny_segment = int(ny / cfg.nproc_eta) + 1
@@ -176,8 +174,8 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,
         nx_segment = 2
         ny_segment = 2
         # if iproc == 0: print nx,ny,cfg.cpux,cfg.cpuy
-        xp = (cfg.xmax - cfg.xmin) / float((nx - 1))
-        yp = (cfg.ymax - cfg.ymin) / float((ny - 1))
+        # xp = (cfg.xmax - cfg.xmin) / float((nx - 1))
+        # yp = (cfg.ymax - cfg.ymin) / float((ny - 1))
         #
         if verticalsandwich:
             elev = numpy.zeros([nx, ny, cfg.nxvol], float)
@@ -191,12 +189,12 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,
         xlength = (cfg.xmax - cfg.xmin) / float(cfg.nproc_xi)
         # length of y slide for chunk
         ylength = (cfg.ymax - cfg.ymin) / float(cfg.nproc_eta)
-        nelem_chunk_x = 1
-        nelem_chunk_y = 1
-        ivxtot = nelem_chunk_x + 1
-        ivytot = nelem_chunk_y + 1
-        xstep = xlength  # distance between vertex on x
-        ystep = ylength
+        # nelem_chunk_x = 1
+        # nelem_chunk_y = 1
+        # ivxtot = nelem_chunk_x + 1
+        # ivytot = nelem_chunk_y + 1
+        # xstep = xlength  # distance between vertex on x
+        # ystep = ylength
         if verticalsandwich:
             for i in range(0, cfg.nxvol):
                 elev[:, :, i] = cfg.xwidth[i]
@@ -231,9 +229,9 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,
     #    print coordy[0,0],coordy[nx-1,ny-1]
     #
     #
-    icurve = 0
+    # icurve = 0
     isurf = 0
-    ivertex = 0
+    # ivertex = 0
     #
     # create vertex
     if verticalsandwich:
@@ -488,7 +486,6 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,
                 vertex = []
 
                 for iy in range(nymin_cpu, nymax_cpu + 1):
-                    ivx = 0
                     for ix in range(nxmin_cpu, nxmax_cpu + 1):
                         zvertex = elev[ix, iy, inz]
                         x_current, y_current = (coordx[ix, iy], coordy[ix, iy])
@@ -498,7 +495,7 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,
                                       str(zvertex))
                 #
                 print 'proc', iproc, 'vertex list created....', len(vertex)
-                n = max(nx, ny)
+
                 uline = []
                 vline = []
                 iv = 0
@@ -601,16 +598,15 @@ def layercake_volume_ascii_regulargrid_mpiregularmap(filename=None,
 
 
 def layercake_volume_fromacis_mpiregularmap(filename=None):
-    import sys
+
     import start as start
     #
     mpiflag, iproc, numproc, mpi = start.start_mpi()
     #
     cfg = start.start_cfg(filename=filename)
     #
-    from utilities import geo2utm, savegeometry
-    #
-    from math import sqrt
+    from utilities import savegeometry
+
     #
     try:
         mpi.barrier()
@@ -662,9 +658,9 @@ def layercake_volume_fromacis_mpiregularmap(filename=None):
     #
     ner = cubit.get_error_count()
     #
-    icurve = 0
+    # icurve = 0
     isurf = 0
-    ivertex = 0
+    # ivertex = 0
     #
     # length of x slide for chunk
     xlength = (cfg.xmax - cfg.xmin) / float(cfg.cpux)
@@ -707,8 +703,8 @@ def layercake_volume_fromacis_mpiregularmap(filename=None):
     dict_surf = {}
     for isurf in list_surface_all:
         p = cubit.get_center_point("surface", isurf)
-        if p[0] < xmin_cpu or p[0] > xmax_cpu or
-        p[1] > ymax_cpu or p[1] < ymin_cpu:
+        if p[0] < xmin_cpu or p[0] > xmax_cpu or \
+           p[1] > ymax_cpu or p[1] < ymin_cpu:
             command = "del surf " + str(isurf)
             cubit.cmd(command)
         else:

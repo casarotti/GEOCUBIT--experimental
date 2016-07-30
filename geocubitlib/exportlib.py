@@ -459,7 +459,7 @@ def collecting_merging_new(cpuxmin=0, cpuxmax=0, cpuymin=0, cpuymax=0, cpux=1,
                 store_group_name, ip, xmin, xmax, ymin, ymax, index_block)
             if len(store_tmp) != 0:
                 store_group_name = store_tmp
-            lateral_nodes = check_lateral_nodes()
+            # lateral_nodes = check_lateral_nodes()
 
         cubit.cmd('save as "tmp_nomerging.cub" overwrite ')
 
