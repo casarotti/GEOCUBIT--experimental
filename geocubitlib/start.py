@@ -100,13 +100,15 @@ def start_cubit(init=False):
                 from start import start_cfg,start_mpi
                 cfg=start_cfg()
                 mpiflag,iproc,numproc,mpi   = start_mpi()
+                version_cubit=utilities.get_cubit_version()
                 cubit.cmd('set logging on file "'+cfg.working_dir+'/cubit_proc_'+str(iproc)+'.log"')
                 cubit.cmd("set echo off")
                 cubit.cmd("set info off")
                 if iproc == cfg.monitored_cpu:
                     cubit.cmd("record '"+cfg.working_dir+"/monitor_"+str(cfg.monitored_cpu)+".jou'")
                     cubit.cmd("set journal on")
-                    cubit.cmd("journal error on")
+                    if version_cubit < 16:
+                        cubit.cmd("journal error on")
                     d=cfg.__dict__
                     ks=d.keys()
                     ks.sort()
@@ -117,7 +119,8 @@ def start_cubit(init=False):
                             cubit.cmd('comment "'+txt+'"')
                 else:
                     cubit.cmd("set journal "+cfg.jou_info)
-                    cubit.cmd("journal error "+cfg.jer_info)
+                    if version_cubit < 16:
+                        cubit.cmd("journal error "+cfg.jer_info)
                     d=cfg.__dict__
                     ks=d.keys()
                     ks.sort()
@@ -128,7 +131,6 @@ def start_cubit(init=False):
                             cubit.cmd('comment "'+txt+'"')
                 cubit.cmd("set echo "+cfg.echo_info)
                 cubit.cmd("set info "+cfg.cubit_info)
-                version_cubit=utilities.get_cubit_version()
                 if version_cubit > 13 and version_cubit < 15:
                     print 'VERSION CUBIT ',version_cubit
                     print 'VERSIONs of CUBIT > 13 have bugs with merge node commands and equivalence'

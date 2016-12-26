@@ -111,3 +111,7 @@ example/MESH/absorbing_surface_file_bottom
 *.jou
 
 example/trash.txt
+
+MESH_GEOCUBIT/blocks_00000
+
+MESH_GEOCUBIT/quality_00000
