@@ -1075,14 +1075,14 @@ def collect_old(cpuxmin=0, cpuxmax=1, cpuymin=0, cpuymax=1, cpux=1, cpuy=1,
                 listflag=None, outdir='.', add_sea=False, decimate=False,
                 cpml=False, cpml_size=False, top_absorbing=False, hex27=False):
     #
-    #cubit.cmd('set journal error off')
-    #cubit.cmd('set verbose error off')
+    # cubit.cmd('set journal error off')
+    # cubit.cmd('set verbose error off')
     collecting_merging(cpuxmin, cpuxmax, cpuymin, cpuymax, cpux, cpuy,
                        cubfiles=cubfiles, ckbound_method1=ckbound_method1,
                        ckbound_method2=ckbound_method2,
                        merge_tolerance=merge_tolerance, decimate=decimate)
-    #cubit.cmd('set journal error on')
-    #cubit.cmd('set verbose error on')
+    # cubit.cmd('set journal error on')
+    # cubit.cmd('set verbose error on')
     #
     if curverefining:
         block = 1001  # topography

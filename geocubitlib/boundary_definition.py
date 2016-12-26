@@ -160,10 +160,10 @@ def define_surf(ip=0, cpuxmin=0, cpuxmax=1,
     zmax_box = cubit.get_total_bounding_box("volume", list_vol)[7]
     # it is the z_min of the box ... box= xmin,xmax,d,ymin,ymax,d,zmin...
     zmin_box = cubit.get_total_bounding_box("volume", list_vol)[6]
-    xmin_box = cubit.get_total_bounding_box("volume", list_vol)[0]
-    xmax_box = cubit.get_total_bounding_box("volume", list_vol)[1]
-    ymin_box = cubit.get_total_bounding_box("volume", list_vol)[3]
-    ymax_box = cubit.get_total_bounding_box("volume", list_vol)[4]
+    # xmin_box = cubit.get_total_bounding_box("volume", list_vol)[0]
+    # xmax_box = cubit.get_total_bounding_box("volume", list_vol)[1]
+    # ymin_box = cubit.get_total_bounding_box("volume", list_vol)[3]
+    # ymax_box = cubit.get_total_bounding_box("volume", list_vol)[4]
     list_surf = cubit.parse_cubit_list("surface", "all")
 
     absorbing_surface_distance_tolerance = 0.001
@@ -255,7 +255,6 @@ def define_surf(ip=0, cpuxmin=0, cpuxmax=1,
 
 def define_block():
     list_vol = cubit.parse_cubit_list("volume", "all")
-    init_n_vol = len(list_vol)
     list_name = map(lambda x: 'vol' + x, map(str, list_vol))
     return list_vol, list_name
 
@@ -443,18 +442,18 @@ def define_bc(*args, **keys):
                 build_block_side(bottom_surf, entity +
                                  '_abs_bottom', obj=entity, id_0=1002)
     elif closed:
-        print "##closed region"
-        surf = define_absorbing_surf_sphere()
-        v_list, name_list = define_block()
-        build_block(v_list, name_list, id_0)
-        # entities
-        entities = args[0]
-        id_side = 1001
-        print entities
-        for entity in entities:
-            build_block_side(surf, entity + '_closedvol',
-                             obj=entity, id_0=id_side)
-            id_side = id_side + 1
+        print "##closed region not ready"
+        # surf = define_absorbing_surf_sphere()
+        # v_list, name_list = define_block()
+        # build_block(v_list, name_list, id_0)
+        # # entities
+        # entities = args[0]
+        # id_side = 1001
+        # print entities
+        # for entity in entities:
+        #     build_block_side(surf, entity + '_closedvol',
+        #                      obj=entity, id_0=id_side)
+        #     id_side = id_side + 1
 
 #########################################
 

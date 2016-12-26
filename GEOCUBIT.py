@@ -44,7 +44,7 @@ else:
 
 if __name__ == '__main__':
 
-    print 'VERSION 4.0b'
+    print 'VERSION 4.1b'
 
     # GEOMETRY
     if menu.build_surface:

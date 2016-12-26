@@ -156,8 +156,8 @@ class mtools(object):
         txt = 'Meshing for frequency up to ' + str(self.frequency) + 'Hz\n'
         for surf, vp in zip(self.list_surf, self.list_vp):
             txt = txt + 'surface ' + str(surf) + ', vp =' + str(vp) +\
-                  '  -> size ' + str(self.freq2meshsize(vp)[0]) + ' -> dt ' +\
-                  str(self.freq2meshsize(vp)[0]) + '\n'
+                '  -> size ' + str(self.freq2meshsize(vp)[0]) + ' -> dt ' +\
+                str(self.freq2meshsize(vp)[0]) + '\n'
         return txt
 
     def freq2meshsize(self, vp):
@@ -548,8 +548,8 @@ class mesh(object, mesh_tools):
                                         if nattrib == 7:
                                             # anisotropy_flag
                                             ani = \
-                                              cubit.get_block_attribute_value(
-                                                block, 6)
+                                             cubit.get_block_attribute_value(
+                                                    block, 6)
                                     # for q to be valid: it must be positive
                                     if qk < 0 or qmu < 0:
                                         print 'error, Q value invalid:', \
