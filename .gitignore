@@ -115,3 +115,23 @@ example/trash.txt
 MESH_GEOCUBIT/blocks_00000
 
 MESH_GEOCUBIT/quality_00000
+
+nummaterial_velocity_file
+
+nodes_coords_file
+
+materials_file
+
+mesh_file
+
+free_or_absorbing_surface_file_zmax
+
+absorbing_surface_file_ymin
+
+absorbing_surface_file_ymax
+
+absorbing_surface_file_xmin
+
+absorbing_surface_file_xmax
+
+absorbing_surface_file_bottom

@@ -98,7 +98,7 @@ def collect_new(cpuxmin=0, cpuxmax=1, cpuymin=0, cpuymax=1, cpux=1, cpuy=1,
                 export2SPECFEM3D=False, listblock=None, listflag=None,
                 outdir='.', add_sea=False, decimate=False, cpml=False,
                 cpml_size=False, top_absorbing=False, hex27=False,
-                save_cubfile=True, check_merging=False,
+                save_cubfile=False, check_merging=False,
                 starting_tolerance=100.):
     #
     cubit.cmd('set info off')
@@ -214,6 +214,10 @@ def collect_new(cpuxmin=0, cpuxmax=1, cpuymin=0, cpuymax=1, cpux=1, cpuy=1,
         command = "save as '" + outdir2 + outfilename + ".cub' overwrite"
         print command
         cubit.cmd(command)
+
+collect = collect_new
+
+absorbing_surface = collect_new
 
 
 def e2SEM(files=False, listblock=None, listflag=None, outdir='.',
@@ -464,8 +468,12 @@ def collecting_merging_new(cpuxmin=0, cpuxmax=0, cpuymin=0, cpuymax=0, cpux=1,
         cubit.cmd('save as "tmp_nomerging.cub" overwrite ')
 
     else:
-        check_bc(ip, xmin, xmax, ymin, ymax, cpux, cpuy,
-                 cpuxmin, cpuxmax + 1, cpuymin, cpuymax + 1)
+        if number_of_chunks == 1:
+            from geocubitlib import boundary_definition
+            boundary_definition.define_bc()
+        else:
+            check_bc(ip, xmin, xmax, ymin, ymax, cpux, cpuy,
+                     cpuxmin, cpuxmax + 1, cpuymin, cpuymax + 1)
         cubit.cmd('disassociate mesh from volume all')
         cubit.cmd('del vol all')
         cubit.cmd('set info on')

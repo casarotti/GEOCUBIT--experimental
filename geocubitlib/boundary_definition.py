@@ -56,6 +56,8 @@ def map_boundary(cpuxmin=0, cpuxmax=1, cpuymin=0, cpuymax=1, cpux=1, cpuy=1):
                 ymax.append(ip)
                 #
             listfull.append(ip)
+    if cpux * cpuy == 1:
+        xmin, xmax, ymin, ymax = [0], [0], [0], [0]
     return xmin, xmax, ymin, ymax, listfull
 
 
@@ -107,15 +109,15 @@ def lateral_boundary_are_absorbing(ip=0, cpuxmin=0, cpuxmax=1,
     #
     if ip in ip_xmin:
         abs_xmin = xmin
-        print 'proc ', ip, ' is has absorbing boundary xmin'
+        print 'proc ', ip, ' has absorbing boundary xmin'
     if ip in ip_ymin:
-        print 'proc ', ip, ' is has absorbing boundary ymin'
+        print 'proc ', ip, ' has absorbing boundary ymin'
         abs_ymin = ymin
     if ip in ip_xmax:
-        print 'proc ', ip, ' is has absorbing boundary xmax'
+        print 'proc ', ip, ' has absorbing boundary xmax'
         abs_xmax = xmax
     if ip in ip_ymax:
-        print 'proc ', ip, ' is has absorbing boundary ymax'
+        print 'proc ', ip, ' has absorbing boundary ymax'
         abs_ymax = ymax
     return abs_xmin, abs_xmax, abs_ymin, abs_ymax
 
@@ -274,11 +276,14 @@ def build_block(vol_list, name, id_0=1, top_surf=None, optionsea=False):
         seathres = False
 
     #
+    print 'build blocks'
     block_list = cubit.get_block_id_list()
+    print block_list, vol_list
     if len(block_list) > 0:
         id_block = max(max(block_list), 2) + id_0
     else:
-        id_block = 2 + id_0
+        # id_block = 2 + id_0
+        id_block = 0
     for v, n in zip(vol_list, name):
         id_block += 1
         v_other = Set(vol_list) - Set([v])
@@ -310,6 +315,7 @@ def build_block(vol_list, name, id_0=1, top_surf=None, optionsea=False):
             if version_cubit >= 15:
                 command = 'block ' + str(id_block) + ' hex in vol ' + \
                           str(v)
+                print command
             else:
                 command = 'block ' + str(id_block) + ' hex in vol ' + \
                           str(v) + ' except hex in vol ' + str(list(v_other))
@@ -381,6 +387,7 @@ def define_bc(*args, **keys):
                         cpux=cpux, cpuy=cpuy)
         id_0 = cubit.get_next_block_id()
         v_list, name_list = define_block()
+        print 'define block', v_list, name_list
         build_block(v_list, name_list, id_0, top_surf, optionsea=optionsea)
         # entities
         entities = ['face']
@@ -622,14 +629,19 @@ def check_bc(iproc, xmin, xmax, ymin, ymax,
     curve_bottom_xmin, curve_bottom_ymin, curve_bottom_xmax, \
         curve_bottom_ymax = \
         extract_bottom_curves(surf_xmin, surf_ymin, surf_xmax, surf_ymax)
-    print absorbing_surf, abs_xmin, abs_xmax, abs_ymin, \
-        abs_ymax, top_surf, bottom_surf, surf_xmin, \
-        surf_ymin, surf_xmax, surf_ymax
+    # print 'absorbing surfaces: ', absorbing_surf
+    print 'absorbing surfaces xmin   : ', abs_xmin
+    print 'absorbing surfaces xmax   : ', abs_xmax
+    print 'absorbing surfaces ymin   : ', abs_ymin
+    print 'absorbing surfaces ymax   : ', abs_ymax
+    print 'absorbing surfaces top    : ', top_surf
+    print 'absorbing surfaces bottom : ', bottom_surf
+    # print 'bottom curves: ', surf_xmin, surf_ymin, surf_xmax, surf_ymax
     #
     #
     #
     from sets import Set
-    # UPGRADE.... the sets module is deprecated after python 2.6
+    # to be UPGRADEd.... the sets module is deprecated after python 2.6
 
     cubit.cmd('set info off')
     cubit.cmd('set echo off')
