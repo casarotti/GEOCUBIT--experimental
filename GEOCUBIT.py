@@ -29,9 +29,6 @@ GEOCUBIT requires:
 
 - numpy 1.0+  - http://downloads.sourceforge.net/numpy
 
-  -- optional for parallel mesh
-- pympi - http://downloads.sourceforge.net/pympi
-
 """
 import geocubitlib.menu as menu
 import geocubitlib.start as start
@@ -44,7 +41,7 @@ else:
 
 if __name__ == '__main__':
 
-    print 'VERSION 4.1b'
+    print 'VERSION 4.1'
 
     # GEOMETRY
     if menu.build_surface:
