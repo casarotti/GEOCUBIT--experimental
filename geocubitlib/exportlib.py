@@ -217,7 +217,7 @@ def collect_new(cpuxmin=0, cpuxmax=1, cpuymin=0, cpuymax=1, cpux=1, cpuy=1,
 
 collect = collect_new
 
-absorbing_surface = collect_new
+define_blocks = collect_new
 
 
 def e2SEM(files=False, listblock=None, listflag=None, outdir='.',
