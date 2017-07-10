@@ -10,7 +10,7 @@
 #                                                                           #
 # This program is free software; you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by      #
-# the Free Software Foundation; either version 2 of the License, or         #
+# the Free Software Foundation; either version 3 of the License, or         #
 # (at your option) any later version.                                       #
 #                                                                           #
 # This program is distributed in the hope that it will be useful,           #
@@ -551,10 +551,10 @@ class mesh(object, mesh_tools):
                                              cubit.get_block_attribute_value(
                                                     block, 6)
                                     # for q to be valid: it must be positive
-                                    if qk < 0 or qmu < 0:
-                                        print 'error, Q value invalid:', \
-                                            qk, qmu
-                                        break
+                                        if qk < 0 or qmu < 0:
+                                            print 'error, Q value invalid:', \
+                                               qk, qmu
+                                            break
                     elif flag < 0:
                         # interface/tomography domain
                         # velocity model
